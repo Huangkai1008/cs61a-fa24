@@ -1,0 +1,40 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build:
+    name: ${{ matrix.os }} / ${{ matrix.python-version }}
+    runs-on: ${{ matrix.image }}
+    strategy:
+      matrix:
+        os: [ Ubuntu, macOS]
+        python-version: ["3.9", "3.10", "3.11" ]
+        include:
+          - os: Ubuntu
+            image: ubuntu-22.04
+          - os: macOS
+            image: macos-12
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: Lint
+        run: |
+          poetry run mypy .
+          poetry run black . --check
+          poetry run isort . --check-only
+          poetry run flake8 .
+      - name: Test
+        run: |
+          poetry run pytest
