@@ -10,7 +10,7 @@ dependencies = []
 [project.optional-dependencies]
 
 [[tool.uv.index]]
-name = "tsinghua"
+name = "aliyun"
 url = "https://mirrors.aliyun.com/pypi/simple"
 
 [dependency-groups]
