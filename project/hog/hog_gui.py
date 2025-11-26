@@ -1,4 +1,5 @@
 """Web server for the hog GUI."""
+
 import io
 import os
 import logging
@@ -11,8 +12,8 @@ import dice
 import default_graphics
 
 PORT = 31415
-DEFAULT_SERVER = "https://hog.cs61a.org"
-GUI_FOLDER = "gui_files/"
+DEFAULT_SERVER = 'https://hog.cs61a.org'
+GUI_FOLDER = 'gui_files/'
 PATHS = {}
 
 
@@ -26,7 +27,7 @@ def take_turn(prev_rolls, move_history, goal, game_rules):
     fair_dice = dice.make_fair_dice(6)
     dice_results = []
 
-    sus_fuss = game_rules["Sus Fuss"]
+    sus_fuss = game_rules['Sus Fuss']
 
     def logged_dice():
         if len(dice_results) < len(prev_rolls):
@@ -75,29 +76,29 @@ def take_turn(prev_rolls, move_history, goal, game_rules):
         game_over = True
 
     return {
-        "rolls": dice_results,
-        "finalScores": final_scores,
-        "message": "",
-        "gameOver": game_over,
-        "who": who,
+        'rolls': dice_results,
+        'finalScores': final_scores,
+        'message': '',
+        'gameOver': game_over,
+        'who': who,
     }
 
 
 @route
 def strategy(name, scores):
     STRATEGIES = {
-        "boar_strategy": hog.boar_strategy,
-        "sus_strategy": hog.sus_strategy,
-        "final_strategy": hog.final_strategy,
+        'boar_strategy': hog.boar_strategy,
+        'sus_strategy': hog.sus_strategy,
+        'final_strategy': hog.final_strategy,
     }
     return STRATEGIES[name](*scores[::-1])
 
 
-@route("dice_graphic.svg")
+@route('dice_graphic.svg')
 def draw_dice_graphic(num):
     num = int(num[0])
     # Either draw student-provided dice or our default dice
-    if hasattr(hog, "draw_dice"):
+    if hasattr(hog, 'draw_dice'):
         graphic = hog.draw_dice(num)
         return str(graphic)
     return default_graphics.dice[num]
@@ -117,18 +118,18 @@ def trace_play(play, strategy0, strategy1, update, score0, score1, dice, goal):
 
     def mod_strategy(who, my_score, opponent_score):
         if game_trace:
-            prev_total_score = game_trace[-1]["s0_start"] + game_trace[-1]["s1_start"]
+            prev_total_score = game_trace[-1]['s0_start'] + game_trace[-1]['s1_start']
             if prev_total_score == my_score + opponent_score:
                 # game is still on last turn since the total number of points
                 # goes up every turn
-                return game_trace[-1]["num_dice"]
+                return game_trace[-1]['num_dice']
         current_num_dice = (strategy0, strategy1)[who](my_score, opponent_score)
         current_turn = {
-            "s0_start": [my_score, opponent_score][who],
-            "s1_start": [my_score, opponent_score][1 - who],
-            "who": who,
-            "num_dice": current_num_dice,
-            "dice_values": [],  # no dice rolled yet
+            's0_start': [my_score, opponent_score][who],
+            's1_start': [my_score, opponent_score][1 - who],
+            'who': who,
+            'num_dice': current_num_dice,
+            'dice_values': [],  # no dice rolled yet
         }
         game_trace.append(current_turn)
         return current_num_dice
@@ -136,8 +137,8 @@ def trace_play(play, strategy0, strategy1, update, score0, score1, dice, goal):
     def mod_dice():
         roll = dice()
         if not game_trace:
-            raise RuntimeError("roll_dice called before either strategy function")
-        game_trace[-1]["dice_values"].append(roll)
+            raise RuntimeError('roll_dice called before either strategy function')
+        game_trace[-1]['dice_values'].append(roll)
         return roll
 
     s0, s1 = play(
@@ -152,5 +153,5 @@ def trace_play(play, strategy0, strategy1, update, score0, score1, dice, goal):
     return s0, s1, game_trace
 
 
-if __name__ == "__main__" or "gunicorn" in os.environ.get("SERVER_SOFTWARE", ""):
+if __name__ == '__main__' or 'gunicorn' in os.environ.get('SERVER_SOFTWARE', ''):
     app = start(PORT, DEFAULT_SERVER, GUI_FOLDER)

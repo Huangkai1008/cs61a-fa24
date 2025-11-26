@@ -1,9 +1,15 @@
 """The Game of Hog."""
 
+from collections.abc import Callable
+
 from dice import six_sided, make_test_dice
 from ucb import main, trace, interact
 
 GOAL = 100  # The goal of Hog is to score 100 points.
+
+DiceFunc = Callable[..., int]
+StrategyFunc = Callable[[int, int], int]
+UpdateFunc = Callable[[int, int, int, DiceFunc], int]
 
 ######################
 # Phase 1: Simulator #
@@ -21,7 +27,17 @@ def roll_dice(num_rolls, dice=six_sided):
     assert type(num_rolls) == int, 'num_rolls must be an integer.'
     assert num_rolls > 0, 'Must roll at least once.'
     # BEGIN PROBLEM 1
-    "*** YOUR CODE HERE ***"
+    points = []
+    for _ in range(num_rolls):
+        points.append(dice())
+
+    # [Sow Sad]: If any of the dice outcomes is a 1,
+    # the current player's score for the turn is 1,
+    # regardless of the other values rolled.
+    if 1 in points:
+        return 1
+
+    return sum(points)
     # END PROBLEM 1
 
 
@@ -33,7 +49,13 @@ def boar_brawl(player_score, opponent_score):
 
     """
     # BEGIN PROBLEM 2
-    "*** YOUR CODE HERE ***"
+
+    # The tens digit of the opponent's score
+    opponent_digit = opponent_score // 10 % 10
+    # The ones digit of the current player's score.
+    play_digit = player_score % 10
+    return max(1, 3 * abs(opponent_digit - play_digit))
+
     # END PROBLEM 2
 
 
@@ -51,7 +73,13 @@ def take_turn(num_rolls, player_score, opponent_score, dice=six_sided):
     assert num_rolls >= 0, 'Cannot roll a negative number of dice in take_turn.'
     assert num_rolls <= 10, 'Cannot roll more than 10 dice.'
     # BEGIN PROBLEM 3
-    "*** YOUR CODE HERE ***"
+
+    # Player choose `boar_brawl`.
+    if num_rolls == 0:
+        return boar_brawl(player_score, opponent_score)
+
+    return roll_dice(num_rolls, dice)
+
     # END PROBLEM 3
 
 
@@ -61,6 +89,7 @@ def simple_update(num_rolls, player_score, opponent_score, dice=six_sided):
     """
     score = player_score + take_turn(num_rolls, player_score, opponent_score, dice)
     return score
+
 
 def is_prime(n):
     """Return whether N is prime."""
@@ -73,24 +102,46 @@ def is_prime(n):
         k += 1
     return True
 
+
 def num_factors(n):
     """Return the number of factors of N, including 1 and N itself."""
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    num, k = 0, 1
+    while k <= n:
+        if n % k == 0:
+            num += 1
+        k += 1
+    return num
     # END PROBLEM 4
+
+
+def is_sus(n: int) -> bool:
+    """We call a number sus if it has exactly 3 or 4 factors,
+    including 1 and the number itself."""
+    return num_factors(n) in [3, 4]
+
 
 def sus_points(score):
     """Return the new score of a player taking into account the Sus Fuss rule."""
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    if not is_sus(score):
+        return score
+
+    while True:
+        if is_prime(score):
+            return score
+
+        score += 1
     # END PROBLEM 4
+
 
 def sus_update(num_rolls, player_score, opponent_score, dice=six_sided):
     """Return the total score of a player who starts their turn with
     PLAYER_SCORE and then rolls NUM_ROLLS DICE, *including* Sus Fuss.
     """
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    score = player_score + take_turn(num_rolls, player_score, opponent_score, dice)
+    return sus_points(score)
     # END PROBLEM 4
 
 
@@ -101,8 +152,39 @@ def always_roll_5(score, opponent_score):
     return 5
 
 
-def play(strategy0, strategy1, update,
-         score0=0, score1=0, dice=six_sided, goal=GOAL):
+def next_player(who: int) -> int:
+    """Return the other player, for a player WHO numbered 0 or 1.
+
+    >>> next_player(0)
+    1
+    >>> next_player(1)
+    0
+    """
+    return 1 - who
+
+
+def play_turn(
+    strategy: StrategyFunc,
+    update: UpdateFunc,
+    player_score: int,
+    opponent_score: int,
+    dice: DiceFunc,
+) -> int:
+    """Return the player score after playing the turn."""
+    num_rolls = strategy(player_score, opponent_score)
+    score = update(num_rolls, player_score, opponent_score, dice)
+    return score
+
+
+def play(
+    strategy0: StrategyFunc,
+    strategy1: StrategyFunc,
+    update: UpdateFunc,
+    score0: int = 0,
+    score1: int = 0,
+    dice: DiceFunc = six_sided,
+    goal: int = GOAL,
+) -> tuple[int, int]:
     """Simulate a game and return the final scores of both players, with
     Player 0's score first and Player 1's score second.
 
@@ -129,7 +211,13 @@ def play(strategy0, strategy1, update,
     """
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    while score0 < goal and score1 < goal:
+        if who == 0:
+            score0 = play_turn(strategy0, update, score0, score1, dice)
+        else:
+            score1 = play_turn(strategy1, update, score1, score0, dice)
+
+        who = next_player(who)
     # END PROBLEM 5
     return score0, score1
 
@@ -154,7 +242,7 @@ def always_roll(n):
     """
     assert n >= 0 and n <= 10
     # BEGIN PROBLEM 6
-    "*** YOUR CODE HERE ***"
+    '*** YOUR CODE HERE ***'
     # END PROBLEM 6
 
 
@@ -185,7 +273,7 @@ def is_always_roll(strategy, goal=GOAL):
     False
     """
     # BEGIN PROBLEM 7
-    "*** YOUR CODE HERE ***"
+    '*** YOUR CODE HERE ***'
     # END PROBLEM 7
 
 
@@ -201,7 +289,7 @@ def make_averaged(original_function, times_called=1000):
     3.0
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    '*** YOUR CODE HERE ***'
     # END PROBLEM 8
 
 
@@ -214,7 +302,7 @@ def max_scoring_num_rolls(dice=six_sided, times_called=1000):
     1
     """
     # BEGIN PROBLEM 9
-    "*** YOUR CODE HERE ***"
+    '*** YOUR CODE HERE ***'
     # END PROBLEM 9
 
 
@@ -242,7 +330,7 @@ def run_experiments():
     six_sided_max = max_scoring_num_rolls(six_sided)
     print('Max scoring num rolls for six-sided dice:', six_sided_max)
 
-    print('always_roll(6) win rate:', average_win_rate(always_roll(6))) # near 0.5
+    print('always_roll(6) win rate:', average_win_rate(always_roll(6)))  # near 0.5
     print('catch_up win rate:', average_win_rate(catch_up))
     print('always_roll(3) win rate:', average_win_rate(always_roll(3)))
     print('always_roll(8) win rate:', average_win_rate(always_roll(8)))
@@ -250,8 +338,7 @@ def run_experiments():
     print('boar_strategy win rate:', average_win_rate(boar_strategy))
     print('sus_strategy win rate:', average_win_rate(sus_strategy))
     print('final_strategy win rate:', average_win_rate(final_strategy))
-    "*** You may add additional experiments as you wish ***"
-
+    '*** You may add additional experiments as you wish ***'
 
 
 def boar_strategy(score, opponent_score, threshold=11, num_rolls=6):
@@ -287,13 +374,16 @@ def final_strategy(score, opponent_score):
 # NOTE: The function in this section does not need to be changed. It uses
 # features of Python not yet covered in the course.
 
+
 @main
 def run(*args):
     """Read in the command-line argument and calls corresponding functions."""
     import argparse
-    parser = argparse.ArgumentParser(description="Play Hog")
-    parser.add_argument('--run_experiments', '-r', action='store_true',
-                        help='Runs strategy experiments')
+
+    parser = argparse.ArgumentParser(description='Play Hog')
+    parser.add_argument(
+        '--run_experiments', '-r', action='store_true', help='Runs strategy experiments'
+    )
 
     args = parser.parse_args()
 

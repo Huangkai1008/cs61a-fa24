@@ -77,6 +77,7 @@ _NAMES = {
     'YieldFrom': 'yield from',
 }
 
+
 def check(source_file, checked_funcs, disallow, source=None):
     """Checks that AST nodes whose type names are present in DISALLOW
     (an object supporting 'in') are not present in the function(s) named
@@ -89,6 +90,7 @@ def check(source_file, checked_funcs, disallow, source=None):
     checks for overtly recursive calls (i.e., calls of the form NAME(...) where
     NAME is an enclosing def."""
     return ExclusionChecker(disallow).check(source_file, checked_funcs, source)
+
 
 class ExclusionChecker(NodeVisitor):
     """An AST visitor that checks that certain constructs are excluded from
@@ -110,16 +112,18 @@ class ExclusionChecker(NodeVisitor):
         super().generic_visit(node)
 
     def visit_Module(self, node):
-        if "__main__" in self._checked_funcs:
+        if '__main__' in self._checked_funcs:
             self._checking = True
             self._checked_name = self._source_file
         super().generic_visit(node)
 
     def visit_Call(self, node):
-        if 'Recursion' in self._disallow and \
-           type(node.func) is Name and \
-           node.func.id in self._func_nest:
-            self._report(node, "should not be recursive")
+        if (
+            'Recursion' in self._disallow
+            and type(node.func) is Name
+            and node.func.id in self._func_nest
+        ):
+            self._report(node, 'should not be recursive')
         self.generic_visit(node)
 
     def visit_FunctionDef(self, node):
@@ -127,7 +131,7 @@ class ExclusionChecker(NodeVisitor):
         if self._checking:
             self.generic_visit(node)
         elif node.name in self._checked_funcs:
-            self._checked_name = "Function " + node.name
+            self._checked_name = 'Function ' + node.name
             checking0 = self._checking
             self._checking = True
             super().generic_visit(node)
@@ -138,7 +142,7 @@ class ExclusionChecker(NodeVisitor):
         node_name = _NAMES.get(type(node).__name__, type(node).__name__)
         if msg is None:
             msg = "should not contain '{}'".format(node_name)
-        print("{} {}".format(self._checked_name, msg))
+        print('{} {}'.format(self._checked_name, msg))
         self._errs += 1
 
     def errors(self):
@@ -165,7 +169,7 @@ class ExclusionChecker(NodeVisitor):
         self._source_file = source_file
         self._func_nest = []
         if type(checked_funcs) is str:
-            self._checked_funcs = { checked_funcs }
+            self._checked_funcs = {checked_funcs}
         else:
             self._checked_funcs = set(checked_funcs)
         if disallow is not None:

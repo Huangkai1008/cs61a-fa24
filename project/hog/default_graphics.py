@@ -1,7 +1,7 @@
 # Default dice for the Hog game. These can be overriden by students.
 
 dice = [
-    "",
+    '',
     """<?xml version="1.0" encoding="UTF-8"?>
         <svg data-name="Layer 1" viewBox="0 0 76.08 76.08" xmlns="http://www.w3.org/2000/svg">
         <defs>
