@@ -10,6 +10,7 @@ GOAL = 100  # The goal of Hog is to score 100 points.
 DiceFunc = Callable[..., int]
 StrategyFunc = Callable[[int, int], int]
 UpdateFunc = Callable[[int, int, int, DiceFunc], int]
+RollFunc = Callable[[int, int], int]
 
 ######################
 # Phase 1: Simulator #
@@ -227,7 +228,7 @@ def play(
 #######################
 
 
-def always_roll(n):
+def always_roll(n) -> RollFunc:
     """Return a player strategy that always rolls N dice.
 
     A player strategy is a function that takes two total scores as arguments
@@ -241,8 +242,12 @@ def always_roll(n):
     3
     """
     assert n >= 0 and n <= 10
+
     # BEGIN PROBLEM 6
-    '*** YOUR CODE HERE ***'
+    def strategy(player_score, opponent_score) -> int:
+        return n
+
+    return strategy
     # END PROBLEM 6
 
 
@@ -261,7 +266,7 @@ def catch_up(score, opponent_score):
         return 5
 
 
-def is_always_roll(strategy, goal=GOAL):
+def is_always_roll(strategy: StrategyFunc, goal: int = GOAL):
     """Return whether STRATEGY always chooses the same number of dice to roll
     given a game that goes to GOAL points.
 
@@ -273,7 +278,12 @@ def is_always_roll(strategy, goal=GOAL):
     False
     """
     # BEGIN PROBLEM 7
-    '*** YOUR CODE HERE ***'
+    target = strategy(0, 0)
+    for s0 in range(goal):
+        for s1 in range(goal):
+            if strategy(s0, s1) != target:
+                return False
+    return True
     # END PROBLEM 7
 
 
@@ -288,8 +298,15 @@ def make_averaged(original_function, times_called=1000):
     >>> averaged_dice(1, dice)  # The avg of 10 4's, 10 2's, 10 5's, and 10 1's
     3.0
     """
+
     # BEGIN PROBLEM 8
-    '*** YOUR CODE HERE ***'
+    def averaged(*args) -> float:
+        total = 0
+        for _ in range(times_called):
+            total += original_function(*args)
+        return total / times_called
+
+    return averaged
     # END PROBLEM 8
 
 
@@ -302,7 +319,15 @@ def max_scoring_num_rolls(dice=six_sided, times_called=1000):
     1
     """
     # BEGIN PROBLEM 9
-    '*** YOUR CODE HERE ***'
+    max_score, max_num_rolls = 0, 0
+    start, end = 1, 10
+    for i in range(start, end + 1):
+        averaged_dice = make_averaged(roll_dice, times_called)
+        avg_score = averaged_dice(i, dice)
+        if avg_score > max_score:
+            max_score = avg_score
+            max_num_rolls = i
+    return max_num_rolls
     # END PROBLEM 9
 
 
@@ -346,24 +371,47 @@ def boar_strategy(score, opponent_score, threshold=11, num_rolls=6):
     points, and returns NUM_ROLLS otherwise. Ignore score and Sus Fuss.
     """
     # BEGIN PROBLEM 10
-    return num_rolls  # Remove this line once implemented.
+    if boar_brawl(score, opponent_score) >= threshold:
+        return 0
+
+    return num_rolls
     # END PROBLEM 10
 
 
 def sus_strategy(score, opponent_score, threshold=11, num_rolls=6):
     """This strategy returns 0 dice when your score would increase by at least threshold."""
     # BEGIN PROBLEM 11
-    return num_rolls  # Remove this line once implemented.
+    boar_score = boar_brawl(score, opponent_score)
+    sus_score = sus_points(boar_score + score)
+    if sus_score - score >= threshold:
+        return 0
+
+    return num_rolls
     # END PROBLEM 11
 
 
 def final_strategy(score, opponent_score):
-    """Write a brief description of your final strategy.
-
-    *** YOUR DESCRIPTION HERE ***
-    """
+    """Write a brief description of your final strategy."""
     # BEGIN PROBLEM 12
-    return 6  # Remove this line once implemented.
+    boar_score = boar_brawl(score, opponent_score)
+    sus_score = sus_points(boar_score + score)
+    if sus_score >= GOAL:
+        return 0
+
+    boar_gain = sus_score - score
+    if boar_gain >= 8:
+        return 0
+
+    margin = score - opponent_score
+
+    if margin > 0:
+        if boar_gain >= 6:
+            return 0
+        return 4
+    else:
+        if boar_gain >= 7:
+            return 0
+        return 6
     # END PROBLEM 12
 
 
