@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from operator import mul, sub
+
 HW_SOURCE_FILE = __file__
 
 
@@ -24,7 +27,10 @@ def num_eights(n):
     ...       ['Assign', 'AnnAssign', 'AugAssign', 'NamedExpr', 'For', 'While'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    if n == 0:
+        return 0
+
+    return num_eights(n // 10) + (1 if n % 10 == 8 else 0)
 
 
 def digit_distance(n):
@@ -46,7 +52,10 @@ def digit_distance(n):
     ...       ['For', 'While'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    if n < 10:
+        return 0
+
+    return digit_distance(n // 10) + abs(n % 10 - n // 10 % 10)
 
 
 def interleaved_sum(n, odd_func, even_func):
@@ -70,7 +79,14 @@ def interleaved_sum(n, odd_func, even_func):
     >>> check(HW_SOURCE_FILE, 'interleaved_sum', ['BitAnd', 'BitOr', 'BitXor']) # ban bitwise operators, don't worry about these if you don't know what they are
     True
     """
-    "*** YOUR CODE HERE ***"
+
+    def helper(k: int, func1: Callable, func2: Callable) -> int:
+        if k > n:
+            return 0
+
+        return func1(k) + helper(k + 1, func2, func1)
+
+    return helper(1, odd_func, even_func)
 
 
 def next_smaller_dollar(bill):
@@ -85,6 +101,19 @@ def next_smaller_dollar(bill):
         return 5
     elif bill == 5:
         return 1
+
+
+def count_dollars_with_partitions(n, m):
+    if n < 0:
+        return 0
+    elif n == 0:
+        return 1
+    elif next_smaller_dollar(m) is None:
+        return count_dollars_with_partitions(n - m, m)
+    return count_dollars_with_partitions(n - m, m) + count_dollars_with_partitions(
+        n, next_smaller_dollar(m)
+    )
+
 
 def count_dollars(total):
     """Return the number of ways to make change.
@@ -106,7 +135,7 @@ def count_dollars(total):
     >>> check(HW_SOURCE_FILE, 'count_dollars', ['While', 'For'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    return count_dollars_with_partitions(total, 100)
 
 
 def next_larger_dollar(bill):
@@ -121,6 +150,19 @@ def next_larger_dollar(bill):
         return 50
     elif bill == 50:
         return 100
+
+
+def count_dollars_with_partitions_upward(n, m):
+    if n < 0:
+        return 0
+    elif n == 0:
+        return 1
+    elif next_larger_dollar(m) is None:
+        return count_dollars_with_partitions_upward(n - m, m)
+    return count_dollars_with_partitions_upward(
+        n - m, m
+    ) + count_dollars_with_partitions_upward(n, next_larger_dollar(m))
+
 
 def count_dollars_upward(total):
     """Return the number of ways to make change using bills.
@@ -142,12 +184,13 @@ def count_dollars_upward(total):
     >>> check(HW_SOURCE_FILE, 'count_dollars_upward', ['While', 'For'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    return count_dollars_with_partitions_upward(total, 1)
 
 
 def print_move(origin, destination):
     """Print instructions to move a disk."""
-    print("Move the top disk from rod", origin, "to rod", destination)
+    print('Move the top disk from rod', origin, 'to rod', destination)
+
 
 def move_stack(n, start, end):
     """Print the moves required to move n disks on the start pole to the end
@@ -176,11 +219,16 @@ def move_stack(n, start, end):
     Move the top disk from rod 2 to rod 3
     Move the top disk from rod 1 to rod 3
     """
-    assert 1 <= start <= 3 and 1 <= end <= 3 and start != end, "Bad start/end"
-    "*** YOUR CODE HERE ***"
+    assert 1 <= start <= 3 and 1 <= end <= 3 and start != end, 'Bad start/end'
 
+    if n == 1:
+        print_move(start, end)
+    else:
+        spare = 6 - start - end
+        move_stack(n - 1, start, spare)
+        print_move(start, end)
+        move_stack(n - 1, spare, end)
 
-from operator import sub, mul
 
 def make_anonymous_factorial():
     """Return the value of an expression that computes factorial.
@@ -193,5 +241,6 @@ def make_anonymous_factorial():
     ...     ['Assign', 'AnnAssign', 'AugAssign', 'NamedExpr', 'FunctionDef', 'Recursion'])
     True
     """
-    return 'YOUR_EXPRESSION_HERE'
-
+    return (lambda f: f(f))(
+        lambda f: lambda n: 1 if n == 0 else mul(n, f(f)(sub(n, 1)))
+    )
