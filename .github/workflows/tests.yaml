@@ -29,7 +29,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          uv sync
+          uv sync --all-groups
       - name: Lint
         run: |
           # uv run mypy .
@@ -37,4 +37,4 @@ jobs:
           uv run ruff format --check .
       - name: Test
         run: |
-          uv run pytest
+          find hw lab project -type f -name "*.py" ! -name "__*" ! -name "construct_check.py" ! -name "utils.py" ! -name "ucb.py" ! -path "*/tests/*" ! -path "*/gui_files/*" ! -path "*/__pycache__/*" -exec uv run python -m doctest -v {} +
