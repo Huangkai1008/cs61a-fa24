@@ -19,22 +19,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
       - name: Install dependencies
         run: |
-          poetry install
+          uv sync
       - name: Lint
         run: |
-          poetry run mypy .
-          poetry run black . --check
-          poetry run isort . --check-only
-          poetry run flake8 .
+          uv run mypy .
+          uv run ruff check .
+          uv run ruff format --check .
       - name: Test
         run: |
-          poetry run pytest
+          uv run pytest
