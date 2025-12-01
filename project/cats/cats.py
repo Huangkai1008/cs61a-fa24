@@ -315,6 +315,17 @@ FINAL_DIFF_LIMIT = 6  # REPLACE THIS WITH YOUR LIMIT
 ###########
 # Phase 3 #
 ###########
+def get_progress(typed: list[str], source: list[str]) -> float:
+    """Progress is a ratio of the words in the source that you have typed correctly,
+    up to the first incorrect word, divided by the number of source words."""
+    total = len(source)
+    correct = 0
+    for t, s in zip(typed, source):
+        if t != s:
+            break
+
+        correct += 1
+    return correct / total
 
 
 def report_progress(typed, source, user_id, upload):
@@ -341,11 +352,13 @@ def report_progress(typed, source, user_id, upload):
     0.2
     """
     # BEGIN PROBLEM 8
-    '*** YOUR CODE HERE ***'
+    progress = get_progress(typed, source)
+    upload({'id': user_id, 'progress': progress})
+    return progress
     # END PROBLEM 8
 
 
-def time_per_word(words, timestamps_per_player):
+def time_per_word(words: list[[str]], timestamps_per_player: list[list[int]]):
     """Return a dictionary {'words': words, 'times': times} where times
     is a list of lists that stores the durations it took each player to type
     each word in words.
@@ -365,7 +378,7 @@ def time_per_word(words, timestamps_per_player):
     """
     tpp = timestamps_per_player  # A shorter name (for convenience)
     # BEGIN PROBLEM 9
-    times = []  # You may remove this line
+    times = [[tp[i + 1] - tp[i] for i in range(len(words))] for tp in tpp]
     # END PROBLEM 9
     return {'words': words, 'times': times}
 
@@ -391,8 +404,13 @@ def fastest_words(words_and_times):
     words, times = words_and_times['words'], words_and_times['times']
     player_indices = range(len(times))  # contains an *index* for each player
     word_indices = range(len(words))  # contains an *index* for each word
+    fastest_players = [[] for _ in player_indices]
     # BEGIN PROBLEM 10
-    '*** YOUR CODE HERE ***'
+    for word_index in word_indices:
+        word = words[word_index]
+        fastest_player = min(player_indices, key=lambda p: times[p][word_index])
+        fastest_players[fastest_player].append(word)
+    return fastest_players
     # END PROBLEM 10
 
 
