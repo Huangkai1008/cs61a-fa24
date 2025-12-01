@@ -1,5 +1,7 @@
 """Typing test implementation"""
 
+from collections.abc import Callable
+
 from utils import (
     lower,
     split,
@@ -13,12 +15,15 @@ from datetime import datetime
 import random
 
 
+SelectFunc = Callable[[str], bool]
+
+
 ###########
 # Phase 1 #
 ###########
 
 
-def pick(paragraphs, select, k):
+def pick(paragraphs: list[str], select: SelectFunc, k: int):
     """Return the Kth paragraph from PARAGRAPHS for which the SELECT returns True.
     If there are fewer than K such paragraphs, return an empty string.
 
@@ -37,11 +42,12 @@ def pick(paragraphs, select, k):
     ''
     """
     # BEGIN PROBLEM 1
-    '*** YOUR CODE HERE ***'
+    selected = [pg for pg in paragraphs if select(pg)]
+    return selected[k] if len(selected) > k else ''
     # END PROBLEM 1
 
 
-def about(subject):
+def about(subject: list[str]) -> SelectFunc:
     """Return a function that takes in a paragraph and returns whether
     that paragraph contains one of the words in SUBJECT.
 
@@ -57,7 +63,12 @@ def about(subject):
     assert all([lower(x) == x for x in subject]), 'subjects should be lowercase.'
 
     # BEGIN PROBLEM 2
-    '*** YOUR CODE HERE ***'
+    def helper(paragraph: str) -> bool:
+        paragraph = remove_punctuation(paragraph)
+        words = split(lower(paragraph))
+        return len(set(words) & set(subject)) > 0
+
+    return helper
     # END PROBLEM 2
 
 
@@ -87,7 +98,16 @@ def accuracy(typed, source):
     typed_words = split(typed)
     source_words = split(source)
     # BEGIN PROBLEM 3
-    '*** YOUR CODE HERE ***'
+    if not typed_words and not source_words:
+        return 100.0
+
+    if not (typed_words and source_words):
+        return 0.0
+
+    total = len(typed_words)
+
+    correct = sum(t == s for t, s in zip(typed_words, source_words))
+    return correct / total * 100
     # END PROBLEM 3
 
 
@@ -105,7 +125,7 @@ def wpm(typed, elapsed):
     """
     assert elapsed > 0, 'Elapsed time must be positive'
     # BEGIN PROBLEM 4
-    '*** YOUR CODE HERE ***'
+    return len(typed) / 5 / (elapsed / 60)
     # END PROBLEM 4
 
 
