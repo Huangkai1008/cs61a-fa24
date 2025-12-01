@@ -1,21 +1,21 @@
 """Typing test implementation"""
 
+import random
 from collections.abc import Callable
+from datetime import datetime
 
+from ucb import main
 from utils import (
-    lower,
-    split,
-    remove_punctuation,
-    lines_from_file,
     count,
     deep_convert_to_tuple,
+    lines_from_file,
+    lower,
+    remove_punctuation,
+    split,
 )
-from ucb import main, interact, trace
-from datetime import datetime
-import random
-
 
 SelectFunc = Callable[[str], bool]
+DiffFunc = Callable[[str, str, int], int]
 
 
 ###########
@@ -168,7 +168,9 @@ def memo_diff(diff_function):
 ###########
 
 
-def autocorrect(typed_word, word_list, diff_function, limit):
+def autocorrect(
+    typed_word: str, word_list: list[str], diff_function: DiffFunc, limit: int
+) -> str:
     """Returns the element of WORD_LIST that has the smallest difference
     from TYPED_WORD based on DIFF_FUNCTION. If multiple words are tied for the smallest difference,
     return the one that appears closest to the front of WORD_LIST. If the
@@ -188,7 +190,18 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     'testing'
     """
     # BEGIN PROBLEM 5
-    '*** YOUR CODE HERE ***'
+
+    # If the typed_word is contained inside the word_list,
+    # autocorrect returns that word.
+    if typed_word in word_list:
+        return typed_word
+
+    best_word = min(word_list, key=lambda word: diff_function(typed_word, word, limit))
+    if diff_function(typed_word, best_word, limit) > limit:
+        return typed_word
+
+    return best_word
+
     # END PROBLEM 5
 
 
@@ -215,7 +228,21 @@ def furry_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+
+    if not typed:
+        return len(source)
+
+    if not source:
+        return len(typed)
+
+    if limit < 0:
+        return 1
+
+    if typed[0] == source[0]:
+        return furry_fixes(typed[1:], source[1:], limit)
+
+    return 1 + furry_fixes(typed[1:], source[1:], limit - 1)
+
     # END PROBLEM 6
 
 
@@ -236,23 +263,21 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________:  # Base cases should go here, you may add more base cases as needed.
-        # BEGIN
-        '*** YOUR CODE HERE ***'
-        # END
-    # Recursive cases should go below here
-    if ___________:  # Feel free to remove or add additional cases
-        # BEGIN
-        '*** YOUR CODE HERE ***'
-        # END
+    if not typed:
+        return len(source)
+
+    if not source:
+        return len(typed)
+
+    if typed[0] == source[0]:
+        return minimum_mewtations(typed[1:], source[1:], limit)
+    elif limit == 0:
+        return 1
     else:
-        add = ...  # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        '*** YOUR CODE HERE ***'
-        # END
+        add = 1 + minimum_mewtations(typed, source[1:], limit - 1)
+        remove = 1 + minimum_mewtations(typed[1:], source, limit - 1)
+        substitute = 1 + minimum_mewtations(typed[1:], source[1:], limit - 1)
+        return min(add, remove, substitute)
 
 
 # Ignore the line below
@@ -262,7 +287,26 @@ minimum_mewtations = count(minimum_mewtations)
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
     If you implement this function, it will be used."""
-    assert False, 'Remove this line to use your final_diff function.'
+    n, m = len(typed), len(source)
+
+    if abs(n - m) > limit:
+        return limit + 1
+
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+
+    for i in range(n + 1):
+        dp[i][0] = i
+    for j in range(m + 1):
+        dp[0][j] = j
+
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            if typed[i - 1] == source[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]
+            else:
+                dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+
+    return dp[n][m]
 
 
 FINAL_DIFF_LIMIT = 6  # REPLACE THIS WITH YOUR LIMIT
