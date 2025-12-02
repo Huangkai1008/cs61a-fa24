@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 HW_SOURCE_FILE = __file__
 
 
@@ -26,7 +28,10 @@ def insert_items(s, before, after):
     >>> large_s3 is large_s
     True
     """
-    '*** YOUR CODE HERE ***'
+    for i in range(len(s) - 1, -1, -1):
+        if s[i] == before:
+            s.insert(i + 1, after)
+    return s
 
 
 def group_by(s, fn):
@@ -40,12 +45,12 @@ def group_by(s, fn):
     {9: [-3, 3], 4: [-2, 2], 1: [-1, 1], 0: [0]}
     """
     grouped = {}
-    for ____ in ____:
-        key = ____
+    for e in s:
+        key = fn(e)
         if key in grouped:
-            ____
+            grouped[key].append(e)
         else:
-            grouped[key] = ____
+            grouped[key] = [e]
     return grouped
 
 
@@ -70,7 +75,7 @@ def count_occurrences(t, n, x):
     >>> count_occurrences(v, 6, 6)
     2
     """
-    '*** YOUR CODE HERE ***'
+    return sum(1 for _ in range(n) if next(t) == x)
 
 
 def repeated(t, k):
@@ -93,7 +98,18 @@ def repeated(t, k):
     2
     """
     assert k > 1
-    '*** YOUR CODE HERE ***'
+    current = next(t)
+    count = 1
+
+    while count < k:
+        v = next(t)
+        if v == current:
+            count += 1
+        else:
+            current = v
+            count = 1
+
+    return current
 
 
 def sprout_leaves(t, leaves):
