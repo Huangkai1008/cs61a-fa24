@@ -56,7 +56,7 @@ class Request(RequestBase):
     def max_content_length(self) -> int | None:  # type: ignore[override]
         """Read-only view of the ``MAX_CONTENT_LENGTH`` config key."""
         if current_app:
-            return current_app.config["MAX_CONTENT_LENGTH"]  # type: ignore[no-any-return]
+            return current_app.config['MAX_CONTENT_LENGTH']  # type: ignore[no-any-return]
         else:
             return None
 
@@ -89,8 +89,8 @@ class Request(RequestBase):
         """
         endpoint = self.endpoint
 
-        if endpoint is not None and "." in endpoint:
-            return endpoint.rpartition(".")[0]
+        if endpoint is not None and '.' in endpoint:
+            return endpoint.rpartition('.')[0]
 
         return None
 
@@ -119,7 +119,7 @@ class Request(RequestBase):
         if (
             current_app
             and current_app.debug
-            and self.mimetype != "multipart/form-data"
+            and self.mimetype != 'multipart/form-data'
             and not self.files
         ):
             from .debughelpers import attach_enctype_error_multidict
@@ -154,7 +154,7 @@ class Response(ResponseBase):
         Added :attr:`max_cookie_size`.
     """
 
-    default_mimetype: str | None = "text/html"
+    default_mimetype: str | None = 'text/html'
 
     json_module = json
 
@@ -168,7 +168,7 @@ class Response(ResponseBase):
         Werkzeug's docs.
         """
         if current_app:
-            return current_app.config["MAX_COOKIE_SIZE"]  # type: ignore[no-any-return]
+            return current_app.config['MAX_COOKIE_SIZE']  # type: ignore[no-any-return]
 
         # return Werkzeug's default when not in an app context
         return super().max_cookie_size

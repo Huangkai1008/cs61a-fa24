@@ -19,13 +19,25 @@ class BaseServer:
     _default_monitor_clients = True
     sequence_number = 0
 
-    def __init__(self, async_mode=None, ping_interval=25, ping_timeout=20,
-                 max_http_buffer_size=1000000, allow_upgrades=True,
-                 http_compression=True, compression_threshold=1024,
-                 cookie=None, cors_allowed_origins=None,
-                 cors_credentials=True, logger=False, json=None,
-                 async_handlers=True, monitor_clients=None, transports=None,
-                 **kwargs):
+    def __init__(
+        self,
+        async_mode=None,
+        ping_interval=25,
+        ping_timeout=20,
+        max_http_buffer_size=1000000,
+        allow_upgrades=True,
+        http_compression=True,
+        compression_threshold=1024,
+        cookie=None,
+        cors_allowed_origins=None,
+        cors_credentials=True,
+        logger=False,
+        json=None,
+        async_handlers=True,
+        monitor_clients=None,
+        transports=None,
+        **kwargs,
+    ):
         self.ping_timeout = ping_timeout
         if isinstance(ping_interval, tuple):
             self.ping_interval = ping_interval[0]
@@ -44,8 +56,11 @@ class BaseServer:
         self.sockets = {}
         self.handlers = {}
         self.log_message_keys = set()
-        self.start_service_task = monitor_clients \
-            if monitor_clients is not None else self._default_monitor_clients
+        self.start_service_task = (
+            monitor_clients
+            if monitor_clients is not None
+            else self._default_monitor_clients
+        )
         self.service_task_handle = None
         self.service_task_event = None
         if json is not None:
@@ -68,9 +83,11 @@ class BaseServer:
         for mode in modes:
             try:
                 self._async = importlib.import_module(
-                    'engineio.async_drivers.' + mode)._async
-                asyncio_based = self._async['asyncio'] \
-                    if 'asyncio' in self._async else False
+                    'engineio.async_drivers.' + mode
+                )._async
+                asyncio_based = (
+                    self._async['asyncio'] if 'asyncio' in self._async else False
+                )
                 if asyncio_based != self.is_asyncio_based():
                     continue  # pragma: no cover
                 self.async_mode = mode
@@ -79,20 +96,27 @@ class BaseServer:
                 pass
         if self.async_mode is None:
             raise ValueError('Invalid async_mode specified')
-        if self.is_asyncio_based() and \
-                ('asyncio' not in self._async or not
-                 self._async['asyncio']):  # pragma: no cover
-            raise ValueError('The selected async_mode is not asyncio '
-                             'compatible')
-        if not self.is_asyncio_based() and 'asyncio' in self._async and \
-                self._async['asyncio']:  # pragma: no cover
-            raise ValueError('The selected async_mode requires asyncio and '
-                             'must use the AsyncServer class')
+        if self.is_asyncio_based() and (
+            'asyncio' not in self._async or not self._async['asyncio']
+        ):  # pragma: no cover
+            raise ValueError('The selected async_mode is not asyncio compatible')
+        if (
+            not self.is_asyncio_based()
+            and 'asyncio' in self._async
+            and self._async['asyncio']
+        ):  # pragma: no cover
+            raise ValueError(
+                'The selected async_mode requires asyncio and '
+                'must use the AsyncServer class'
+            )
         if transports is not None:
             if isinstance(transports, str):
                 transports = [transports]
-            transports = [transport for transport in transports
-                          if transport in self.valid_transports]
+            transports = [
+                transport
+                for transport in transports
+                if transport in self.valid_transports
+            ]
             if not transports:
                 raise ValueError('No valid transports provided')
         self.transports = transports or self.valid_transports
@@ -186,8 +210,9 @@ class BaseServer:
     def generate_id(self):
         """Generate a unique session id."""
         id = base64.b64encode(
-            secrets.token_bytes(12) + self.sequence_number.to_bytes(3, 'big'))
-        self.sequence_number = (self.sequence_number + 1) & 0xffffff
+            secrets.token_bytes(12) + self.sequence_number.to_bytes(3, 'big')
+        )
+        self.sequence_number = (self.sequence_number + 1) & 0xFFFFFF
         return id.decode('utf-8').replace('/', '_').replace('+', '-')
 
     def _generate_sid_cookie(self, sid, attributes):
@@ -206,15 +231,19 @@ class BaseServer:
 
     def _upgrades(self, sid, transport):
         """Return the list of possible upgrades for a client connection."""
-        if not self.allow_upgrades or self._get_socket(sid).upgraded or \
-                transport == 'websocket':
+        if (
+            not self.allow_upgrades
+            or self._get_socket(sid).upgraded
+            or transport == 'websocket'
+        ):
             return []
         if self._async['websocket'] is None:  # pragma: no cover
             self._log_error_once(
                 'The WebSocket transport is not available, you must install a '
                 'WebSocket server that is compatible with your async mode to '
                 'enable it. See the documentation for details.',
-                'no-websocket')
+                'no-websocket',
+            )
             return []
         return ['websocket']
 
@@ -235,53 +264,75 @@ class BaseServer:
             if headers is None:
                 headers = []
             headers += [('Content-Type', 'text/plain; charset=UTF-8')]
-            return {'status': '200 OK',
-                    'headers': headers,
-                    'response': payload.Payload(packets=packets).encode(
-                        jsonp_index=jsonp_index).encode('utf-8')}
+            return {
+                'status': '200 OK',
+                'headers': headers,
+                'response': payload.Payload(packets=packets)
+                .encode(jsonp_index=jsonp_index)
+                .encode('utf-8'),
+            }
         else:
-            return {'status': '200 OK',
-                    'headers': [('Content-Type', 'text/plain')],
-                    'response': b'OK'}
+            return {
+                'status': '200 OK',
+                'headers': [('Content-Type', 'text/plain')],
+                'response': b'OK',
+            }
 
     def _bad_request(self, message=None):
         """Generate a bad request HTTP error response."""
         if message is None:
             message = 'Bad Request'
         message = packet.Packet.json.dumps(message)
-        return {'status': '400 BAD REQUEST',
-                'headers': [('Content-Type', 'text/plain')],
-                'response': message.encode('utf-8')}
+        return {
+            'status': '400 BAD REQUEST',
+            'headers': [('Content-Type', 'text/plain')],
+            'response': message.encode('utf-8'),
+        }
 
     def _method_not_found(self):
         """Generate a method not found HTTP error response."""
-        return {'status': '405 METHOD NOT FOUND',
-                'headers': [('Content-Type', 'text/plain')],
-                'response': b'Method Not Found'}
+        return {
+            'status': '405 METHOD NOT FOUND',
+            'headers': [('Content-Type', 'text/plain')],
+            'response': b'Method Not Found',
+        }
 
     def _unauthorized(self, message=None):
         """Generate a unauthorized HTTP error response."""
         if message is None:
             message = 'Unauthorized'
         message = packet.Packet.json.dumps(message)
-        return {'status': '401 UNAUTHORIZED',
-                'headers': [('Content-Type', 'application/json')],
-                'response': message.encode('utf-8')}
+        return {
+            'status': '401 UNAUTHORIZED',
+            'headers': [('Content-Type', 'application/json')],
+            'response': message.encode('utf-8'),
+        }
 
     def _cors_allowed_origins(self, environ):
         default_origins = []
         if 'wsgi.url_scheme' in environ and 'HTTP_HOST' in environ:
-            default_origins.append('{scheme}://{host}'.format(
-                scheme=environ['wsgi.url_scheme'], host=environ['HTTP_HOST']))
-            if 'HTTP_X_FORWARDED_PROTO' in environ or \
-                    'HTTP_X_FORWARDED_HOST' in environ:
-                scheme = environ.get(
-                    'HTTP_X_FORWARDED_PROTO',
-                    environ['wsgi.url_scheme']).split(',')[0].strip()
-                default_origins.append('{scheme}://{host}'.format(
-                    scheme=scheme, host=environ.get(
-                        'HTTP_X_FORWARDED_HOST', environ['HTTP_HOST']).split(
-                            ',')[0].strip()))
+            default_origins.append(
+                '{scheme}://{host}'.format(
+                    scheme=environ['wsgi.url_scheme'], host=environ['HTTP_HOST']
+                )
+            )
+            if (
+                'HTTP_X_FORWARDED_PROTO' in environ
+                or 'HTTP_X_FORWARDED_HOST' in environ
+            ):
+                scheme = (
+                    environ.get('HTTP_X_FORWARDED_PROTO', environ['wsgi.url_scheme'])
+                    .split(',')[0]
+                    .strip()
+                )
+                default_origins.append(
+                    '{scheme}://{host}'.format(
+                        scheme=scheme,
+                        host=environ.get('HTTP_X_FORWARDED_HOST', environ['HTTP_HOST'])
+                        .split(',')[0]
+                        .strip(),
+                    )
+                )
         if self.cors_allowed_origins is None:
             allowed_origins = default_origins
         elif self.cors_allowed_origins == '*':
@@ -290,8 +341,7 @@ class BaseServer:
             allowed_origins = [self.cors_allowed_origins]
         elif callable(self.cors_allowed_origins):
             origin = environ.get('HTTP_ORIGIN')
-            allowed_origins = [origin] \
-                if self.cors_allowed_origins(origin) else []
+            allowed_origins = [origin] if self.cors_allowed_origins(origin) else []
         else:
             allowed_origins = self.cors_allowed_origins
         return allowed_origins
@@ -303,15 +353,19 @@ class BaseServer:
             return []
         headers = []
         allowed_origins = self._cors_allowed_origins(environ)
-        if 'HTTP_ORIGIN' in environ and \
-                (allowed_origins is None or environ['HTTP_ORIGIN'] in
-                 allowed_origins):
+        if 'HTTP_ORIGIN' in environ and (
+            allowed_origins is None or environ['HTTP_ORIGIN'] in allowed_origins
+        ):
             headers = [('Access-Control-Allow-Origin', environ['HTTP_ORIGIN'])]
         if environ['REQUEST_METHOD'] == 'OPTIONS':
             headers += [('Access-Control-Allow-Methods', 'OPTIONS, GET, POST')]
         if 'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' in environ:
-            headers += [('Access-Control-Allow-Headers',
-                        environ['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])]
+            headers += [
+                (
+                    'Access-Control-Allow-Headers',
+                    environ['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'],
+                )
+            ]
         if self.cors_credentials:
             headers += [('Access-Control-Allow-Credentials', 'true')]
         return headers
@@ -331,8 +385,10 @@ class BaseServer:
         """Log message with logging.ERROR level the first time, then log
         with given level."""
         if message_key not in self.log_message_keys:
-            self.logger.error(message + ' (further occurrences of this error '
-                              'will be logged with level INFO)')
+            self.logger.error(
+                message + ' (further occurrences of this error '
+                'will be logged with level INFO)'
+            )
             self.log_message_keys.add(message_key)
         else:
             self.logger.info(message)

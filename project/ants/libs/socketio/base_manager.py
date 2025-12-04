@@ -52,8 +52,10 @@ class BaseManager:
         return sid
 
     def is_connected(self, sid, namespace):
-        if namespace in self.pending_disconnect and \
-                sid in self.pending_disconnect[namespace]:
+        if (
+            namespace in self.pending_disconnect
+            and sid in self.pending_disconnect[namespace]
+        ):
             # the client is in the process of being disconnected
             return False
         try:
@@ -95,8 +97,10 @@ class BaseManager:
             self.basic_leave_room(sid, namespace, room)
         if sid in self.callbacks:
             del self.callbacks[sid]
-        if namespace in self.pending_disconnect and \
-                sid in self.pending_disconnect[namespace]:
+        if (
+            namespace in self.pending_disconnect
+            and sid in self.pending_disconnect[namespace]
+        ):
             self.pending_disconnect[namespace].remove(sid)
             if len(self.pending_disconnect[namespace]) == 0:
                 del self.pending_disconnect[namespace]

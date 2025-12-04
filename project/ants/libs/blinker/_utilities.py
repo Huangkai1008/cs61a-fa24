@@ -20,7 +20,7 @@ class _symbol:
         return self.name
 
 
-_symbol.__name__ = "symbol"
+_symbol.__name__ = 'symbol'
 
 
 class symbol:
@@ -48,9 +48,9 @@ class symbol:
 
 
 def hashable_identity(obj: object) -> IdentityType:
-    if hasattr(obj, "__func__"):
+    if hasattr(obj, '__func__'):
         return (id(obj.__func__), id(obj.__self__))  # type: ignore[attr-defined]
-    elif hasattr(obj, "im_func"):
+    elif hasattr(obj, 'im_func'):
         return (id(obj.im_func), id(obj.im_self))  # type: ignore[attr-defined]
     elif isinstance(obj, (int, str)):
         return obj
@@ -83,9 +83,9 @@ def reference(  # type: ignore[no-untyped-def]
 
 def callable_reference(object, callback=None):
     """Return an annotated weak ref, supporting bound instance methods."""
-    if hasattr(object, "im_self") and object.im_self is not None:
+    if hasattr(object, 'im_self') and object.im_self is not None:
         return BoundMethodWeakref(target=object, on_delete=callback)
-    elif hasattr(object, "__self__") and object.__self__ is not None:
+    elif hasattr(object, '__self__') and object.__self__ is not None:
         return BoundMethodWeakref(target=object, on_delete=callback)
     return annotatable_weakref(object, callback)
 

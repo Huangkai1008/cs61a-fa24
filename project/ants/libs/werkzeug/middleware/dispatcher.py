@@ -30,6 +30,7 @@ and the static files would be served directly by the HTTP server.
 :copyright: 2007 Pallets
 :license: BSD-3-Clause
 """
+
 from __future__ import annotations
 
 import typing as t
@@ -61,20 +62,20 @@ class DispatcherMiddleware:
     def __call__(
         self, environ: WSGIEnvironment, start_response: StartResponse
     ) -> t.Iterable[bytes]:
-        script = environ.get("PATH_INFO", "")
-        path_info = ""
+        script = environ.get('PATH_INFO', '')
+        path_info = ''
 
-        while "/" in script:
+        while '/' in script:
             if script in self.mounts:
                 app = self.mounts[script]
                 break
 
-            script, last_item = script.rsplit("/", 1)
-            path_info = f"/{last_item}{path_info}"
+            script, last_item = script.rsplit('/', 1)
+            path_info = f'/{last_item}{path_info}'
         else:
             app = self.mounts.get(script, self.app)
 
-        original_script_name = environ.get("SCRIPT_NAME", "")
-        environ["SCRIPT_NAME"] = original_script_name + script
-        environ["PATH_INFO"] = path_info
+        original_script_name = environ.get('SCRIPT_NAME', '')
+        environ['SCRIPT_NAME'] = original_script_name + script
+        environ['PATH_INFO'] = path_info
         return app(environ, start_response)

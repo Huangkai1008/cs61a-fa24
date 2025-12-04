@@ -55,6 +55,5 @@ def get_static_file(path, static_files):
                 f['filename'] += 'index.html'
         if 'content_type' not in f:
             ext = f['filename'].rsplit('.')[-1]
-            f['content_type'] = content_types.get(
-                ext, 'application/octet-stream')
+            f['content_type'] = content_types.get(ext, 'application/octet-stream')
     return f

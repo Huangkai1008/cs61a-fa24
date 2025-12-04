@@ -1,43 +1,43 @@
 test = {
-  'name': 'Problem 8a',
-  'points': 1,
-  'suites': [
-    {
-      'cases': [
+    'name': 'Problem 8a',
+    'points': 1,
+    'suites': [
         {
-          'answer': 'cf13df85d8ffea8b7928c6f0f860c5e1',
-          'choices': [
-            "In the ContainerAnt's ant_contained instance attribute",
-            "In the ContainerAnt's ant_contained class attribute",
-            "In its place's ant instance attribute",
-            "Nowhere, a ContainerAnt has no knowledge of the ant that it's protecting"
-          ],
-          'hidden': False,
-          'locked': True,
-          'multiline': False,
-          'question': 'Where is the ant contained by a ContainerAnt stored?'
+            'cases': [
+                {
+                    'answer': 'cf13df85d8ffea8b7928c6f0f860c5e1',
+                    'choices': [
+                        "In the ContainerAnt's ant_contained instance attribute",
+                        "In the ContainerAnt's ant_contained class attribute",
+                        "In its place's ant instance attribute",
+                        "Nowhere, a ContainerAnt has no knowledge of the ant that it's protecting",
+                    ],
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                    'question': 'Where is the ant contained by a ContainerAnt stored?',
+                },
+                {
+                    'answer': '22a2c7eb1d7adee7ea4eb970d3cc09e9',
+                    'choices': [
+                        'By protecting the ant from Bees and allowing it to perform its original action',
+                        'By attacking Bees that try to attack it',
+                        "By increasing the ant's health",
+                        'By allowing Bees to pass without attacking',
+                    ],
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                    'question': 'How does a ContainerAnt guard its ant?',
+                },
+            ],
+            'scored': False,
+            'type': 'concept',
         },
         {
-          'answer': '22a2c7eb1d7adee7ea4eb970d3cc09e9',
-          'choices': [
-            'By protecting the ant from Bees and allowing it to perform its original action',
-            'By attacking Bees that try to attack it',
-            "By increasing the ant's health",
-            'By allowing Bees to pass without attacking'
-          ],
-          'hidden': False,
-          'locked': True,
-          'multiline': False,
-          'question': 'How does a ContainerAnt guard its ant?'
-        }
-      ],
-      'scored': False,
-      'type': 'concept'
-    },
-    {
-      'cases': [
-        {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> container = ContainerAnt(1)
           >>> container2 = ContainerAnt(2)
           >>> container3 = ContainerAnt(3)
@@ -49,12 +49,12 @@ test = {
           c7a88a0ffd3aef026b98eef6e7557da3
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> container = ContainerAnt(2)
           >>> friend = HungryAnt()
           >>> container.ant_contained is None
@@ -65,12 +65,12 @@ test = {
           c7a88a0ffd3aef026b98eef6e7557da3
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> container = ContainerAnt(2)
           >>> container.ant_contained is not None
           03456a09f22295a39ca84d133a26f63d
@@ -93,29 +93,29 @@ test = {
           03456a09f22295a39ca84d133a26f63d
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> container = ContainerAnt(1)
           >>> container.action(gamestate) # ContainerAnt does not have an ant contained, should not have any action taken!
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       >>> beehive, layout = Hive(AssaultPlan()), dry_layout
       >>> gamestate = GameState(beehive, ant_types(), layout, (1, 9))
       >>> #
       """,
-      'teardown': '',
-      'type': 'doctest'
-    }
-  ]
+            'teardown': '',
+            'type': 'doctest',
+        },
+    ],
 }

@@ -1,30 +1,30 @@
 test = {
-  'name': 'Problem 8c',
-  'points': 1,
-  'suites': [
-    {
-      'cases': [
+    'name': 'Problem 8c',
+    'points': 1,
+    'suites': [
         {
-          'answer': '9f40b97857ecfadf1e7ad1c7965f2464',
-          'choices': [
-            'ContainerAnt class',
-            'Insect class',
-            'the BodyguardAnt does not inherit from any other class',
-            'Ant class'
-          ],
-          'hidden': False,
-          'locked': True,
-          'multiline': False,
-          'question': 'Where does a BodyguardAnt directly inherit all of its instance attributes from?'
-        }
-      ],
-      'scored': False,
-      'type': 'concept'
-    },
-    {
-      'cases': [
+            'cases': [
+                {
+                    'answer': '9f40b97857ecfadf1e7ad1c7965f2464',
+                    'choices': [
+                        'ContainerAnt class',
+                        'Insect class',
+                        'the BodyguardAnt does not inherit from any other class',
+                        'Ant class',
+                    ],
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                    'question': 'Where does a BodyguardAnt directly inherit all of its instance attributes from?',
+                }
+            ],
+            'scored': False,
+            'type': 'concept',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> # Testing BodyguardAnt parameters
           >>> bodyguard = BodyguardAnt()
           >>> BodyguardAnt.food_cost
@@ -34,22 +34,22 @@ test = {
           20d533d3e06345c8bd7072212867f2d1
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                }
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       """,
-      'teardown': '',
-      'type': 'doctest'
-    },
-    {
-      'cases': [
+            'teardown': '',
+            'type': 'doctest',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> # Abstraction tests
           >>> original = ContainerAnt.__init__
           >>> ContainerAnt.__init__ = lambda self, health: print("init") #If this errors, you are not calling the parent constructor correctly.
@@ -60,31 +60,31 @@ test = {
           >>> hasattr(bodyguard, 'ant_contained')
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                }
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       """,
-      'teardown': '',
-      'type': 'doctest'
-    },
-    {
-      'cases': [
+            'teardown': '',
+            'type': 'doctest',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> bodyguard = BodyguardAnt()
           >>> bodyguard.action(gamestate) # Action without contained ant should not error
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing bodyguard performs thrower's action
           >>> bodyguard = BodyguardAnt()
           >>> thrower = ThrowerAnt()
@@ -97,12 +97,12 @@ test = {
           >>> bee.health
           1
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing bodyguard performs thrower's action
           >>> bodyguard = BodyguardAnt()
           >>> thrower = ThrowerAnt()
@@ -115,12 +115,12 @@ test = {
           >>> bee.health
           1
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing removing a bodyguard doesn't remove contained ant
           >>> place = gamestate.places['tunnel_0_0']
           >>> bodyguard = BodyguardAnt()
@@ -134,12 +134,12 @@ test = {
           >>> bodyguard.place is None
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing removing a bodyguard doesn't remove contained ant
           >>> place = gamestate.places['tunnel_0_0']
           >>> bodyguard = BodyguardAnt()
@@ -153,12 +153,12 @@ test = {
           >>> bodyguard.place is None
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing bodyguarded ant keeps instance attributes
           >>> test_ant = Ant()
           >>> def new_action(gamestate):
@@ -172,12 +172,12 @@ test = {
           >>> place.ant.ant_contained.health
           9001
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing single BodyguardAnt cannot hold two other ants
           >>> bodyguard = BodyguardAnt()
           >>> first_ant = ThrowerAnt()
@@ -190,12 +190,12 @@ test = {
           ...
           AssertionError: Too many ants in tunnel_0_0
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing BodyguardAnt cannot hold another BodyguardAnt
           >>> bodyguard1 = BodyguardAnt()
           >>> bodyguard2 = BodyguardAnt()
@@ -206,12 +206,12 @@ test = {
           ...
           AssertionError: Too many ants in tunnel_0_0
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing BodyguardAnt takes all the damage
           >>> thrower = ThrowerAnt()
           >>> bodyguard = BodyguardAnt()
@@ -238,12 +238,12 @@ test = {
           >>> place.ant is None
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # test proper call to zero-health callback
           >>> original_zero_health_callback = Insect.zero_health_callback
           >>> Insect.zero_health_callback = lambda x: print("insect died")
@@ -261,38 +261,38 @@ test = {
           insect died
           >>> Insect.zero_health_callback = original_zero_health_callback
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       >>> beehive, layout = Hive(AssaultPlan()), dry_layout
       >>> gamestate = GameState(beehive, ant_types(), layout, (1, 9))
       >>> #
       """,
-      'teardown': '',
-      'type': 'doctest'
-    },
-    {
-      'cases': [
+            'teardown': '',
+            'type': 'doctest',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> from ants import *
           >>> BodyguardAnt.implemented
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': '',
-      'teardown': '',
-      'type': 'doctest'
-    }
-  ]
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                }
+            ],
+            'scored': True,
+            'setup': '',
+            'teardown': '',
+            'type': 'doctest',
+        },
+    ],
 }

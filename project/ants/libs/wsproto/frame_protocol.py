@@ -202,7 +202,7 @@ MAX_PRIVATE_CLOSE_REASON = 4999
 MAX_CLOSE_REASON = 4999
 
 
-NULL_MASK = struct.pack("!I", 0)
+NULL_MASK = struct.pack('!I', 0)
 
 
 class ParseFailed(Exception):
@@ -246,7 +246,7 @@ def _truncate_utf8(data: bytes, nbytes: int) -> bytes:
     # whole message twice when in theory we could just peek at the last
     # few characters, but since this is only used for close messages (max
     # length = 125 bytes) it really doesn't matter.
-    data = data.decode("utf-8", errors="ignore").encode("utf-8")
+    data = data.decode('utf-8', errors='ignore').encode('utf-8')
     return data
 
 
@@ -296,13 +296,13 @@ class MessageDecoder:
 
         if self.opcode is None:
             if frame.opcode is Opcode.CONTINUATION:
-                raise ParseFailed("unexpected CONTINUATION")
+                raise ParseFailed('unexpected CONTINUATION')
             self.opcode = frame.opcode
         elif frame.opcode is not Opcode.CONTINUATION:
-            raise ParseFailed("expected CONTINUATION, got %r" % frame.opcode)
+            raise ParseFailed('expected CONTINUATION, got %r' % frame.opcode)
 
         if frame.opcode is Opcode.TEXT:
-            self.decoder = getincrementaldecoder("utf-8")()
+            self.decoder = getincrementaldecoder('utf-8')()
 
         finished = frame.frame_finished and frame.message_finished
 
@@ -326,7 +326,7 @@ class MessageDecoder:
 
 class FrameDecoder:
     def __init__(
-        self, client: bool, extensions: Optional[List["Extension"]] = None
+        self, client: bool, extensions: Optional[List['Extension']] = None
     ) -> None:
         self.client = client
         self.extensions = extensions or []
@@ -368,7 +368,7 @@ class FrameDecoder:
         for extension in self.extensions:
             payload_ = extension.frame_inbound_payload_data(self, payload)
             if isinstance(payload_, CloseReason):
-                raise ParseFailed("error in extension", payload_)
+                raise ParseFailed('error in extension', payload_)
             payload = payload_
 
         if finished:
@@ -376,7 +376,7 @@ class FrameDecoder:
             for extension in self.extensions:
                 result = extension.frame_inbound_complete(self, self.header.fin)
                 if isinstance(result, CloseReason):
-                    raise ParseFailed("error in extension", result)
+                    raise ParseFailed('error in extension', result)
                 if result is not None:
                     final += result
             payload += final
@@ -408,10 +408,10 @@ class FrameDecoder:
         try:
             opcode = Opcode(opcode)
         except ValueError:
-            raise ParseFailed(f"Invalid opcode {opcode:#x}")
+            raise ParseFailed(f'Invalid opcode {opcode:#x}')
 
         if opcode.iscontrol() and not fin:
-            raise ParseFailed("Invalid attempt to fragment control frame")
+            raise ParseFailed('Invalid attempt to fragment control frame')
 
         has_mask = bool(data[1] & MASK_MASK)
         payload_len_short = data[1] & PAYLOAD_LEN_MASK
@@ -423,9 +423,9 @@ class FrameDecoder:
         self.extension_processing(opcode, rsv, payload_len)
 
         if has_mask and self.client:
-            raise ParseFailed("client received unexpected masked frame")
+            raise ParseFailed('client received unexpected masked frame')
         if not has_mask and not self.client:
-            raise ParseFailed("server received unexpected unmasked frame")
+            raise ParseFailed('server received unexpected unmasked frame')
         if has_mask:
             masking_key = self.buffer.consume_exactly(4)
             if masking_key is None:
@@ -449,29 +449,29 @@ class FrameDecoder:
         self, opcode: Opcode, payload_len: int
     ) -> Optional[int]:
         if opcode.iscontrol() and payload_len > MAX_PAYLOAD_NORMAL:
-            raise ParseFailed("Control frame with payload len > 125")
+            raise ParseFailed('Control frame with payload len > 125')
         if payload_len == PAYLOAD_LENGTH_TWO_BYTE:
             data = self.buffer.consume_exactly(2)
             if data is None:
                 return None
-            (payload_len,) = struct.unpack("!H", data)
+            (payload_len,) = struct.unpack('!H', data)
             if payload_len <= MAX_PAYLOAD_NORMAL:
                 raise ParseFailed(
-                    "Payload length used 2 bytes when 1 would have sufficed"
+                    'Payload length used 2 bytes when 1 would have sufficed'
                 )
         elif payload_len == PAYLOAD_LENGTH_EIGHT_BYTE:
             data = self.buffer.consume_exactly(8)
             if data is None:
                 return None
-            (payload_len,) = struct.unpack("!Q", data)
+            (payload_len,) = struct.unpack('!Q', data)
             if payload_len <= MAX_PAYLOAD_TWO_BYTE:
                 raise ParseFailed(
-                    "Payload length used 8 bytes when 2 would have sufficed"
+                    'Payload length used 8 bytes when 2 would have sufficed'
                 )
             if payload_len >> 63:
                 # I'm not sure why this is illegal, but that's what the RFC
                 # says, so...
-                raise ParseFailed("8-byte payload length with non-zero MSB")
+                raise ParseFailed('8-byte payload length with non-zero MSB')
 
         return payload_len
 
@@ -482,17 +482,17 @@ class FrameDecoder:
         for extension in self.extensions:
             result = extension.frame_inbound_header(self, opcode, rsv, payload_len)
             if isinstance(result, CloseReason):
-                raise ParseFailed("error in extension", result)
+                raise ParseFailed('error in extension', result)
             for bit, used in enumerate(result):
                 if used:
                     rsv_used[bit] = True
         for expected, found in zip(rsv_used, rsv):
             if found and not expected:
-                raise ParseFailed("Reserved bit set unexpectedly")
+                raise ParseFailed('Reserved bit set unexpectedly')
 
 
 class FrameProtocol:
-    def __init__(self, client: bool, extensions: List["Extension"]) -> None:
+    def __init__(self, client: bool, extensions: List['Extension']) -> None:
         self.client = client
         self.extensions = [ext for ext in extensions if ext.enabled()]
 
@@ -510,26 +510,26 @@ class FrameProtocol:
         if not data:
             # "If this Close control frame contains no status code, _The
             # WebSocket Connection Close Code_ is considered to be 1005"
-            data = (CloseReason.NO_STATUS_RCVD, "")
+            data = (CloseReason.NO_STATUS_RCVD, '')
         elif len(data) == 1:
-            raise ParseFailed("CLOSE with 1 byte payload")
+            raise ParseFailed('CLOSE with 1 byte payload')
         else:
-            (code,) = struct.unpack("!H", data[:2])
+            (code,) = struct.unpack('!H', data[:2])
             if code < MIN_CLOSE_REASON or code > MAX_CLOSE_REASON:
-                raise ParseFailed("CLOSE with invalid code")
+                raise ParseFailed('CLOSE with invalid code')
             try:
                 code = CloseReason(code)
             except ValueError:
                 pass
             if code in LOCAL_ONLY_CLOSE_REASONS:
-                raise ParseFailed("remote CLOSE with local-only reason")
+                raise ParseFailed('remote CLOSE with local-only reason')
             if not isinstance(code, CloseReason) and code <= MAX_PROTOCOL_CLOSE_REASON:
-                raise ParseFailed("CLOSE with unknown reserved code")
+                raise ParseFailed('CLOSE with unknown reserved code')
             try:
-                reason = data[2:].decode("utf-8")
+                reason = data[2:].decode('utf-8')
             except UnicodeDecodeError as exc:
                 raise ParseFailed(
-                    "Error decoding CLOSE reason: " + str(exc),
+                    'Error decoding CLOSE reason: ' + str(exc),
                     CloseReason.INVALID_FRAME_PAYLOAD_DATA,
                 )
             data = (code, reason)
@@ -572,39 +572,39 @@ class FrameProtocol:
         if code is CloseReason.NO_STATUS_RCVD:
             code = None
         if code is None and reason:
-            raise TypeError("cannot specify a reason without a code")
+            raise TypeError('cannot specify a reason without a code')
         if code in LOCAL_ONLY_CLOSE_REASONS:
             code = CloseReason.NORMAL_CLOSURE
         if code is not None:
-            payload += bytearray(struct.pack("!H", code))
+            payload += bytearray(struct.pack('!H', code))
             if reason is not None:
                 payload += _truncate_utf8(
-                    reason.encode("utf-8"), MAX_PAYLOAD_NORMAL - 2
+                    reason.encode('utf-8'), MAX_PAYLOAD_NORMAL - 2
                 )
 
         return self._serialize_frame(Opcode.CLOSE, payload)
 
-    def ping(self, payload: bytes = b"") -> bytes:
+    def ping(self, payload: bytes = b'') -> bytes:
         return self._serialize_frame(Opcode.PING, payload)
 
-    def pong(self, payload: bytes = b"") -> bytes:
+    def pong(self, payload: bytes = b'') -> bytes:
         return self._serialize_frame(Opcode.PONG, payload)
 
     def send_data(
-        self, payload: Union[bytes, bytearray, str] = b"", fin: bool = True
+        self, payload: Union[bytes, bytearray, str] = b'', fin: bool = True
     ) -> bytes:
         if isinstance(payload, (bytes, bytearray, memoryview)):
             opcode = Opcode.BINARY
         elif isinstance(payload, str):
             opcode = Opcode.TEXT
-            payload = payload.encode("utf-8")
+            payload = payload.encode('utf-8')
         else:
-            raise ValueError("Must provide bytes or text")
+            raise ValueError('Must provide bytes or text')
 
         if self._outbound_opcode is None:
             self._outbound_opcode = opcode
         elif self._outbound_opcode is not opcode:
-            raise TypeError("Data type mismatch inside message")
+            raise TypeError('Data type mismatch inside message')
         else:
             opcode = Opcode.CONTINUATION
 
@@ -621,7 +621,7 @@ class FrameProtocol:
         return fin_bits | rsv_bits | opcode_bits
 
     def _serialize_frame(
-        self, opcode: Opcode, payload: bytes = b"", fin: bool = True
+        self, opcode: Opcode, payload: bytes = b'', fin: bool = True
     ) -> bytes:
         rsv = RsvBits(False, False, False)
         for extension in reversed(self.extensions):
@@ -648,11 +648,11 @@ class FrameProtocol:
         header = bytearray([fin_rsv_opcode, first_payload])
         if second_payload is not None:
             if opcode.iscontrol():
-                raise ValueError("payload too long for control frame")
+                raise ValueError('payload too long for control frame')
             if quad_payload:
-                header += bytearray(struct.pack("!Q", second_payload))
+                header += bytearray(struct.pack('!Q', second_payload))
             else:
-                header += bytearray(struct.pack("!H", second_payload))
+                header += bytearray(struct.pack('!H', second_payload))
 
         if self.client:
             # "The masking key is a 32-bit value chosen at random by the

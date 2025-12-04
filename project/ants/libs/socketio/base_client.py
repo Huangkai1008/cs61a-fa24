@@ -29,18 +29,28 @@ original_signal_handler = None
 
 
 class BaseClient:
-    reserved_events = ['connect', 'connect_error', 'disconnect',
-                       '__disconnect_final']
+    reserved_events = ['connect', 'connect_error', 'disconnect', '__disconnect_final']
 
-    def __init__(self, reconnection=True, reconnection_attempts=0,
-                 reconnection_delay=1, reconnection_delay_max=5,
-                 randomization_factor=0.5, logger=False, serializer='default',
-                 json=None, handle_sigint=True, **kwargs):
+    def __init__(
+        self,
+        reconnection=True,
+        reconnection_attempts=0,
+        reconnection_delay=1,
+        reconnection_delay_max=5,
+        randomization_factor=0.5,
+        logger=False,
+        serializer='default',
+        json=None,
+        handle_sigint=True,
+        **kwargs,
+    ):
         global original_signal_handler
-        if handle_sigint and original_signal_handler is None and \
-                threading.current_thread() == threading.main_thread():
-            original_signal_handler = signal.signal(signal.SIGINT,
-                                                    signal_handler)
+        if (
+            handle_sigint
+            and original_signal_handler is None
+            and threading.current_thread() == threading.main_thread()
+        ):
+            original_signal_handler = signal.signal(signal.SIGINT, signal_handler)
         self.reconnection = reconnection
         self.reconnection_attempts = reconnection_attempts
         self.reconnection_delay = reconnection_delay
@@ -57,6 +67,7 @@ class BaseClient:
             self.packet_class = packet.Packet
         elif serializer == 'msgpack':
             from . import msgpack_packet
+
             self.packet_class = msgpack_packet.MsgPackPacket
         else:
             self.packet_class = serializer
@@ -199,14 +210,12 @@ class BaseClient:
                                   subclass that handles all the event traffic
                                   for a namespace.
         """
-        if not isinstance(namespace_handler,
-                          base_namespace.BaseClientNamespace):
+        if not isinstance(namespace_handler, base_namespace.BaseClientNamespace):
             raise ValueError('Not a namespace instance')
         if self.is_asyncio_based() != namespace_handler.is_asyncio_based():
             raise ValueError('Not a valid namespace class for this client')
         namespace_handler._set_client(self)
-        self.namespace_handlers[namespace_handler.namespace] = \
-            namespace_handler
+        self.namespace_handlers[namespace_handler.namespace] = namespace_handler
 
     def get_sid(self, namespace=None):
         """Return the ``sid`` associated with a connection.
@@ -242,16 +251,14 @@ class BaseClient:
         if namespace in self.handlers:
             if event in self.handlers[namespace]:
                 handler = self.handlers[namespace][event]
-            elif event not in self.reserved_events and \
-                    '*' in self.handlers[namespace]:
+            elif event not in self.reserved_events and '*' in self.handlers[namespace]:
                 handler = self.handlers[namespace]['*']
                 args = (event, *args)
         elif '*' in self.handlers:
             if event in self.handlers['*']:
                 handler = self.handlers['*'][event]
                 args = (namespace, *args)
-            elif event not in self.reserved_events and \
-                    '*' in self.handlers['*']:
+            elif event not in self.reserved_events and '*' in self.handlers['*']:
                 handler = self.handlers['*']['*']
                 args = (event, namespace, *args)
         return handler, args

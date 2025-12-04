@@ -14,8 +14,7 @@ def create_route(app, engineio_server, engineio_endpoint):
     """
     app.router.add_get(engineio_endpoint, engineio_server.handle_request)
     app.router.add_post(engineio_endpoint, engineio_server.handle_request)
-    app.router.add_route('OPTIONS', engineio_endpoint,
-                         engineio_server.handle_request)
+    app.router.add_route('OPTIONS', engineio_endpoint, engineio_server.handle_request)
 
 
 def translate_request(request):
@@ -43,7 +42,7 @@ def translate_request(request):
         'REMOTE_PORT': '0',
         'SERVER_NAME': 'aiohttp',
         'SERVER_PORT': '0',
-        'aiohttp.request': request
+        'aiohttp.request': request,
     }
 
     for hdr_name, hdr_value in message.headers.items():
@@ -75,8 +74,7 @@ def make_response(status, headers, payload, environ):
     """This function generates an appropriate response object for this async
     mode.
     """
-    return Response(body=payload, status=int(status.split()[0]),
-                    headers=headers)
+    return Response(body=payload, status=int(status.split()[0]), headers=headers)
 
 
 class WebSocket(object):  # pragma: no cover
@@ -84,6 +82,7 @@ class WebSocket(object):  # pragma: no cover
     This wrapper class provides a aiohttp WebSocket interface that is
     somewhat compatible with eventlet's implementation.
     """
+
     def __init__(self, handler, server):
         self.handler = handler
         self._sock = None
@@ -112,8 +111,7 @@ class WebSocket(object):  # pragma: no cover
 
     async def wait(self):
         msg = await self._sock.receive()
-        if not isinstance(msg.data, bytes) and \
-                not isinstance(msg.data, str):
+        if not isinstance(msg.data, bytes) and not isinstance(msg.data, str):
             raise IOError()
         return msg.data
 

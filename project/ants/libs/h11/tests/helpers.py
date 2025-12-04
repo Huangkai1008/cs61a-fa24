@@ -73,11 +73,11 @@ class ConnectionPair:
         self,
         role: Type[Sentinel],
         send_events: Union[List[Event], Event],
-        expect: Union[List[Event], Event, Literal["match"]] = "match",
+        expect: Union[List[Event], Event, Literal['match']] = 'match',
     ) -> bytes:
         if not isinstance(send_events, list):
             send_events = [send_events]
-        data = b""
+        data = b''
         closed = False
         for send_event in send_events:
             new_data = self.conn[role].send(send_event)
@@ -91,9 +91,9 @@ class ConnectionPair:
         if data:
             self.conn[self.other[role]].receive_data(data)
         if closed:
-            self.conn[self.other[role]].receive_data(b"")
+            self.conn[self.other[role]].receive_data(b'')
         got_events = get_all_events(self.conn[self.other[role]])
-        if expect == "match":
+        if expect == 'match':
             expect = send_events
         if not isinstance(expect, list):
             expect = [expect]

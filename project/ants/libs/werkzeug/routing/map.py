@@ -93,7 +93,7 @@ class Map:
     def __init__(
         self,
         rules: t.Iterable[RuleFactory] | None = None,
-        default_subdomain: str = "",
+        default_subdomain: str = '',
         strict_slashes: bool = True,
         merge_slashes: bool = True,
         redirect_defaults: bool = True,
@@ -177,8 +177,8 @@ class Map:
         server_name: str,
         script_name: str | None = None,
         subdomain: str | None = None,
-        url_scheme: str = "http",
-        default_method: str = "GET",
+        url_scheme: str = 'http',
+        default_method: str = 'GET',
         path_info: str | None = None,
         query_args: t.Mapping[str, t.Any] | str | None = None,
     ) -> MapAdapter:
@@ -214,25 +214,25 @@ class Map:
         server_name = server_name.lower()
         if self.host_matching:
             if subdomain is not None:
-                raise RuntimeError("host matching enabled and a subdomain was provided")
+                raise RuntimeError('host matching enabled and a subdomain was provided')
         elif subdomain is None:
             subdomain = self.default_subdomain
         if script_name is None:
-            script_name = "/"
+            script_name = '/'
         if path_info is None:
-            path_info = "/"
+            path_info = '/'
 
         # Port isn't part of IDNA, and might push a name over the 63 octet limit.
-        server_name, port_sep, port = server_name.partition(":")
+        server_name, port_sep, port = server_name.partition(':')
 
         try:
-            server_name = server_name.encode("idna").decode("ascii")
+            server_name = server_name.encode('idna').decode('ascii')
         except UnicodeError as e:
             raise BadHost() from e
 
         return MapAdapter(
             self,
-            f"{server_name}{port_sep}{port}",
+            f'{server_name}{port_sep}{port}',
             script_name,
             subdomain,
             url_scheme,
@@ -290,14 +290,14 @@ class Map:
         """
         env = _get_environ(environ)
         wsgi_server_name = get_host(env).lower()
-        scheme = env["wsgi.url_scheme"]
+        scheme = env['wsgi.url_scheme']
         upgrade = any(
-            v.strip() == "upgrade"
-            for v in env.get("HTTP_CONNECTION", "").lower().split(",")
+            v.strip() == 'upgrade'
+            for v in env.get('HTTP_CONNECTION', '').lower().split(',')
         )
 
-        if upgrade and env.get("HTTP_UPGRADE", "").lower() == "websocket":
-            scheme = "wss" if scheme == "https" else "ws"
+        if upgrade and env.get('HTTP_UPGRADE', '').lower() == 'websocket':
+            scheme = 'wss' if scheme == 'https' else 'ws'
 
         if server_name is None:
             server_name = wsgi_server_name
@@ -305,14 +305,14 @@ class Map:
             server_name = server_name.lower()
 
             # strip standard port to match get_host()
-            if scheme in {"http", "ws"} and server_name.endswith(":80"):
+            if scheme in {'http', 'ws'} and server_name.endswith(':80'):
                 server_name = server_name[:-3]
-            elif scheme in {"https", "wss"} and server_name.endswith(":443"):
+            elif scheme in {'https', 'wss'} and server_name.endswith(':443'):
                 server_name = server_name[:-4]
 
         if subdomain is None and not self.host_matching:
-            cur_server_name = wsgi_server_name.split(".")
-            real_server_name = server_name.split(".")
+            cur_server_name = wsgi_server_name.split('.')
+            real_server_name = server_name.split('.')
             offset = -len(real_server_name)
 
             if cur_server_name[offset:] != real_server_name:
@@ -323,12 +323,12 @@ class Map:
                 # in a 404 error on matching.
                 warnings.warn(
                     f"Current server name {wsgi_server_name!r} doesn't match configured"
-                    f" server name {server_name!r}",
+                    f' server name {server_name!r}',
                     stacklevel=2,
                 )
-                subdomain = "<invalid>"
+                subdomain = '<invalid>'
             else:
-                subdomain = ".".join(filter(None, cur_server_name[:offset]))
+                subdomain = '.'.join(filter(None, cur_server_name[:offset]))
 
         def _get_wsgi_string(name: str) -> str | None:
             val = env.get(name)
@@ -336,16 +336,16 @@ class Map:
                 return _wsgi_decoding_dance(val)
             return None
 
-        script_name = _get_wsgi_string("SCRIPT_NAME")
-        path_info = _get_wsgi_string("PATH_INFO")
-        query_args = _get_wsgi_string("QUERY_STRING")
+        script_name = _get_wsgi_string('SCRIPT_NAME')
+        path_info = _get_wsgi_string('PATH_INFO')
+        query_args = _get_wsgi_string('QUERY_STRING')
         return Map.bind(
             self,
             server_name,
             script_name,
             subdomain,
             scheme,
-            env["REQUEST_METHOD"],
+            env['REQUEST_METHOD'],
             path_info,
             query_args=query_args,
         )
@@ -368,11 +368,10 @@ class Map:
 
     def __repr__(self) -> str:
         rules = self.iter_rules()
-        return f"{type(self).__name__}({pformat(list(rules))})"
+        return f'{type(self).__name__}({pformat(list(rules))})'
 
 
 class MapAdapter:
-
     """Returned by :meth:`Map.bind` or :meth:`Map.bind_to_environ` and does
     the URL matching and building based on runtime information.
     """
@@ -391,8 +390,8 @@ class MapAdapter:
         self.map = map
         self.server_name = server_name
 
-        if not script_name.endswith("/"):
-            script_name += "/"
+        if not script_name.endswith('/'):
+            script_name += '/'
 
         self.script_name = script_name
         self.subdomain = subdomain
@@ -400,7 +399,7 @@ class MapAdapter:
         self.path_info = path_info
         self.default_method = default_method
         self.query_args = query_args
-        self.websocket = self.url_scheme in {"ws", "wss"}
+        self.websocket = self.url_scheme in {'ws', 'wss'}
 
     def dispatch(
         self,
@@ -470,8 +469,7 @@ class MapAdapter:
         return_rule: t.Literal[False] = False,
         query_args: t.Mapping[str, t.Any] | str | None = None,
         websocket: bool | None = None,
-    ) -> tuple[str, t.Mapping[str, t.Any]]:
-        ...
+    ) -> tuple[str, t.Mapping[str, t.Any]]: ...
 
     @t.overload
     def match(
@@ -481,8 +479,7 @@ class MapAdapter:
         return_rule: t.Literal[True] = True,
         query_args: t.Mapping[str, t.Any] | str | None = None,
         websocket: bool | None = None,
-    ) -> tuple[Rule, t.Mapping[str, t.Any]]:
-        ...
+    ) -> tuple[Rule, t.Mapping[str, t.Any]]: ...
 
     def match(
         self,
@@ -594,7 +591,7 @@ class MapAdapter:
         if not self.map.host_matching and self.subdomain is not None:
             domain_part = self.subdomain
 
-        path_part = f"/{path_info.lstrip('/')}" if path_info else ""
+        path_part = f'/{path_info.lstrip("/")}' if path_info else ''
 
         try:
             result = self.map._matcher.match(domain_part, path_part, method, websocket)
@@ -607,7 +604,7 @@ class MapAdapter:
         except RequestAliasRedirect as e:
             raise RequestRedirect(
                 self.make_alias_redirect_url(
-                    f"{domain_part}|{path_part}",
+                    f'{domain_part}|{path_part}',
                     e.endpoint,
                     e.matched_values,
                     method,
@@ -642,13 +639,13 @@ class MapAdapter:
                     redirect_url = rule.redirect_to(self, **rv)
 
                 if self.subdomain:
-                    netloc = f"{self.subdomain}.{self.server_name}"
+                    netloc = f'{self.subdomain}.{self.server_name}'
                 else:
                     netloc = self.server_name
 
                 raise RequestRedirect(
                     urljoin(
-                        f"{self.url_scheme or 'http'}://{netloc}{self.script_name}",
+                        f'{self.url_scheme or "http"}://{netloc}{self.script_name}',
                         redirect_url,
                     )
                 )
@@ -681,7 +678,7 @@ class MapAdapter:
         .. versionadded:: 0.7
         """
         try:
-            self.match(path_info, method="--")
+            self.match(path_info, method='--')
         except MethodNotAllowed as e:
             return e.valid_methods  # type: ignore
         except HTTPException:
@@ -705,7 +702,7 @@ class MapAdapter:
             subdomain = domain_part
 
         if subdomain:
-            return f"{subdomain}.{self.server_name}"
+            return f'{subdomain}.{self.server_name}'
         else:
             return self.server_name
 
@@ -757,9 +754,9 @@ class MapAdapter:
         else:
             query_str = None
 
-        scheme = self.url_scheme or "http"
+        scheme = self.url_scheme or 'http'
         host = self.get_host(domain_part)
-        path = "/".join((self.script_name.strip("/"), path_info.lstrip("/")))
+        path = '/'.join((self.script_name.strip('/'), path_info.lstrip('/')))
         return urlunsplit((scheme, host, path, query_str, None))
 
     def make_alias_redirect_url(
@@ -775,8 +772,8 @@ class MapAdapter:
             endpoint, values, method, append_unknown=False, force_external=True
         )
         if query_args:
-            url += f"?{self.encode_query_args(query_args)}"
-        assert url != path, "detected invalid alias setting. No canonical URL found"
+            url += f'?{self.encode_query_args(query_args)}'
+        assert url != path, 'detected invalid alias setting. No canonical URL found'
         return url
 
     def _partial_build(
@@ -927,20 +924,20 @@ class MapAdapter:
         # Always build WebSocket routes with the scheme (browsers
         # require full URLs). If bound to a WebSocket, ensure that HTTP
         # routes are built with an HTTP scheme.
-        secure = url_scheme in {"https", "wss"}
+        secure = url_scheme in {'https', 'wss'}
 
         if websocket:
             force_external = True
-            url_scheme = "wss" if secure else "ws"
+            url_scheme = 'wss' if secure else 'ws'
         elif url_scheme:
-            url_scheme = "https" if secure else "http"
+            url_scheme = 'https' if secure else 'http'
 
         # shortcut this.
         if not force_external and (
             (self.map.host_matching and host == self.server_name)
             or (not self.map.host_matching and domain_part == self.subdomain)
         ):
-            return f"{self.script_name.rstrip('/')}/{path.lstrip('/')}"
+            return f'{self.script_name.rstrip("/")}/{path.lstrip("/")}'
 
-        scheme = f"{url_scheme}:" if url_scheme else ""
-        return f"{scheme}//{host}{self.script_name[:-1]}/{path.lstrip('/')}"
+        scheme = f'{url_scheme}:' if url_scheme else ''
+        return f'{scheme}//{host}{self.script_name[:-1]}/{path.lstrip("/")}'

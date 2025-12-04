@@ -20,20 +20,20 @@ from ._internal import _log
 _ignore_always = tuple({sys.base_prefix, sys.base_exec_prefix})
 prefix = {*_ignore_always, sys.prefix, sys.exec_prefix}
 
-if hasattr(sys, "real_prefix"):
+if hasattr(sys, 'real_prefix'):
     # virtualenv < 20
     prefix.add(sys.real_prefix)
 
 _stat_ignore_scan = tuple(prefix)
 del prefix
 _ignore_common_dirs = {
-    "__pycache__",
-    ".git",
-    ".hg",
-    ".tox",
-    ".nox",
-    ".pytest_cache",
-    ".mypy_cache",
+    '__pycache__',
+    '.git',
+    '.hg',
+    '.tox',
+    '.nox',
+    '.pytest_cache',
+    '.mypy_cache',
 }
 
 
@@ -41,7 +41,7 @@ def _iter_module_paths() -> t.Iterator[str]:
     """Find the filesystem paths associated with imported modules."""
     # List is in case the value is modified by the app while updating.
     for module in list(sys.modules.values()):
-        name = getattr(module, "__file__", None)
+        name = getattr(module, '__file__', None)
 
         if name is None or name.startswith(_ignore_always):
             continue
@@ -99,7 +99,7 @@ def _find_stat_paths(
             has_py = False
 
             for name in files:
-                if name.endswith((".py", ".pyc")):
+                if name.endswith(('.py', '.pyc')):
                     has_py = True
                     paths.add(os.path.join(root, name))
 
@@ -177,29 +177,29 @@ def _get_args_for_reloading() -> list[str]:
     py_script = sys.argv[0]
     args = sys.argv[1:]
     # Need to look at main module to determine how it was executed.
-    __main__ = sys.modules["__main__"]
+    __main__ = sys.modules['__main__']
 
     # The value of __package__ indicates how Python was called. It may
     # not exist if a setuptools script is installed as an egg. It may be
     # set incorrectly for entry points created with pip on Windows.
-    if getattr(__main__, "__package__", None) is None or (
-        os.name == "nt"
-        and __main__.__package__ == ""
+    if getattr(__main__, '__package__', None) is None or (
+        os.name == 'nt'
+        and __main__.__package__ == ''
         and not os.path.exists(py_script)
-        and os.path.exists(f"{py_script}.exe")
+        and os.path.exists(f'{py_script}.exe')
     ):
         # Executed a file, like "python app.py".
         py_script = os.path.abspath(py_script)
 
-        if os.name == "nt":
+        if os.name == 'nt':
             # Windows entry points have ".exe" extension and should be
             # called directly.
-            if not os.path.exists(py_script) and os.path.exists(f"{py_script}.exe"):
-                py_script += ".exe"
+            if not os.path.exists(py_script) and os.path.exists(f'{py_script}.exe'):
+                py_script += '.exe'
 
             if (
-                os.path.splitext(sys.executable)[1] == ".exe"
-                and os.path.splitext(py_script)[1] == ".exe"
+                os.path.splitext(sys.executable)[1] == '.exe'
+                and os.path.splitext(py_script)[1] == '.exe'
             ):
                 rv.pop(0)
 
@@ -211,20 +211,20 @@ def _get_args_for_reloading() -> list[str]:
             py_module = t.cast(str, __main__.__package__)
             name = os.path.splitext(os.path.basename(py_script))[0]
 
-            if name != "__main__":
-                py_module += f".{name}"
+            if name != '__main__':
+                py_module += f'.{name}'
         else:
             # Incorrectly rewritten by pydevd debugger from "-m script" to "script".
             py_module = py_script
 
-        rv.extend(("-m", py_module.lstrip(".")))
+        rv.extend(('-m', py_module.lstrip('.')))
 
     rv.extend(args)
     return rv
 
 
 class ReloaderLoop:
-    name = ""
+    name = ''
 
     def __init__(
         self,
@@ -266,10 +266,10 @@ class ReloaderLoop:
         current one, but running the reloader thread.
         """
         while True:
-            _log("info", f" * Restarting with {self.name}")
+            _log('info', f' * Restarting with {self.name}')
             args = _get_args_for_reloading()
             new_environ = os.environ.copy()
-            new_environ["WERKZEUG_RUN_MAIN"] = "true"
+            new_environ['WERKZEUG_RUN_MAIN'] = 'true'
             exit_code = subprocess.call(args, env=new_environ, close_fds=False)
 
             if exit_code != 3:
@@ -281,11 +281,11 @@ class ReloaderLoop:
 
     def log_reload(self, filename: str) -> None:
         filename = os.path.abspath(filename)
-        _log("info", f" * Detected change in {filename!r}, reloading")
+        _log('info', f' * Detected change in {filename!r}, reloading')
 
 
 class StatReloaderLoop(ReloaderLoop):
-    name = "stat"
+    name = 'stat'
 
     def __enter__(self) -> ReloaderLoop:
         self.mtimes: dict[str, float] = {}
@@ -327,10 +327,10 @@ class WatchdogReloaderLoop(ReloaderLoop):
 
         reloader_name = Observer.__name__.lower()  # type: ignore[attr-defined]
 
-        if reloader_name.endswith("observer"):
+        if reloader_name.endswith('observer'):
             reloader_name = reloader_name[:-8]
 
-        self.name = f"watchdog ({reloader_name})"
+        self.name = f'watchdog ({reloader_name})'
         self.observer = Observer()
         # Extra patterns can be non-Python files, match them in addition
         # to all Python files in default and extra directories. Ignore
@@ -339,9 +339,9 @@ class WatchdogReloaderLoop(ReloaderLoop):
         # Mercurial internal changes.
         extra_patterns = [p for p in self.extra_files if not os.path.isdir(p)]
         self.event_handler = EventHandler(
-            patterns=["*.py", "*.pyc", "*.zip", *extra_patterns],
+            patterns=['*.py', '*.pyc', '*.zip', *extra_patterns],
             ignore_patterns=[
-                *[f"*/{d}/*" for d in _ignore_common_dirs],
+                *[f'*/{d}/*' for d in _ignore_common_dirs],
                 *self.exclude_patterns,
             ],
         )
@@ -395,16 +395,16 @@ class WatchdogReloaderLoop(ReloaderLoop):
 
 
 reloader_loops: dict[str, type[ReloaderLoop]] = {
-    "stat": StatReloaderLoop,
-    "watchdog": WatchdogReloaderLoop,
+    'stat': StatReloaderLoop,
+    'watchdog': WatchdogReloaderLoop,
 }
 
 try:
-    __import__("watchdog.observers")
+    __import__('watchdog.observers')
 except ImportError:
-    reloader_loops["auto"] = reloader_loops["stat"]
+    reloader_loops['auto'] = reloader_loops['stat']
 else:
-    reloader_loops["auto"] = reloader_loops["watchdog"]
+    reloader_loops['auto'] = reloader_loops['watchdog']
 
 
 def ensure_echo_on() -> None:
@@ -431,7 +431,7 @@ def run_with_reloader(
     extra_files: t.Iterable[str] | None = None,
     exclude_patterns: t.Iterable[str] | None = None,
     interval: int | float = 1,
-    reloader_type: str = "auto",
+    reloader_type: str = 'auto',
 ) -> None:
     """Run the given function in an independent Python interpreter."""
     import signal
@@ -442,7 +442,7 @@ def run_with_reloader(
     )
 
     try:
-        if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
             ensure_echo_on()
             t = threading.Thread(target=main_func, args=())
             t.daemon = True

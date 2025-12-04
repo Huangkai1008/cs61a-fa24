@@ -62,12 +62,12 @@ class State(Enum):
 
 # Multipart line breaks MUST be CRLF (\r\n) by RFC-7578, except that
 # many implementations break this and either use CR or LF alone.
-LINE_BREAK = b"(?:\r\n|\n|\r)"
-BLANK_LINE_RE = re.compile(b"(?:\r\n\r\n|\r\r|\n\n)", re.MULTILINE)
+LINE_BREAK = b'(?:\r\n|\n|\r)'
+BLANK_LINE_RE = re.compile(b'(?:\r\n\r\n|\r\r|\n\n)', re.MULTILINE)
 LINE_BREAK_RE = re.compile(LINE_BREAK, re.MULTILINE)
 # Header values can be continued via a space or tab after the linebreak, as
 # per RFC2231
-HEADER_CONTINUATION_RE = re.compile(b"%s[ \t]" % LINE_BREAK, re.MULTILINE)
+HEADER_CONTINUATION_RE = re.compile(b'%s[ \t]' % LINE_BREAK, re.MULTILINE)
 # This must be long enough to contain any line breaks plus any
 # additional boundary markers (--) such that they will be found in a
 # subsequent search
@@ -105,7 +105,7 @@ class MultipartDecoder:
         # epilogue boundary (for empty form-data) hence the matching
         # group to understand if it is an epilogue boundary.
         self.preamble_re = re.compile(
-            rb"%s?--%s(--[^\S\n\r]*%s?|[^\S\n\r]*%s)"
+            rb'%s?--%s(--[^\S\n\r]*%s?|[^\S\n\r]*%s)'
             % (LINE_BREAK, re.escape(boundary), LINE_BREAK, LINE_BREAK),
             re.MULTILINE,
         )
@@ -114,7 +114,7 @@ class MultipartDecoder:
         # could be the epilogue boundary hence the matching group to
         # understand if it is an epilogue boundary.
         self.boundary_re = re.compile(
-            rb"%s--%s(--[^\S\n\r]*%s?|[^\S\n\r]*%s)"
+            rb'%s--%s(--[^\S\n\r]*%s?|[^\S\n\r]*%s)'
             % (LINE_BREAK, re.escape(boundary), LINE_BREAK, LINE_BREAK),
             re.MULTILINE,
         )
@@ -123,11 +123,11 @@ class MultipartDecoder:
 
     def last_newline(self, data: bytes) -> int:
         try:
-            last_nl = data.rindex(b"\n")
+            last_nl = data.rindex(b'\n')
         except ValueError:
             last_nl = len(data)
         try:
-            last_cr = data.rindex(b"\r")
+            last_cr = data.rindex(b'\r')
         except ValueError:
             last_cr = len(data)
 
@@ -150,7 +150,7 @@ class MultipartDecoder:
         if self.state == State.PREAMBLE:
             match = self.preamble_re.search(self.buffer, self._search_position)
             if match is not None:
-                if match.group(1).startswith(b"--"):
+                if match.group(1).startswith(b'--'):
                     self.state = State.EPILOGUE
                 else:
                     self.state = State.PART
@@ -176,14 +176,14 @@ class MultipartDecoder:
                 headers_end = (match.start() + match.end()) // 2
                 del self.buffer[:headers_end]
 
-                if "content-disposition" not in headers:
-                    raise ValueError("Missing Content-Disposition header")
+                if 'content-disposition' not in headers:
+                    raise ValueError('Missing Content-Disposition header')
 
                 disposition, extra = parse_options_header(
-                    headers["content-disposition"]
+                    headers['content-disposition']
                 )
-                name = t.cast(str, extra.get("name"))
-                filename = extra.get("filename")
+                name = t.cast(str, extra.get('name'))
+                filename = extra.get('filename')
                 if filename is not None:
                     event = File(
                         filename=filename,
@@ -226,20 +226,20 @@ class MultipartDecoder:
             self.state = State.COMPLETE
 
         if self.complete and isinstance(event, NeedData):
-            raise ValueError(f"Invalid form-data cannot parse beyond {self.state}")
+            raise ValueError(f'Invalid form-data cannot parse beyond {self.state}')
 
         return event
 
     def _parse_headers(self, data: bytes) -> Headers:
         headers: list[tuple[str, str]] = []
         # Merge the continued headers into one line
-        data = HEADER_CONTINUATION_RE.sub(b" ", data)
+        data = HEADER_CONTINUATION_RE.sub(b' ', data)
         # Now there is one header per line
         for line in data.splitlines():
             line = line.strip()
 
-            if line != b"":
-                name, _, value = line.decode().partition(":")
+            if line != b'':
+                name, _, value = line.decode().partition(':')
                 headers.append((name.strip(), value.strip()))
         return Headers(headers)
 
@@ -251,7 +251,7 @@ class MultipartDecoder:
         else:
             data_start = 0
 
-        boundary = b"--" + self.boundary
+        boundary = b'--' + self.boundary
 
         if self.buffer.find(boundary) == -1:
             # No complete boundary in the buffer, but there may be
@@ -263,13 +263,13 @@ class MultipartDecoder:
             # possible length of partial boundary, we should
             # assume that there is no partial boundary in the buffer
             # and return all pending data.
-            if (len(data) - data_end) > len(b"\n" + boundary):
+            if (len(data) - data_end) > len(b'\n' + boundary):
                 data_end = del_index = len(data)
             more_data = True
         else:
             match = self.boundary_re.search(data)
             if match is not None:
-                if match.group(1).startswith(b"--"):
+                if match.group(1).startswith(b'--'):
                     self.state = State.EPILOGUE
                 else:
                     self.state = State.PART
@@ -296,26 +296,26 @@ class MultipartEncoder:
             State.PART,
             State.DATA,
         }:
-            data = b"\r\n--" + self.boundary + b"\r\n"
+            data = b'\r\n--' + self.boundary + b'\r\n'
             data += b'Content-Disposition: form-data; name="%s"' % event.name.encode()
             if isinstance(event, File):
                 data += b'; filename="%s"' % event.filename.encode()
-            data += b"\r\n"
+            data += b'\r\n'
             for name, value in t.cast(Field, event).headers:
-                if name.lower() != "content-disposition":
-                    data += f"{name}: {value}\r\n".encode()
+                if name.lower() != 'content-disposition':
+                    data += f'{name}: {value}\r\n'.encode()
             self.state = State.DATA_START
             return data
         elif isinstance(event, Data) and self.state == State.DATA_START:
             self.state = State.DATA
             if len(event.data) > 0:
-                return b"\r\n" + event.data
+                return b'\r\n' + event.data
             else:
                 return event.data
         elif isinstance(event, Data) and self.state == State.DATA:
             return event.data
         elif isinstance(event, Epilogue):
             self.state = State.COMPLETE
-            return b"\r\n--" + self.boundary + b"--\r\n" + event.data
+            return b'\r\n--' + self.boundary + b'--\r\n' + event.data
         else:
-            raise ValueError(f"Cannot generate {event} in state: {self.state}")
+            raise ValueError(f'Cannot generate {event} in state: {self.state}')

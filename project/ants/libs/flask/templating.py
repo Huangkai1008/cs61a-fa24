@@ -29,10 +29,10 @@ def _default_template_ctx_processor() -> dict[str, t.Any]:
     reqctx = _cv_request.get(None)
     rv: dict[str, t.Any] = {}
     if appctx is not None:
-        rv["g"] = appctx.g
+        rv['g'] = appctx.g
     if reqctx is not None:
-        rv["request"] = reqctx.request
-        rv["session"] = reqctx.session
+        rv['request'] = reqctx.request
+        rv['session'] = reqctx.session
     return rv
 
 
@@ -43,8 +43,8 @@ class Environment(BaseEnvironment):
     """
 
     def __init__(self, app: App, **options: t.Any) -> None:
-        if "loader" not in options:
-            options["loader"] = app.create_global_jinja_loader()
+        if 'loader' not in options:
+            options['loader'] = app.create_global_jinja_loader()
         BaseEnvironment.__init__(self, **options)
         self.app = app
 
@@ -60,7 +60,7 @@ class DispatchingJinjaLoader(BaseLoader):
     def get_source(
         self, environment: BaseEnvironment, template: str
     ) -> tuple[str, str | None, t.Callable[[], bool] | None]:
-        if self.app.config["EXPLAIN_TEMPLATE_LOADING"]:
+        if self.app.config['EXPLAIN_TEMPLATE_LOADING']:
             return self._get_source_explained(environment, template)
         return self._get_source_fast(environment, template)
 

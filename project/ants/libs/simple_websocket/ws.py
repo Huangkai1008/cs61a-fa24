@@ -23,9 +23,17 @@ from .errors import ConnectionError, ConnectionClosed
 
 
 class Base:
-    def __init__(self, sock=None, connection_type=None, receive_bytes=4096,
-                 ping_interval=None, max_message_size=None,
-                 thread_class=None, event_class=None, selector_class=None):
+    def __init__(
+        self,
+        sock=None,
+        connection_type=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+        thread_class=None,
+        event_class=None,
+        selector_class=None,
+    ):
         #: The name of the subprotocol chosen for the WebSocket connection.
         self.subprotocol = None
 
@@ -38,15 +46,17 @@ class Base:
         self.incoming_message = None
         self.incoming_message_len = 0
         self.connected = False
-        self.is_server = (connection_type == ConnectionType.SERVER)
+        self.is_server = connection_type == ConnectionType.SERVER
         self.close_reason = CloseReason.NO_STATUS_RCVD
         self.close_message = None
 
         if thread_class is None:
             import threading
+
             thread_class = threading.Thread
         if event_class is None:  # pragma: no branch
             import threading
+
             event_class = threading.Event
         if selector_class is None:
             selector_class = selectors.DefaultSelector
@@ -60,7 +70,8 @@ class Base:
             raise ConnectionError()
         self.thread = thread_class(target=self._thread)
         self.thread.name = self.thread.name.replace(
-            '(_thread)', '(simple_websocket.Base._thread)')
+            '(_thread)', '(simple_websocket.Base._thread)'
+        )
         self.thread.start()
 
     def handshake(self):  # pragma: no cover
@@ -113,8 +124,9 @@ class Base:
         """
         if not self.connected:
             raise ConnectionClosed(self.close_reason, self.close_message)
-        out_data = self.ws.send(CloseConnection(
-            reason or CloseReason.NORMAL_CLOSURE, message))
+        out_data = self.ws.send(
+            CloseConnection(reason or CloseReason.NORMAL_CLOSURE, message)
+        )
         try:
             self.sock.send(out_data)
         except BrokenPipeError:  # pragma: no cover
@@ -141,8 +153,10 @@ class Base:
                     if next_ping <= now or not sel.select(next_ping - now):
                         # we reached the timeout, we have to send a ping
                         if not self.pong_received:
-                            self.close(reason=CloseReason.POLICY_VIOLATION,
-                                       message='Ping/Pong timeout')
+                            self.close(
+                                reason=CloseReason.POLICY_VIOLATION,
+                                message='Ping/Pong timeout',
+                            )
                             break
                         self.pong_received = False
                         self.sock.send(self.ws.send(Ping()))
@@ -167,9 +181,12 @@ class Base:
             try:
                 if isinstance(event, Request):
                     self.subprotocol = self.choose_subprotocol(event)
-                    out_data += self.ws.send(AcceptConnection(
-                        subprotocol=self.subprotocol,
-                        extensions=[PerMessageDeflate()]))
+                    out_data += self.ws.send(
+                        AcceptConnection(
+                            subprotocol=self.subprotocol,
+                            extensions=[PerMessageDeflate()],
+                        )
+                    )
                 elif isinstance(event, CloseConnection):
                     if self.is_server:
                         out_data += self.ws.send(event.response())
@@ -184,10 +201,15 @@ class Base:
                     self.pong_received = True
                 elif isinstance(event, (TextMessage, BytesMessage)):
                     self.incoming_message_len += len(event.data)
-                    if self.max_message_size and \
-                            self.incoming_message_len > self.max_message_size:
-                        out_data += self.ws.send(CloseConnection(
-                            CloseReason.MESSAGE_TOO_BIG, 'Message is too big'))
+                    if (
+                        self.max_message_size
+                        and self.incoming_message_len > self.max_message_size
+                    ):
+                        out_data += self.ws.send(
+                            CloseConnection(
+                                CloseReason.MESSAGE_TOO_BIG, 'Message is too big'
+                            )
+                        )
                         self.event.set()
                         keep_going = False
                         break
@@ -202,7 +224,8 @@ class Base:
                         if not isinstance(self.incoming_message, bytearray):
                             # convert to bytearray and append
                             self.incoming_message = bytearray(
-                                (self.incoming_message + event.data).encode())
+                                (self.incoming_message + event.data).encode()
+                            )
                         else:
                             # append to bytearray
                             self.incoming_message += event.data.encode()
@@ -210,7 +233,8 @@ class Base:
                         if not isinstance(self.incoming_message, bytearray):
                             # convert to mutable bytearray and append
                             self.incoming_message = bytearray(
-                                self.incoming_message + event.data)
+                                self.incoming_message + event.data
+                            )
                         else:
                             # append to bytearray
                             self.incoming_message += event.data
@@ -221,8 +245,7 @@ class Base:
                         self.input_buffer.append(self.incoming_message)
                     elif isinstance(event, TextMessage):
                         # convert multi-part message back to text
-                        self.input_buffer.append(
-                            self.incoming_message.decode())
+                        self.input_buffer.append(self.incoming_message.decode())
                     else:
                         # convert multi-part message back to bytes
                         self.input_buffer.append(bytes(self.incoming_message))
@@ -247,9 +270,18 @@ class Server(Base):
     ``accept()`` class method to create individual instances of the server,
     each bound to a client request.
     """
-    def __init__(self, environ, subprotocols=None, receive_bytes=4096,
-                 ping_interval=None, max_message_size=None, thread_class=None,
-                 event_class=None, selector_class=None):
+
+    def __init__(
+        self,
+        environ,
+        subprotocols=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+        thread_class=None,
+        event_class=None,
+        selector_class=None,
+    ):
         self.environ = environ
         self.subprotocols = subprotocols or []
         if isinstance(self.subprotocols, str):
@@ -269,7 +301,8 @@ class Server(Base):
             sock = environ.get('eventlet.input').get_socket()
             self.mode = 'eventlet'
         elif environ.get('SERVER_SOFTWARE', '').startswith(
-                'gevent'):  # pragma: no cover
+            'gevent'
+        ):  # pragma: no cover
             # extract socket from Gevent's WSGI environment
             wsgi_input = environ['wsgi.input']
             if not hasattr(wsgi_input, 'raw') and hasattr(wsgi_input, 'rfile'):
@@ -283,17 +316,29 @@ class Server(Base):
                 self.mode = 'gevent'
         if sock is None:
             raise RuntimeError('Cannot obtain socket from WSGI environment.')
-        super().__init__(sock, connection_type=ConnectionType.SERVER,
-                         receive_bytes=receive_bytes,
-                         ping_interval=ping_interval,
-                         max_message_size=max_message_size,
-                         thread_class=thread_class, event_class=event_class,
-                         selector_class=selector_class)
+        super().__init__(
+            sock,
+            connection_type=ConnectionType.SERVER,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+            thread_class=thread_class,
+            event_class=event_class,
+            selector_class=selector_class,
+        )
 
     @classmethod
-    def accept(cls, environ, subprotocols=None, receive_bytes=4096,
-               ping_interval=None, max_message_size=None, thread_class=None,
-               event_class=None, selector_class=None):
+    def accept(
+        cls,
+        environ,
+        subprotocols=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+        thread_class=None,
+        event_class=None,
+        selector_class=None,
+    ):
         """Accept a WebSocket connection from a client.
 
         :param environ: A WSGI ``environ`` dictionary with the request details.
@@ -330,11 +375,16 @@ class Server(Base):
                                ``selectors.DefaultSelector`` class from the
                                Python standard library.
         """
-        return cls(environ, subprotocols=subprotocols,
-                   receive_bytes=receive_bytes, ping_interval=ping_interval,
-                   max_message_size=max_message_size,
-                   thread_class=thread_class, event_class=event_class,
-                   selector_class=selector_class)
+        return cls(
+            environ,
+            subprotocols=subprotocols,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+            thread_class=thread_class,
+            event_class=event_class,
+            selector_class=selector_class,
+        )
 
     def handshake(self):
         in_data = b'GET / HTTP/1.1\r\n'
@@ -371,9 +421,19 @@ class Client(Base):
     ``connect()`` class method to create an instance that is connected to a
     server.
     """
-    def __init__(self, url, subprotocols=None, headers=None,
-                 receive_bytes=4096, ping_interval=None, max_message_size=None,
-                 ssl_context=None, thread_class=None, event_class=None):
+
+    def __init__(
+        self,
+        url,
+        subprotocols=None,
+        headers=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+        ssl_context=None,
+        thread_class=None,
+        event_class=None,
+    ):
         parsed_url = urlsplit(url)
         is_secure = parsed_url.scheme in ['https', 'wss']
         self.host = parsed_url.hostname
@@ -396,19 +456,33 @@ class Client(Base):
         if is_secure:  # pragma: no cover
             if ssl_context is None:
                 ssl_context = ssl.create_default_context(
-                    purpose=ssl.Purpose.SERVER_AUTH)
+                    purpose=ssl.Purpose.SERVER_AUTH
+                )
             sock = ssl_context.wrap_socket(sock, server_hostname=self.host)
         sock.connect((self.host, self.port))
-        super().__init__(sock, connection_type=ConnectionType.CLIENT,
-                         receive_bytes=receive_bytes,
-                         ping_interval=ping_interval,
-                         max_message_size=max_message_size,
-                         thread_class=thread_class, event_class=event_class)
+        super().__init__(
+            sock,
+            connection_type=ConnectionType.CLIENT,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+            thread_class=thread_class,
+            event_class=event_class,
+        )
 
     @classmethod
-    def connect(cls, url, subprotocols=None, headers=None,
-                receive_bytes=4096, ping_interval=None, max_message_size=None,
-                ssl_context=None, thread_class=None, event_class=None):
+    def connect(
+        cls,
+        url,
+        subprotocols=None,
+        headers=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+        ssl_context=None,
+        thread_class=None,
+        event_class=None,
+    ):
         """Returns a WebSocket client connection.
 
         :param url: The connection URL. Both ``ws://`` and ``wss://`` URLs are
@@ -446,15 +520,27 @@ class Client(Base):
                             objects. The default is the `threading.Event``
                             class from the Python standard library.
         """
-        return cls(url, subprotocols=subprotocols, headers=headers,
-                   receive_bytes=receive_bytes, ping_interval=ping_interval,
-                   max_message_size=max_message_size, ssl_context=ssl_context,
-                   thread_class=thread_class, event_class=event_class)
+        return cls(
+            url,
+            subprotocols=subprotocols,
+            headers=headers,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+            ssl_context=ssl_context,
+            thread_class=thread_class,
+            event_class=event_class,
+        )
 
     def handshake(self):
-        out_data = self.ws.send(Request(host=self.host, target=self.path,
-                                        subprotocols=self.subprotocols,
-                                        extra_headers=self.extra_headeers))
+        out_data = self.ws.send(
+            Request(
+                host=self.host,
+                target=self.path,
+                subprotocols=self.subprotocols,
+                extra_headers=self.extra_headeers,
+            )
+        )
         self.sock.send(out_data)
 
         while True:

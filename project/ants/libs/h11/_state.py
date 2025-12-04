@@ -117,17 +117,17 @@ from ._util import LocalProtocolError, Sentinel
 
 # Everything in __all__ gets re-exported as part of the h11 public API.
 __all__ = [
-    "CLIENT",
-    "SERVER",
-    "IDLE",
-    "SEND_RESPONSE",
-    "SEND_BODY",
-    "DONE",
-    "MUST_CLOSE",
-    "CLOSED",
-    "MIGHT_SWITCH_PROTOCOL",
-    "SWITCHED_PROTOCOL",
-    "ERROR",
+    'CLIENT',
+    'SERVER',
+    'IDLE',
+    'SEND_RESPONSE',
+    'SEND_BODY',
+    'DONE',
+    'MUST_CLOSE',
+    'CLOSED',
+    'MIGHT_SWITCH_PROTOCOL',
+    'SWITCHED_PROTOCOL',
+    'ERROR',
 ]
 
 
@@ -283,7 +283,7 @@ class ConnectionState:
             assert role is SERVER
             if server_switch_event not in self.pending_switch_proposals:
                 raise LocalProtocolError(
-                    "Received server {} event without a pending proposal".format(
+                    'Received server {} event without a pending proposal'.format(
                         server_switch_event
                     )
                 )
@@ -358,7 +358,7 @@ class ConnectionState:
     def start_next_cycle(self) -> None:
         if self.states != {CLIENT: DONE, SERVER: DONE}:
             raise LocalProtocolError(
-                "not in a reusable state. self.states={}".format(self.states)
+                'not in a reusable state. self.states={}'.format(self.states)
             )
         # Can't reach DONE/DONE with any of these active, but still, let's be
         # sure.

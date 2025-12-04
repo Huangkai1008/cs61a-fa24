@@ -31,7 +31,7 @@ class Blueprint(SansioBlueprint):
 
         .. versionadded:: 0.9
         """
-        value = current_app.config["SEND_FILE_MAX_AGE_DEFAULT"]
+        value = current_app.config['SEND_FILE_MAX_AGE_DEFAULT']
 
         if value is None:
             return None
@@ -63,7 +63,7 @@ class Blueprint(SansioBlueprint):
             t.cast(str, self.static_folder), filename, max_age=max_age
         )
 
-    def open_resource(self, resource: str, mode: str = "rb") -> t.IO[t.AnyStr]:
+    def open_resource(self, resource: str, mode: str = 'rb') -> t.IO[t.AnyStr]:
         """Open a resource file relative to :attr:`root_path` for
         reading.
 
@@ -85,7 +85,7 @@ class Blueprint(SansioBlueprint):
         class.
 
         """
-        if mode not in {"r", "rt", "rb"}:
-            raise ValueError("Resources can only be opened for reading.")
+        if mode not in {'r', 'rt', 'rb'}:
+            raise ValueError('Resources can only be opened for reading.')
 
         return open(os.path.join(self.root_path, resource), mode)

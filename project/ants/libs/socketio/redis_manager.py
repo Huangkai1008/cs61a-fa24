@@ -37,14 +37,23 @@ class RedisManager(PubSubManager):  # pragma: no cover
     :param redis_options: additional keyword arguments to be passed to
                           ``Redis.from_url()``.
     """
+
     name = 'redis'
 
-    def __init__(self, url='redis://localhost:6379/0', channel='socketio',
-                 write_only=False, logger=None, redis_options=None):
+    def __init__(
+        self,
+        url='redis://localhost:6379/0',
+        channel='socketio',
+        write_only=False,
+        logger=None,
+        redis_options=None,
+    ):
         if redis is None:
-            raise RuntimeError('Redis package is not installed '
-                               '(Run "pip install redis" in your '
-                               'virtualenv).')
+            raise RuntimeError(
+                'Redis package is not installed '
+                '(Run "pip install redis" in your '
+                'virtualenv).'
+            )
         self.redis_url = url
         self.redis_options = redis_options or {}
         self._redis_connect()
@@ -56,18 +65,20 @@ class RedisManager(PubSubManager):  # pragma: no cover
         monkey_patched = True
         if self.server.async_mode == 'eventlet':
             from eventlet.patcher import is_monkey_patched
+
             monkey_patched = is_monkey_patched('socket')
         elif 'gevent' in self.server.async_mode:
             from gevent.monkey import is_module_patched
+
             monkey_patched = is_module_patched('socket')
         if not monkey_patched:
             raise RuntimeError(
                 'Redis requires a monkey patched socket library to work '
-                'with ' + self.server.async_mode)
+                'with ' + self.server.async_mode
+            )
 
     def _redis_connect(self):
-        self.redis = redis.Redis.from_url(self.redis_url,
-                                          **self.redis_options)
+        self.redis = redis.Redis.from_url(self.redis_url, **self.redis_options)
         self.pubsub = self.redis.pubsub(ignore_subscribe_messages=True)
 
     def _publish(self, data):
@@ -97,8 +108,11 @@ class RedisManager(PubSubManager):  # pragma: no cover
                 for message in self.pubsub.listen():
                     yield message
             except redis.exceptions.RedisError:
-                logger.error('Cannot receive from redis... '
-                             'retrying in {} secs'.format(retry_sleep))
+                logger.error(
+                    'Cannot receive from redis... retrying in {} secs'.format(
+                        retry_sleep
+                    )
+                )
                 connect = True
                 time.sleep(retry_sleep)
                 retry_sleep *= 2
@@ -109,7 +123,10 @@ class RedisManager(PubSubManager):  # pragma: no cover
         channel = self.channel.encode('utf-8')
         self.pubsub.subscribe(self.channel)
         for message in self._redis_listen_with_retries():
-            if message['channel'] == channel and \
-                    message['type'] == 'message' and 'data' in message:
+            if (
+                message['channel'] == channel
+                and message['type'] == 'message'
+                and 'data' in message
+            ):
                 yield message['data']
         self.pubsub.unsubscribe(self.channel)

@@ -16,15 +16,15 @@ from .mixins import (
     UpdateDictMixin,
 )
 
-D = TypeVar("D")
-K = TypeVar("K")
-T = TypeVar("T")
-V = TypeVar("V")
-_CD = TypeVar("_CD", bound="CallbackDict")
+D = TypeVar('D')
+K = TypeVar('K')
+T = TypeVar('T')
+V = TypeVar('V')
+_CD = TypeVar('_CD', bound='CallbackDict')
 
 def is_immutable(self: object) -> NoReturn: ...
 def iter_multi_items(
-    mapping: Mapping[K, V | Iterable[V]] | Iterable[tuple[K, V]]
+    mapping: Mapping[K, V | Iterable[V]] | Iterable[tuple[K, V]],
 ) -> Iterator[tuple[K, V]]: ...
 
 class ImmutableList(ImmutableListMixin[V]): ...

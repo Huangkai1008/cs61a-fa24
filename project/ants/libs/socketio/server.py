@@ -112,8 +112,18 @@ class Server(base_server.BaseServer):
                             fatal errors are logged even when
                             ``engineio_logger`` is ``False``.
     """
-    def emit(self, event, data=None, to=None, room=None, skip_sid=None,
-             namespace=None, callback=None, ignore_queue=False):
+
+    def emit(
+        self,
+        event,
+        data=None,
+        to=None,
+        room=None,
+        skip_sid=None,
+        namespace=None,
+        callback=None,
+        ignore_queue=False,
+    ):
         """Emit a custom event to one or more connected clients.
 
         :param event: The event name. It can be any string. The event names
@@ -158,14 +168,29 @@ class Server(base_server.BaseServer):
         """
         namespace = namespace or '/'
         room = to or room
-        self.logger.info('emitting event "%s" to %s [%s]', event,
-                         room or 'all', namespace)
-        self.manager.emit(event, data, namespace, room=room,
-                          skip_sid=skip_sid, callback=callback,
-                          ignore_queue=ignore_queue)
+        self.logger.info(
+            'emitting event "%s" to %s [%s]', event, room or 'all', namespace
+        )
+        self.manager.emit(
+            event,
+            data,
+            namespace,
+            room=room,
+            skip_sid=skip_sid,
+            callback=callback,
+            ignore_queue=ignore_queue,
+        )
 
-    def send(self, data, to=None, room=None, skip_sid=None, namespace=None,
-             callback=None, ignore_queue=False):
+    def send(
+        self,
+        data,
+        to=None,
+        room=None,
+        skip_sid=None,
+        namespace=None,
+        callback=None,
+        ignore_queue=False,
+    ):
         """Send a message to one or more connected clients.
 
         This function emits an event with the name ``'message'``. Use
@@ -202,12 +227,27 @@ class Server(base_server.BaseServer):
                              to always leave this parameter with its default
                              value of ``False``.
         """
-        self.emit('message', data=data, to=to, room=room, skip_sid=skip_sid,
-                  namespace=namespace, callback=callback,
-                  ignore_queue=ignore_queue)
+        self.emit(
+            'message',
+            data=data,
+            to=to,
+            room=room,
+            skip_sid=skip_sid,
+            namespace=namespace,
+            callback=callback,
+            ignore_queue=ignore_queue,
+        )
 
-    def call(self, event, data=None, to=None, sid=None, namespace=None,
-             timeout=60, ignore_queue=False):
+    def call(
+        self,
+        event,
+        data=None,
+        to=None,
+        sid=None,
+        namespace=None,
+        timeout=60,
+        ignore_queue=False,
+    ):
         """Emit a custom event to a client and wait for the response.
 
         This method issues an emit with a callback and waits for the callback
@@ -248,8 +288,7 @@ class Server(base_server.BaseServer):
         if to is None and sid is None:
             raise ValueError('Cannot use call() to broadcast.')
         if not self.async_handlers:
-            raise RuntimeError(
-                'Cannot use call() when async_handlers is False.')
+            raise RuntimeError('Cannot use call() when async_handlers is False.')
         callback_event = self.eio.create_event()
         callback_args = []
 
@@ -257,13 +296,23 @@ class Server(base_server.BaseServer):
             callback_args.append(args)
             callback_event.set()
 
-        self.emit(event, data=data, room=to or sid, namespace=namespace,
-                  callback=event_callback, ignore_queue=ignore_queue)
+        self.emit(
+            event,
+            data=data,
+            room=to or sid,
+            namespace=namespace,
+            callback=event_callback,
+            ignore_queue=ignore_queue,
+        )
         if not callback_event.wait(timeout=timeout):
             raise exceptions.TimeoutError()
-        return callback_args[0] if len(callback_args[0]) > 1 \
-            else callback_args[0][0] if len(callback_args[0]) == 1 \
+        return (
+            callback_args[0]
+            if len(callback_args[0]) > 1
+            else callback_args[0][0]
+            if len(callback_args[0]) == 1
             else None
+        )
 
     def enter_room(self, sid, room, namespace=None):
         """Enter a room.
@@ -360,6 +409,7 @@ class Server(base_server.BaseServer):
                 with sio.session(sid) as session:
                     print('received message from ', session['username'])
         """
+
         class _session_context_manager(object):
             def __init__(self, server, sid, namespace):
                 self.server = server
@@ -368,13 +418,11 @@ class Server(base_server.BaseServer):
                 self.session = None
 
             def __enter__(self):
-                self.session = self.server.get_session(sid,
-                                                       namespace=namespace)
+                self.session = self.server.get_session(sid, namespace=namespace)
                 return self.session
 
             def __exit__(self, *args):
-                self.server.save_session(sid, self.session,
-                                         namespace=namespace)
+                self.server.save_session(sid, self.session, namespace=namespace)
 
         return _session_context_manager(self, sid, namespace)
 
@@ -398,11 +446,11 @@ class Server(base_server.BaseServer):
         if delete_it:
             self.logger.info('Disconnecting %s [%s]', sid, namespace)
             eio_sid = self.manager.pre_disconnect(sid, namespace=namespace)
-            self._send_packet(eio_sid, self.packet_class(
-                packet.DISCONNECT, namespace=namespace))
+            self._send_packet(
+                eio_sid, self.packet_class(packet.DISCONNECT, namespace=namespace)
+            )
             self._trigger_event('disconnect', namespace, sid)
-            self.manager.disconnect(sid, namespace=namespace,
-                                    ignore_queue=True)
+            self.manager.disconnect(sid, namespace=namespace, ignore_queue=True)
 
     def shutdown(self):
         """Stop Socket.IO background tasks.
@@ -456,9 +504,15 @@ class Server(base_server.BaseServer):
         """
         return self.eio.sleep(seconds)
 
-    def instrument(self, auth=None, mode='development', read_only=False,
-                   server_id=None, namespace='/admin',
-                   server_stats_interval=2):
+    def instrument(
+        self,
+        auth=None,
+        mode='development',
+        read_only=False,
+        server_id=None,
+        namespace='/admin',
+        server_stats_interval=2,
+    ):
         """Instrument the Socket.IO server for monitoring with the `Socket.IO
         Admin UI <https://socket.io/docs/v4/admin-ui/>`_.
 
@@ -490,10 +544,16 @@ class Server(base_server.BaseServer):
                                       connected admins.
         """
         from .admin import InstrumentedServer
+
         return InstrumentedServer(
-            self, auth=auth, mode=mode, read_only=read_only,
-            server_id=server_id, namespace=namespace,
-            server_stats_interval=server_stats_interval)
+            self,
+            auth=auth,
+            mode=mode,
+            read_only=read_only,
+            server_id=server_id,
+            namespace=namespace,
+            server_stats_interval=server_stats_interval,
+        )
 
     def _send_packet(self, eio_sid, pkt):
         """Send a Socket.IO packet to a client."""
@@ -512,30 +572,42 @@ class Server(base_server.BaseServer):
         """Handle a client connection request."""
         namespace = namespace or '/'
         sid = None
-        if namespace in self.handlers or namespace in self.namespace_handlers \
-                or self.namespaces == '*' or namespace in self.namespaces:
+        if (
+            namespace in self.handlers
+            or namespace in self.namespace_handlers
+            or self.namespaces == '*'
+            or namespace in self.namespaces
+        ):
             sid = self.manager.connect(eio_sid, namespace)
         if sid is None:
-            self._send_packet(eio_sid, self.packet_class(
-                packet.CONNECT_ERROR, data='Unable to connect',
-                namespace=namespace))
+            self._send_packet(
+                eio_sid,
+                self.packet_class(
+                    packet.CONNECT_ERROR, data='Unable to connect', namespace=namespace
+                ),
+            )
             return
 
         if self.always_connect:
-            self._send_packet(eio_sid, self.packet_class(
-                packet.CONNECT, {'sid': sid}, namespace=namespace))
+            self._send_packet(
+                eio_sid,
+                self.packet_class(packet.CONNECT, {'sid': sid}, namespace=namespace),
+            )
         fail_reason = exceptions.ConnectionRefusedError().error_args
         try:
             if data:
                 success = self._trigger_event(
-                    'connect', namespace, sid, self.environ[eio_sid], data)
+                    'connect', namespace, sid, self.environ[eio_sid], data
+                )
             else:
                 try:
                     success = self._trigger_event(
-                        'connect', namespace, sid, self.environ[eio_sid])
+                        'connect', namespace, sid, self.environ[eio_sid]
+                    )
                 except TypeError:
                     success = self._trigger_event(
-                        'connect', namespace, sid, self.environ[eio_sid], None)
+                        'connect', namespace, sid, self.environ[eio_sid], None
+                    )
         except exceptions.ConnectionRefusedError as exc:
             fail_reason = exc.error_args
             success = False
@@ -543,16 +615,25 @@ class Server(base_server.BaseServer):
         if success is False:
             if self.always_connect:
                 self.manager.pre_disconnect(sid, namespace)
-                self._send_packet(eio_sid, self.packet_class(
-                    packet.DISCONNECT, data=fail_reason, namespace=namespace))
+                self._send_packet(
+                    eio_sid,
+                    self.packet_class(
+                        packet.DISCONNECT, data=fail_reason, namespace=namespace
+                    ),
+                )
             else:
-                self._send_packet(eio_sid, self.packet_class(
-                    packet.CONNECT_ERROR, data=fail_reason,
-                    namespace=namespace))
+                self._send_packet(
+                    eio_sid,
+                    self.packet_class(
+                        packet.CONNECT_ERROR, data=fail_reason, namespace=namespace
+                    ),
+                )
             self.manager.disconnect(sid, namespace, ignore_queue=True)
         elif not self.always_connect:
-            self._send_packet(eio_sid, self.packet_class(
-                packet.CONNECT, {'sid': sid}, namespace=namespace))
+            self._send_packet(
+                eio_sid,
+                self.packet_class(packet.CONNECT, {'sid': sid}, namespace=namespace),
+            )
 
     def _handle_disconnect(self, eio_sid, namespace):
         """Handle a client disconnect."""
@@ -568,21 +649,18 @@ class Server(base_server.BaseServer):
         """Handle an incoming client event."""
         namespace = namespace or '/'
         sid = self.manager.sid_from_eio_sid(eio_sid, namespace)
-        self.logger.info('received event "%s" from %s [%s]', data[0], sid,
-                         namespace)
+        self.logger.info('received event "%s" from %s [%s]', data[0], sid, namespace)
         if not self.manager.is_connected(sid, namespace):
-            self.logger.warning('%s is not connected to namespace %s',
-                                sid, namespace)
+            self.logger.warning('%s is not connected to namespace %s', sid, namespace)
             return
         if self.async_handlers:
-            self.start_background_task(self._handle_event_internal, self, sid,
-                                       eio_sid, data, namespace, id)
+            self.start_background_task(
+                self._handle_event_internal, self, sid, eio_sid, data, namespace, id
+            )
         else:
-            self._handle_event_internal(self, sid, eio_sid, data, namespace,
-                                        id)
+            self._handle_event_internal(self, sid, eio_sid, data, namespace, id)
 
-    def _handle_event_internal(self, server, sid, eio_sid, data, namespace,
-                               id):
+    def _handle_event_internal(self, server, sid, eio_sid, data, namespace, id):
         r = server._trigger_event(data[0], namespace, sid, *data[1:])
         if r != self.not_handled and id is not None:
             # send ACK packet with the response returned by the handler
@@ -593,8 +671,10 @@ class Server(base_server.BaseServer):
                 data = list(r)
             else:
                 data = [r]
-            server._send_packet(eio_sid, self.packet_class(
-                packet.ACK, namespace=namespace, id=id, data=data))
+            server._send_packet(
+                eio_sid,
+                self.packet_class(packet.ACK, namespace=namespace, id=id, data=data),
+            )
 
     def _handle_ack(self, eio_sid, namespace, id, data):
         """Handle ACK packets from the client."""
@@ -630,8 +710,7 @@ class Server(base_server.BaseServer):
             if pkt.add_attachment(data):
                 del self._binary_packet[eio_sid]
                 if pkt.packet_type == packet.BINARY_EVENT:
-                    self._handle_event(eio_sid, pkt.namespace, pkt.id,
-                                       pkt.data)
+                    self._handle_event(eio_sid, pkt.namespace, pkt.id, pkt.data)
                 else:
                     self._handle_ack(eio_sid, pkt.namespace, pkt.id, pkt.data)
         else:
@@ -644,8 +723,10 @@ class Server(base_server.BaseServer):
                 self._handle_event(eio_sid, pkt.namespace, pkt.id, pkt.data)
             elif pkt.packet_type == packet.ACK:
                 self._handle_ack(eio_sid, pkt.namespace, pkt.id, pkt.data)
-            elif pkt.packet_type == packet.BINARY_EVENT or \
-                    pkt.packet_type == packet.BINARY_ACK:
+            elif (
+                pkt.packet_type == packet.BINARY_EVENT
+                or pkt.packet_type == packet.BINARY_ACK
+            ):
                 self._binary_packet[eio_sid] = pkt
             elif pkt.packet_type == packet.CONNECT_ERROR:
                 raise ValueError('Unexpected CONNECT_ERROR packet.')

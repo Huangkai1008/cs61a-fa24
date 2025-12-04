@@ -39,5 +39,5 @@ MISSING: t.Final[MissingT] = MissingT.MISSING
 OKT: TypeAlias = 'KT | MissingT'  #: optional key type
 OVT: TypeAlias = 'VT | MissingT'  #: optional value type
 
-DT = t.TypeVar('DT')              #: for default arguments
+DT = t.TypeVar('DT')  #: for default arguments
 ODT: TypeAlias = 'DT | MissingT'  #: optional default arg type

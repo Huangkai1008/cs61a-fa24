@@ -6,28 +6,28 @@ import os
 import posixpath
 import secrets
 
-SALT_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+SALT_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 DEFAULT_PBKDF2_ITERATIONS = 600000
 
 _os_alt_seps: list[str] = list(
-    sep for sep in [os.sep, os.path.altsep] if sep is not None and sep != "/"
+    sep for sep in [os.sep, os.path.altsep] if sep is not None and sep != '/'
 )
 
 
 def gen_salt(length: int) -> str:
     """Generate a random string of SALT_CHARS with specified ``length``."""
     if length <= 0:
-        raise ValueError("Salt length must be at least 1.")
+        raise ValueError('Salt length must be at least 1.')
 
-    return "".join(secrets.choice(SALT_CHARS) for _ in range(length))
+    return ''.join(secrets.choice(SALT_CHARS) for _ in range(length))
 
 
 def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
-    method, *args = method.split(":")
-    salt = salt.encode("utf-8")
-    password = password.encode("utf-8")
+    method, *args = method.split(':')
+    salt = salt.encode('utf-8')
+    password = password.encode('utf-8')
 
-    if method == "scrypt":
+    if method == 'scrypt':
         if not args:
             n = 2**15
             r = 8
@@ -41,13 +41,13 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
         maxmem = 132 * n * r * p  # ideally 128, but some extra seems needed
         return (
             hashlib.scrypt(password, salt=salt, n=n, r=r, p=p, maxmem=maxmem).hex(),
-            f"scrypt:{n}:{r}:{p}",
+            f'scrypt:{n}:{r}:{p}',
         )
-    elif method == "pbkdf2":
+    elif method == 'pbkdf2':
         len_args = len(args)
 
         if len_args == 0:
-            hash_name = "sha256"
+            hash_name = 'sha256'
             iterations = DEFAULT_PBKDF2_ITERATIONS
         elif len_args == 1:
             hash_name = args[0]
@@ -60,14 +60,14 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
         return (
             hashlib.pbkdf2_hmac(hash_name, password, salt, iterations).hex(),
-            f"pbkdf2:{hash_name}:{iterations}",
+            f'pbkdf2:{hash_name}:{iterations}',
         )
     else:
         raise ValueError(f"Invalid hash method '{method}'.")
 
 
 def generate_password_hash(
-    password: str, method: str = "scrypt", salt_length: int = 16
+    password: str, method: str = 'scrypt', salt_length: int = 16
 ) -> str:
     """Securely hash a password for storage. A password can be compared to a stored hash
     using :func:`check_password_hash`.
@@ -99,7 +99,7 @@ def generate_password_hash(
     """
     salt = gen_salt(salt_length)
     h, actual_method = _hash_internal(method, salt, password)
-    return f"{actual_method}${salt}${h}"
+    return f'{actual_method}${salt}${h}'
 
 
 def check_password_hash(pwhash: str, password: str) -> bool:
@@ -117,7 +117,7 @@ def check_password_hash(pwhash: str, password: str) -> bool:
         All plain hashes are deprecated and will not be supported in Werkzeug 3.0.
     """
     try:
-        method, salt, hashval = pwhash.split("$", 2)
+        method, salt, hashval = pwhash.split('$', 2)
     except ValueError:
         return False
 
@@ -136,19 +136,19 @@ def safe_join(directory: str, *pathnames: str) -> str | None:
     if not directory:
         # Ensure we end up with ./path if directory="" is given,
         # otherwise the first untrusted part could become trusted.
-        directory = "."
+        directory = '.'
 
     parts = [directory]
 
     for filename in pathnames:
-        if filename != "":
+        if filename != '':
             filename = posixpath.normpath(filename)
 
         if (
             any(sep in filename for sep in _os_alt_seps)
             or os.path.isabs(filename)
-            or filename == ".."
-            or filename.startswith("../")
+            or filename == '..'
+            or filename.startswith('../')
         ):
             return None
 

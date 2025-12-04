@@ -10,9 +10,17 @@ default_logger = logging.getLogger('socketio.server')
 class BaseServer:
     reserved_events = ['connect', 'disconnect']
 
-    def __init__(self, client_manager=None, logger=False, serializer='default',
-                 json=None, async_handlers=True, always_connect=False,
-                 namespaces=None, **kwargs):
+    def __init__(
+        self,
+        client_manager=None,
+        logger=False,
+        serializer='default',
+        json=None,
+        async_handlers=True,
+        always_connect=False,
+        namespaces=None,
+        **kwargs,
+    ):
         engineio_options = kwargs
         engineio_logger = engineio_options.pop('engineio_logger', None)
         if engineio_logger is not None:
@@ -21,6 +29,7 @@ class BaseServer:
             self.packet_class = packet.Packet
         elif serializer == 'msgpack':
             from . import msgpack_packet
+
             self.packet_class = msgpack_packet.MsgPackPacket
         else:
             self.packet_class = serializer
@@ -168,14 +177,12 @@ class BaseServer:
                                   subclass that handles all the event traffic
                                   for a namespace.
         """
-        if not isinstance(namespace_handler,
-                          base_namespace.BaseServerNamespace):
+        if not isinstance(namespace_handler, base_namespace.BaseServerNamespace):
             raise ValueError('Not a namespace instance')
         if self.is_asyncio_based() != namespace_handler.is_asyncio_based():
             raise ValueError('Not a valid namespace class for this server')
         namespace_handler._set_server(self)
-        self.namespace_handlers[namespace_handler.namespace] = \
-            namespace_handler
+        self.namespace_handlers[namespace_handler.namespace] = namespace_handler
 
     def rooms(self, sid, namespace=None):
         """Return the rooms a client is in.
@@ -219,16 +226,14 @@ class BaseServer:
         if namespace in self.handlers:
             if event in self.handlers[namespace]:
                 handler = self.handlers[namespace][event]
-            elif event not in self.reserved_events and \
-                    '*' in self.handlers[namespace]:
+            elif event not in self.reserved_events and '*' in self.handlers[namespace]:
                 handler = self.handlers[namespace]['*']
                 args = (event, *args)
         elif '*' in self.handlers:
             if event in self.handlers['*']:
                 handler = self.handlers['*'][event]
                 args = (namespace, *args)
-            elif event not in self.reserved_events and \
-                    '*' in self.handlers['*']:
+            elif event not in self.reserved_events and '*' in self.handlers['*']:
                 handler = self.handlers['*']['*']
                 args = (event, namespace, *args)
         return handler, args

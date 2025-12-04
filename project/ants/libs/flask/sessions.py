@@ -27,11 +27,11 @@ class SessionMixin(MutableMapping):  # type: ignore[type-arg]
     @property
     def permanent(self) -> bool:
         """This reflects the ``'_permanent'`` key in the dict."""
-        return self.get("_permanent", False)
+        return self.get('_permanent', False)
 
     @permanent.setter
     def permanent(self, value: bool) -> None:
-        self["_permanent"] = bool(value)
+        self['_permanent'] = bool(value)
 
     #: Some implementations can detect whether a session is newly
     #: created, but that is not guaranteed. Use with caution. The mixin
@@ -100,9 +100,9 @@ class NullSession(SecureCookieSession):
 
     def _fail(self, *args: t.Any, **kwargs: t.Any) -> t.NoReturn:
         raise RuntimeError(
-            "The session is unavailable because no secret "
-            "key was set.  Set the secret_key on the "
-            "application to something unique and secret."
+            'The session is unavailable because no secret '
+            'key was set.  Set the secret_key on the '
+            'application to something unique and secret.'
         )
 
     __setitem__ = __delitem__ = clear = pop = popitem = update = setdefault = _fail  # type: ignore # noqa: B950
@@ -182,7 +182,7 @@ class SessionInterface:
 
     def get_cookie_name(self, app: Flask) -> str:
         """The name of the session cookie. Uses``app.config["SESSION_COOKIE_NAME"]``."""
-        return app.config["SESSION_COOKIE_NAME"]  # type: ignore[no-any-return]
+        return app.config['SESSION_COOKIE_NAME']  # type: ignore[no-any-return]
 
     def get_cookie_domain(self, app: Flask) -> str | None:
         """The value of the ``Domain`` parameter on the session cookie. If not set,
@@ -194,7 +194,7 @@ class SessionInterface:
         .. versionchanged:: 2.3
             Not set by default, does not fall back to ``SERVER_NAME``.
         """
-        return app.config["SESSION_COOKIE_DOMAIN"]  # type: ignore[no-any-return]
+        return app.config['SESSION_COOKIE_DOMAIN']  # type: ignore[no-any-return]
 
     def get_cookie_path(self, app: Flask) -> str:
         """Returns the path for which the cookie should be valid.  The
@@ -202,27 +202,27 @@ class SessionInterface:
         config var if it's set, and falls back to ``APPLICATION_ROOT`` or
         uses ``/`` if it's ``None``.
         """
-        return app.config["SESSION_COOKIE_PATH"] or app.config["APPLICATION_ROOT"]  # type: ignore[no-any-return]
+        return app.config['SESSION_COOKIE_PATH'] or app.config['APPLICATION_ROOT']  # type: ignore[no-any-return]
 
     def get_cookie_httponly(self, app: Flask) -> bool:
         """Returns True if the session cookie should be httponly.  This
         currently just returns the value of the ``SESSION_COOKIE_HTTPONLY``
         config var.
         """
-        return app.config["SESSION_COOKIE_HTTPONLY"]  # type: ignore[no-any-return]
+        return app.config['SESSION_COOKIE_HTTPONLY']  # type: ignore[no-any-return]
 
     def get_cookie_secure(self, app: Flask) -> bool:
         """Returns True if the cookie should be secure.  This currently
         just returns the value of the ``SESSION_COOKIE_SECURE`` setting.
         """
-        return app.config["SESSION_COOKIE_SECURE"]  # type: ignore[no-any-return]
+        return app.config['SESSION_COOKIE_SECURE']  # type: ignore[no-any-return]
 
     def get_cookie_samesite(self, app: Flask) -> str | None:
         """Return ``'Strict'`` or ``'Lax'`` if the cookie should use the
         ``SameSite`` attribute. This currently just returns the value of
         the :data:`SESSION_COOKIE_SAMESITE` setting.
         """
-        return app.config["SESSION_COOKIE_SAMESITE"]  # type: ignore[no-any-return]
+        return app.config['SESSION_COOKIE_SAMESITE']  # type: ignore[no-any-return]
 
     def get_expiration_time(self, app: Flask, session: SessionMixin) -> datetime | None:
         """A helper method that returns an expiration date for the session
@@ -247,7 +247,7 @@ class SessionInterface:
         """
 
         return session.modified or (
-            session.permanent and app.config["SESSION_REFRESH_EACH_REQUEST"]
+            session.permanent and app.config['SESSION_REFRESH_EACH_REQUEST']
         )
 
     def open_session(self, app: Flask, request: Request) -> SessionMixin | None:
@@ -284,12 +284,12 @@ class SecureCookieSessionInterface(SessionInterface):
 
     #: the salt that should be applied on top of the secret key for the
     #: signing of cookie based sessions.
-    salt = "cookie-session"
+    salt = 'cookie-session'
     #: the hash function to use for the signature.  The default is sha1
     digest_method = staticmethod(hashlib.sha1)
     #: the name of the itsdangerous supported key derivation.  The default
     #: is hmac.
-    key_derivation = "hmac"
+    key_derivation = 'hmac'
     #: A python serializer for the payload.  The default is a compact
     #: JSON derived serializer with support for some extra Python types
     #: such as datetime objects or tuples.
@@ -335,7 +335,7 @@ class SecureCookieSessionInterface(SessionInterface):
 
         # Add a "Vary: Cookie" header if the session was accessed at all.
         if session.accessed:
-            response.vary.add("Cookie")
+            response.vary.add('Cookie')
 
         # If the session is modified to be empty, remove the cookie.
         # If the session is empty, return without setting the cookie.
@@ -349,7 +349,7 @@ class SecureCookieSessionInterface(SessionInterface):
                     samesite=samesite,
                     httponly=httponly,
                 )
-                response.vary.add("Cookie")
+                response.vary.add('Cookie')
 
             return
 
@@ -368,4 +368,4 @@ class SecureCookieSessionInterface(SessionInterface):
             secure=secure,
             samesite=samesite,
         )
-        response.vary.add("Cookie")
+        response.vary.add('Cookie')

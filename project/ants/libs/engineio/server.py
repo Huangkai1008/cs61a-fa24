@@ -80,6 +80,7 @@ class Server(base_server.BaseServer):
     :param kwargs: Reserved for future extensions, any additional parameters
                    given as keyword arguments will be silently ignored.
     """
+
     def send(self, sid, data):
         """Send a message to a client.
 
@@ -148,6 +149,7 @@ class Server(base_server.BaseServer):
                 with eio.session(sid) as session:
                     print('received message from ', session['username'])
         """
+
         class _session_context_manager(object):
             def __init__(self, server, sid):
                 self.server = server
@@ -205,10 +207,10 @@ class Server(base_server.BaseServer):
             origin = environ.get('HTTP_ORIGIN')
             if origin:
                 allowed_origins = self._cors_allowed_origins(environ)
-                if allowed_origins is not None and origin not in \
-                        allowed_origins:
+                if allowed_origins is not None and origin not in allowed_origins:
                     self._log_error_once(
-                        origin + ' is not an accepted origin.', 'bad-origin')
+                        origin + ' is not an accepted origin.', 'bad-origin'
+                    )
                     r = self._bad_request('Not an accepted origin.')
                     start_response(r['status'], r['headers'])
                     return [r['response']]
@@ -231,10 +233,13 @@ class Server(base_server.BaseServer):
         if sid is None and query.get('EIO') != ['4']:
             self._log_error_once(
                 'The client is using an unsupported version of the Socket.IO '
-                'or Engine.IO protocols', 'bad-version')
+                'or Engine.IO protocols',
+                'bad-version',
+            )
             r = self._bad_request(
                 'The client is using an unsupported version of the Socket.IO '
-                'or Engine.IO protocols')
+                'or Engine.IO protocols'
+            )
             start_response(r['status'], r['headers'])
             return [r['response']]
 
@@ -247,22 +252,23 @@ class Server(base_server.BaseServer):
                 pass
 
         if jsonp and jsonp_index is None:
-            self._log_error_once('Invalid JSONP index number',
-                                 'bad-jsonp-index')
+            self._log_error_once('Invalid JSONP index number', 'bad-jsonp-index')
             r = self._bad_request('Invalid JSONP index number')
         elif method == 'GET':
             if sid is None:
                 # transport must be one of 'polling' or 'websocket'.
                 # if 'websocket', the HTTP_UPGRADE header must match.
-                upgrade_header = environ.get('HTTP_UPGRADE').lower() \
-                    if 'HTTP_UPGRADE' in environ else None
-                if transport == 'polling' \
-                        or transport == upgrade_header == 'websocket':
-                    r = self._handle_connect(environ, start_response,
-                                             transport, jsonp_index)
+                upgrade_header = (
+                    environ.get('HTTP_UPGRADE').lower()
+                    if 'HTTP_UPGRADE' in environ
+                    else None
+                )
+                if transport == 'polling' or transport == upgrade_header == 'websocket':
+                    r = self._handle_connect(
+                        environ, start_response, transport, jsonp_index
+                    )
                 else:
-                    self._log_error_once('Invalid websocket upgrade',
-                                         'bad-upgrade')
+                    self._log_error_once('Invalid websocket upgrade', 'bad-upgrade')
                     r = self._bad_request('Invalid websocket upgrade')
             else:
                 if sid not in self.sockets:
@@ -271,8 +277,7 @@ class Server(base_server.BaseServer):
                 else:
                     socket = self._get_socket(sid)
                     try:
-                        packets = socket.handle_get_request(
-                            environ, start_response)
+                        packets = socket.handle_get_request(environ, start_response)
                         if isinstance(packets, list):
                             r = self._ok(packets, jsonp_index=jsonp_index)
                         else:
@@ -285,8 +290,7 @@ class Server(base_server.BaseServer):
                         del self.sockets[sid]
         elif method == 'POST':
             if sid is None or sid not in self.sockets:
-                self._log_error_once(
-                    'Invalid session ' + (sid or 'None'), 'bad-sid')
+                self._log_error_once('Invalid session ' + (sid or 'None'), 'bad-sid')
                 r = self._bad_request('Invalid session')
             else:
                 socket = self._get_socket(sid)
@@ -310,14 +314,14 @@ class Server(base_server.BaseServer):
 
         if not isinstance(r, dict):
             return r
-        if self.http_compression and \
-                len(r['response']) >= self.compression_threshold:
-            encodings = [e.split(';')[0].strip() for e in
-                         environ.get('HTTP_ACCEPT_ENCODING', '').split(',')]
+        if self.http_compression and len(r['response']) >= self.compression_threshold:
+            encodings = [
+                e.split(';')[0].strip()
+                for e in environ.get('HTTP_ACCEPT_ENCODING', '').split(',')
+            ]
             for encoding in encodings:
                 if encoding in self.compression_methods:
-                    r['response'] = \
-                        getattr(self, '_' + encoding)(r['response'])
+                    r['response'] = getattr(self, '_' + encoding)(r['response'])
                     r['headers'] += [('Content-Encoding', encoding)]
                     break
         cors_headers = self._cors_headers(environ)
@@ -365,25 +369,29 @@ class Server(base_server.BaseServer):
         """
         return self._async['sleep'](seconds)
 
-    def _handle_connect(self, environ, start_response, transport,
-                        jsonp_index=None):
+    def _handle_connect(self, environ, start_response, transport, jsonp_index=None):
         """Handle a client connection request."""
         if self.start_service_task:
             # start the service task to monitor connected clients
             self.start_service_task = False
-            self.service_task_handle = self.start_background_task(
-                self._service_task)
+            self.service_task_handle = self.start_background_task(self._service_task)
 
         sid = self.generate_id()
         s = socket.Socket(self, sid)
         self.sockets[sid] = s
 
-        pkt = packet.Packet(packet.OPEN, {
-            'sid': sid,
-            'upgrades': self._upgrades(sid, transport),
-            'pingTimeout': int(self.ping_timeout * 1000),
-            'pingInterval': int(
-                self.ping_interval + self.ping_interval_grace_period) * 1000})
+        pkt = packet.Packet(
+            packet.OPEN,
+            {
+                'sid': sid,
+                'upgrades': self._upgrades(sid, transport),
+                'pingTimeout': int(self.ping_timeout * 1000),
+                'pingInterval': int(
+                    self.ping_interval + self.ping_interval_grace_period
+                )
+                * 1000,
+            },
+        )
         s.send(pkt)
         s.schedule_ping()
 
@@ -408,20 +416,21 @@ class Server(base_server.BaseServer):
             headers = None
             if self.cookie:
                 if isinstance(self.cookie, dict):
-                    headers = [(
-                        'Set-Cookie',
-                        self._generate_sid_cookie(sid, self.cookie)
-                    )]
+                    headers = [
+                        ('Set-Cookie', self._generate_sid_cookie(sid, self.cookie))
+                    ]
                 else:
-                    headers = [(
-                        'Set-Cookie',
-                        self._generate_sid_cookie(sid, {
-                            'name': self.cookie, 'path': '/', 'SameSite': 'Lax'
-                        })
-                    )]
+                    headers = [
+                        (
+                            'Set-Cookie',
+                            self._generate_sid_cookie(
+                                sid,
+                                {'name': self.cookie, 'path': '/', 'SameSite': 'Lax'},
+                            ),
+                        )
+                    ]
             try:
-                return self._ok(s.poll(), headers=headers,
-                                jsonp_index=jsonp_index)
+                return self._ok(s.poll(), headers=headers, jsonp_index=jsonp_index)
             except exceptions.QueueEmpty:
                 return self._bad_request()
 
@@ -429,6 +438,7 @@ class Server(base_server.BaseServer):
         """Invoke an event handler."""
         run_async = kwargs.pop('run_async', False)
         if event in self.handlers:
+
             def run_handler():
                 try:
                     return self.handlers[event](*args)

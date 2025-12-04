@@ -16,28 +16,28 @@ _logger: logging.Logger | None = None
 
 class _Missing:
     def __repr__(self) -> str:
-        return "no value"
+        return 'no value'
 
     def __reduce__(self) -> str:
-        return "_missing"
+        return '_missing'
 
 
 _missing = _Missing()
 
 
 def _wsgi_decoding_dance(s: str) -> str:
-    return s.encode("latin1").decode(errors="replace")
+    return s.encode('latin1').decode(errors='replace')
 
 
 def _wsgi_encoding_dance(s: str) -> str:
-    return s.encode().decode("latin1")
+    return s.encode().decode('latin1')
 
 
 def _get_environ(obj: WSGIEnvironment | Request) -> WSGIEnvironment:
-    env = getattr(obj, "environ", obj)
-    assert isinstance(
-        env, dict
-    ), f"{type(obj).__name__!r} is not a WSGI environment (has to be a dict)"
+    env = getattr(obj, 'environ', obj)
+    assert isinstance(env, dict), (
+        f'{type(obj).__name__!r} is not a WSGI environment (has to be a dict)'
+    )
     return env
 
 
@@ -85,7 +85,7 @@ def _log(type: str, message: str, *args: t.Any, **kwargs: t.Any) -> None:
     global _logger
 
     if _logger is None:
-        _logger = logging.getLogger("werkzeug")
+        _logger = logging.getLogger('werkzeug')
 
         if _logger.level == logging.NOTSET:
             _logger.setLevel(logging.INFO)
@@ -97,13 +97,11 @@ def _log(type: str, message: str, *args: t.Any, **kwargs: t.Any) -> None:
 
 
 @t.overload
-def _dt_as_utc(dt: None) -> None:
-    ...
+def _dt_as_utc(dt: None) -> None: ...
 
 
 @t.overload
-def _dt_as_utc(dt: datetime) -> datetime:
-    ...
+def _dt_as_utc(dt: datetime) -> datetime: ...
 
 
 def _dt_as_utc(dt: datetime | None) -> datetime | None:
@@ -118,7 +116,7 @@ def _dt_as_utc(dt: datetime | None) -> datetime | None:
     return dt
 
 
-_TAccessorValue = t.TypeVar("_TAccessorValue")
+_TAccessorValue = t.TypeVar('_TAccessorValue')
 
 
 class _DictAccessorProperty(t.Generic[_TAccessorValue]):
@@ -149,12 +147,10 @@ class _DictAccessorProperty(t.Generic[_TAccessorValue]):
     @t.overload
     def __get__(
         self, instance: None, owner: type
-    ) -> _DictAccessorProperty[_TAccessorValue]:
-        ...
+    ) -> _DictAccessorProperty[_TAccessorValue]: ...
 
     @t.overload
-    def __get__(self, instance: t.Any, owner: type) -> _TAccessorValue:
-        ...
+    def __get__(self, instance: t.Any, owner: type) -> _TAccessorValue: ...
 
     def __get__(
         self, instance: t.Any | None, owner: type
@@ -179,7 +175,7 @@ class _DictAccessorProperty(t.Generic[_TAccessorValue]):
 
     def __set__(self, instance: t.Any, value: _TAccessorValue) -> None:
         if self.read_only:
-            raise AttributeError("read only property")
+            raise AttributeError('read only property')
 
         if self.dump_func is not None:
             self.lookup(instance)[self.name] = self.dump_func(value)
@@ -188,15 +184,15 @@ class _DictAccessorProperty(t.Generic[_TAccessorValue]):
 
     def __delete__(self, instance: t.Any) -> None:
         if self.read_only:
-            raise AttributeError("read only property")
+            raise AttributeError('read only property')
 
         self.lookup(instance).pop(self.name, None)
 
     def __repr__(self) -> str:
-        return f"<{type(self).__name__} {self.name}>"
+        return f'<{type(self).__name__} {self.name}>'
 
 
-_plain_int_re = re.compile(r"-?\d+", re.ASCII)
+_plain_int_re = re.compile(r'-?\d+', re.ASCII)
 
 
 def _plain_int(value: str) -> int:

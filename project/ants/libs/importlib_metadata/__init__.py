@@ -55,7 +55,7 @@ class PackageNotFoundError(ModuleNotFoundError):
     """The package was not found."""
 
     def __str__(self) -> str:
-        return f"No package metadata was found for {self.name}"
+        return f'No package metadata was found for {self.name}'
 
     @property
     def name(self) -> str:  # type: ignore[override]
@@ -240,7 +240,7 @@ class EntryPoint:
         return self._key() == other._key()
 
     def __setattr__(self, name, value):
-        raise AttributeError("EntryPoint objects are immutable.")
+        raise AttributeError('EntryPoint objects are immutable.')
 
     def __repr__(self):
         return (
@@ -311,9 +311,9 @@ class EntryPoints(tuple):
 class PackagePath(pathlib.PurePosixPath):
     """A reference to a path in a package"""
 
-    hash: Optional["FileHash"]
+    hash: Optional['FileHash']
     size: int
-    dist: "Distribution"
+    dist: 'Distribution'
 
     def read_text(self, encoding: str = 'utf-8') -> str:  # type: ignore[override]
         return self.locate().read_text(encoding=encoding)
@@ -347,7 +347,7 @@ class DeprecatedNonAbstract:
         }
         if abstract:
             warnings.warn(
-                f"Unimplemented abstract methods {abstract}",
+                f'Unimplemented abstract methods {abstract}',
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -395,7 +395,7 @@ class Distribution(DeprecatedNonAbstract):
         """
 
     @classmethod
-    def from_name(cls, name: str) -> "Distribution":
+    def from_name(cls, name: str) -> 'Distribution':
         """Return the Distribution for the given package name.
 
         :param name: The name of the distribution package to search for.
@@ -406,7 +406,7 @@ class Distribution(DeprecatedNonAbstract):
         :raises ValueError: When an invalid value is supplied for name.
         """
         if not name:
-            raise ValueError("A distribution name is required.")
+            raise ValueError('A distribution name is required.')
         try:
             return next(iter(cls.discover(name=name)))
         except StopIteration:
@@ -415,7 +415,7 @@ class Distribution(DeprecatedNonAbstract):
     @classmethod
     def discover(
         cls, *, context: Optional['DistributionFinder.Context'] = None, **kwargs
-    ) -> Iterable["Distribution"]:
+    ) -> Iterable['Distribution']:
         """Return an iterable of Distribution objects for all packages.
 
         Pass a ``context`` or pass keyword arguments for constructing
@@ -426,14 +426,14 @@ class Distribution(DeprecatedNonAbstract):
           the context.
         """
         if context and kwargs:
-            raise ValueError("cannot accept context and kwargs")
+            raise ValueError('cannot accept context and kwargs')
         context = context or DistributionFinder.Context(**kwargs)
         return itertools.chain.from_iterable(
             resolver(context) for resolver in cls._discover_resolvers()
         )
 
     @staticmethod
-    def at(path: str | os.PathLike[str]) -> "Distribution":
+    def at(path: str | os.PathLike[str]) -> 'Distribution':
         """Return a Distribution for the indicated metadata path.
 
         :param path: a string or path-like object
@@ -732,19 +732,19 @@ class FastPath:
 class Lookup:
     def __init__(self, path: FastPath):
         base = os.path.basename(path.root).lower()
-        base_is_egg = base.endswith(".egg")
+        base_is_egg = base.endswith('.egg')
         self.infos = FreezableDefaultDict(list)
         self.eggs = FreezableDefaultDict(list)
 
         for child in path.children():
             low = child.lower()
-            if low.endswith((".dist-info", ".egg-info")):
+            if low.endswith(('.dist-info', '.egg-info')):
                 # rpartition is faster than splitext and suitable for this purpose.
-                name = low.rpartition(".")[0].partition("-")[0]
+                name = low.rpartition('.')[0].partition('-')[0]
                 normalized = Prepared.normalize(name)
                 self.infos[normalized].append(path.joinpath(child))
-            elif base_is_egg and low == "egg-info":
-                name = base.rpartition(".")[0].partition("-")[0]
+            elif base_is_egg and low == 'egg-info':
+                name = base.rpartition('.')[0].partition('-')[0]
                 legacy_normalized = Prepared.legacy_normalize(name)
                 self.eggs[legacy_normalized].append(path.joinpath(child))
 
@@ -785,7 +785,7 @@ class Prepared:
         """
         PEP 503 normalization plus dashes as underscores.
         """
-        return re.sub(r"[-_.]+", "-", name).lower().replace('-', '_')
+        return re.sub(r'[-_.]+', '-', name).lower().replace('-', '_')
 
     @staticmethod
     def legacy_normalize(name):
@@ -809,7 +809,7 @@ class MetadataPathFinder(NullFinder, DistributionFinder):
 
     def find_distributions(
         self, context=DistributionFinder.Context()
-    ) -> Iterable["PathDistribution"]:
+    ) -> Iterable['PathDistribution']:
         """
         Find distributions.
 

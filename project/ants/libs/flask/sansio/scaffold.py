@@ -22,19 +22,19 @@ from ..templating import _default_template_ctx_processor
 # a singleton sentinel value for parameter defaults
 _sentinel = object()
 
-F = t.TypeVar("F", bound=t.Callable[..., t.Any])
-T_after_request = t.TypeVar("T_after_request", bound=ft.AfterRequestCallable[t.Any])
-T_before_request = t.TypeVar("T_before_request", bound=ft.BeforeRequestCallable)
-T_error_handler = t.TypeVar("T_error_handler", bound=ft.ErrorHandlerCallable)
-T_teardown = t.TypeVar("T_teardown", bound=ft.TeardownCallable)
+F = t.TypeVar('F', bound=t.Callable[..., t.Any])
+T_after_request = t.TypeVar('T_after_request', bound=ft.AfterRequestCallable[t.Any])
+T_before_request = t.TypeVar('T_before_request', bound=ft.BeforeRequestCallable)
+T_error_handler = t.TypeVar('T_error_handler', bound=ft.ErrorHandlerCallable)
+T_teardown = t.TypeVar('T_teardown', bound=ft.TeardownCallable)
 T_template_context_processor = t.TypeVar(
-    "T_template_context_processor", bound=ft.TemplateContextProcessorCallable
+    'T_template_context_processor', bound=ft.TemplateContextProcessorCallable
 )
-T_url_defaults = t.TypeVar("T_url_defaults", bound=ft.URLDefaultCallable)
+T_url_defaults = t.TypeVar('T_url_defaults', bound=ft.URLDefaultCallable)
 T_url_value_preprocessor = t.TypeVar(
-    "T_url_value_preprocessor", bound=ft.URLValuePreprocessorCallable
+    'T_url_value_preprocessor', bound=ft.URLValuePreprocessorCallable
 )
-T_route = t.TypeVar("T_route", bound=ft.RouteCallable)
+T_route = t.TypeVar('T_route', bound=ft.RouteCallable)
 
 
 def setupmethod(f: F) -> F:
@@ -218,7 +218,7 @@ class Scaffold:
         ] = defaultdict(list)
 
     def __repr__(self) -> str:
-        return f"<{type(self).__name__} {self.name!r}>"
+        return f'<{type(self).__name__} {self.name!r}>'
 
     def _check_setup_finished(self, f_name: str) -> None:
         raise NotImplementedError
@@ -236,7 +236,7 @@ class Scaffold:
     @static_folder.setter
     def static_folder(self, value: str | os.PathLike[str] | None) -> None:
         if value is not None:
-            value = os.fspath(value).rstrip(r"\/")
+            value = os.fspath(value).rstrip(r'\/')
 
         self._static_folder = value
 
@@ -260,14 +260,14 @@ class Scaffold:
 
         if self.static_folder is not None:
             basename = os.path.basename(self.static_folder)
-            return f"/{basename}".rstrip("/")
+            return f'/{basename}'.rstrip('/')
 
         return None
 
     @static_url_path.setter
     def static_url_path(self, value: str | None) -> None:
         if value is not None:
-            value = value.rstrip("/")
+            value = value.rstrip('/')
 
         self._static_url_path = value
 
@@ -290,7 +290,7 @@ class Scaffold:
         rule: str,
         options: dict[str, t.Any],
     ) -> t.Callable[[T_route], T_route]:
-        if "methods" in options:
+        if 'methods' in options:
             raise TypeError("Use the 'route' decorator to use the 'methods' argument.")
 
         return self.route(rule, methods=[method], **options)
@@ -301,7 +301,7 @@ class Scaffold:
 
         .. versionadded:: 2.0
         """
-        return self._method_route("GET", rule, options)
+        return self._method_route('GET', rule, options)
 
     @setupmethod
     def post(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
@@ -309,7 +309,7 @@ class Scaffold:
 
         .. versionadded:: 2.0
         """
-        return self._method_route("POST", rule, options)
+        return self._method_route('POST', rule, options)
 
     @setupmethod
     def put(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
@@ -317,7 +317,7 @@ class Scaffold:
 
         .. versionadded:: 2.0
         """
-        return self._method_route("PUT", rule, options)
+        return self._method_route('PUT', rule, options)
 
     @setupmethod
     def delete(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
@@ -325,7 +325,7 @@ class Scaffold:
 
         .. versionadded:: 2.0
         """
-        return self._method_route("DELETE", rule, options)
+        return self._method_route('DELETE', rule, options)
 
     @setupmethod
     def patch(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
@@ -333,7 +333,7 @@ class Scaffold:
 
         .. versionadded:: 2.0
         """
-        return self._method_route("PATCH", rule, options)
+        return self._method_route('PATCH', rule, options)
 
     @setupmethod
     def route(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
@@ -361,7 +361,7 @@ class Scaffold:
         """
 
         def decorator(f: T_route) -> T_route:
-            endpoint = options.pop("endpoint", None)
+            endpoint = options.pop('endpoint', None)
             self.add_url_rule(rule, endpoint, f, **options)
             return f
 
@@ -675,24 +675,24 @@ class Scaffold:
             except KeyError:
                 raise ValueError(
                     f"'{exc_class_or_code}' is not a recognized HTTP"
-                    " error code. Use a subclass of HTTPException with"
-                    " that code instead."
+                    ' error code. Use a subclass of HTTPException with'
+                    ' that code instead.'
                 ) from None
         else:
             exc_class = exc_class_or_code
 
         if isinstance(exc_class, Exception):
             raise TypeError(
-                f"{exc_class!r} is an instance, not a class. Handlers"
-                " can only be registered for Exception classes or HTTP"
-                " error codes."
+                f'{exc_class!r} is an instance, not a class. Handlers'
+                ' can only be registered for Exception classes or HTTP'
+                ' error codes.'
             )
 
         if not issubclass(exc_class, Exception):
             raise ValueError(
                 f"'{exc_class.__name__}' is not a subclass of Exception."
-                " Handlers can only be registered for Exception classes"
-                " or HTTP error codes."
+                ' Handlers can only be registered for Exception classes'
+                ' or HTTP error codes.'
             )
 
         if issubclass(exc_class, HTTPException):
@@ -705,7 +705,7 @@ def _endpoint_from_view_func(view_func: ft.RouteCallable) -> str:
     """Internal helper that returns the default endpoint for a given
     function.  This always is the function name.
     """
-    assert view_func is not None, "expected view func if endpoint is not provided."
+    assert view_func is not None, 'expected view func if endpoint is not provided.'
     return view_func.__name__
 
 
@@ -720,13 +720,13 @@ def _path_is_relative_to(path: pathlib.PurePath, base: str) -> bool:
 
 def _find_package_path(import_name: str) -> str:
     """Find the path that contains the package or module."""
-    root_mod_name, _, _ = import_name.partition(".")
+    root_mod_name, _, _ = import_name.partition('.')
 
     try:
         root_spec = importlib.util.find_spec(root_mod_name)
 
         if root_spec is None:
-            raise ValueError("not found")
+            raise ValueError('not found')
     except (ImportError, ValueError):
         # ImportError: the machinery told us it does not exist
         # ValueError:
@@ -736,7 +736,7 @@ def _find_package_path(import_name: str) -> str:
         return os.getcwd()
 
     if root_spec.submodule_search_locations:
-        if root_spec.origin is None or root_spec.origin == "namespace":
+        if root_spec.origin is None or root_spec.origin == 'namespace':
             # namespace package
             package_spec = importlib.util.find_spec(import_name)
 
@@ -786,15 +786,15 @@ def find_package(import_name: str) -> tuple[str | None, str]:
     site_parent, site_folder = os.path.split(package_path)
 
     # installed to a virtualenv
-    if site_folder.lower() == "site-packages":
+    if site_folder.lower() == 'site-packages':
         parent, folder = os.path.split(site_parent)
 
         # Windows (prefix/lib/site-packages)
-        if folder.lower() == "lib":
+        if folder.lower() == 'lib':
             return parent, package_path
 
         # Unix (prefix/lib/pythonX.Y/site-packages)
-        if os.path.basename(parent).lower() == "lib":
+        if os.path.basename(parent).lower() == 'lib':
             return os.path.dirname(parent), package_path
 
         # something else (prefix/site-packages)

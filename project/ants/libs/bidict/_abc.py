@@ -7,9 +7,9 @@
 
 #                             * Code review nav *
 #                        (see comments in __init__.py)
-#==============================================================================
+# ==============================================================================
 # ← Prev: __init__.py          Current: _abc.py               Next: _base.py →
-#==============================================================================
+# ==============================================================================
 
 
 """Provide the :class:`BidirectionalMapping` abstract base class."""
@@ -65,13 +65,15 @@ class BidirectionalMapping(t.Mapping[KT, VT]):
         return iter(self.inverse.items())
 
 
-class MutableBidirectionalMapping(BidirectionalMapping[KT, VT], t.MutableMapping[KT, VT]):
+class MutableBidirectionalMapping(
+    BidirectionalMapping[KT, VT], t.MutableMapping[KT, VT]
+):
     """Abstract base class for mutable bidirectional mapping types."""
 
     __slots__ = ()
 
 
 #                             * Code review nav *
-#==============================================================================
+# ==============================================================================
 # ← Prev: __init__.py          Current: _abc.py               Next: _base.py →
-#==============================================================================
+# ==============================================================================

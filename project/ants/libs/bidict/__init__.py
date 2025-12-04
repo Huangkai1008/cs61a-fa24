@@ -5,9 +5,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-#==============================================================================
+# ==============================================================================
 #                    * Welcome to the bidict source code *
-#==============================================================================
+# ==============================================================================
 
 # Reading through the code? You'll find a "Code review nav" comment like the one
 # below at the top and bottom of the key source files. Follow these cues to take
@@ -20,9 +20,9 @@
 # from README.rst, which is also shown on https://github.com/jab/bidict.
 
 #                             * Code review nav *
-#==============================================================================
+# ==============================================================================
 #                             Current: __init__.py             Next: _abc.py →
-#==============================================================================
+# ==============================================================================
 
 
 """The bidirectional mapping library for Python.
@@ -62,22 +62,50 @@ if _version_info < (3, 7):  # pragma: no cover
 
 from contextlib import suppress as _suppress
 
-from ._abc import BidirectionalMapping as BidirectionalMapping, MutableBidirectionalMapping as MutableBidirectionalMapping
-from ._base import BidictBase as BidictBase, GeneratedBidictInverse as GeneratedBidictInverse, BidictKeysView as BidictKeysView
+from ._abc import (
+    BidirectionalMapping as BidirectionalMapping,
+    MutableBidirectionalMapping as MutableBidirectionalMapping,
+)
+from ._base import (
+    BidictBase as BidictBase,
+    GeneratedBidictInverse as GeneratedBidictInverse,
+    BidictKeysView as BidictKeysView,
+)
 from ._bidict import MutableBidict as MutableBidict, bidict as bidict
 from ._frozenbidict import frozenbidict as frozenbidict
 from ._frozenordered import FrozenOrderedBidict as FrozenOrderedBidict
 from ._named import NamedBidictBase as NamedBidictBase, namedbidict as namedbidict
 from ._orderedbase import OrderedBidictBase as OrderedBidictBase
 from ._orderedbidict import OrderedBidict as OrderedBidict
-from ._dup import ON_DUP_DEFAULT as ON_DUP_DEFAULT, ON_DUP_RAISE as ON_DUP_RAISE, ON_DUP_DROP_OLD as ON_DUP_DROP_OLD
-from ._dup import RAISE as RAISE, DROP_OLD as DROP_OLD, DROP_NEW as DROP_NEW, OnDup as OnDup, OD as OD
-from ._exc import BidictException as BidictException, DuplicationError as DuplicationError
-from ._exc import KeyDuplicationError as KeyDuplicationError, ValueDuplicationError as ValueDuplicationError, KeyAndValueDuplicationError as KeyAndValueDuplicationError
+from ._dup import (
+    ON_DUP_DEFAULT as ON_DUP_DEFAULT,
+    ON_DUP_RAISE as ON_DUP_RAISE,
+    ON_DUP_DROP_OLD as ON_DUP_DROP_OLD,
+)
+from ._dup import (
+    RAISE as RAISE,
+    DROP_OLD as DROP_OLD,
+    DROP_NEW as DROP_NEW,
+    OnDup as OnDup,
+    OD as OD,
+)
+from ._exc import (
+    BidictException as BidictException,
+    DuplicationError as DuplicationError,
+)
+from ._exc import (
+    KeyDuplicationError as KeyDuplicationError,
+    ValueDuplicationError as ValueDuplicationError,
+    KeyAndValueDuplicationError as KeyAndValueDuplicationError,
+)
 from ._iter import inverted as inverted
 from .metadata import (
-    __author__ as __author__, __copyright__ as __copyright__, __description__ as __description__,
-    __license__ as __license__, __url__ as __url__, __version__ as __version__,
+    __author__ as __author__,
+    __copyright__ as __copyright__,
+    __description__ as __description__,
+    __license__ as __license__,
+    __url__ as __url__,
+    __version__ as __version__,
 )
 
 
@@ -95,6 +123,6 @@ for _obj in tuple(locals().values()):  # pragma: no cover
 
 
 #                             * Code review nav *
-#==============================================================================
+# ==============================================================================
 #                             Current: __init__.py             Next: _abc.py →
-#==============================================================================
+# ==============================================================================

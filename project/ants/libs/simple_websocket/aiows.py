@@ -22,8 +22,13 @@ from .errors import ConnectionError, ConnectionClosed
 
 
 class AioBase:
-    def __init__(self, connection_type=None, receive_bytes=4096,
-                 ping_interval=None, max_message_size=None):
+    def __init__(
+        self,
+        connection_type=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+    ):
         #: The name of the subprotocol chosen for the WebSocket connection.
         self.subprotocol = None
 
@@ -36,7 +41,7 @@ class AioBase:
         self.incoming_message = None
         self.incoming_message_len = 0
         self.connected = False
-        self.is_server = (connection_type == ConnectionType.SERVER)
+        self.is_server = connection_type == ConnectionType.SERVER
         self.close_reason = CloseReason.NO_STATUS_RCVD
         self.close_message = None
 
@@ -106,8 +111,9 @@ class AioBase:
         """
         if not self.connected:
             raise ConnectionClosed(self.close_reason, self.close_message)
-        out_data = self.ws.send(CloseConnection(
-            reason or CloseReason.NORMAL_CLOSURE, message))
+        out_data = self.ws.send(
+            CloseConnection(reason or CloseReason.NORMAL_CLOSURE, message)
+        )
         try:
             self.wsock.write(out_data)
         except BrokenPipeError:  # pragma: no cover
@@ -136,7 +142,8 @@ class AioBase:
                         try:
                             in_data = await asyncio.wait_for(
                                 self.rsock.read(self.receive_bytes),
-                                timeout=next_ping - now)
+                                timeout=next_ping - now,
+                            )
                         except asyncio.TimeoutError:
                             timed_out = True
                     if timed_out:
@@ -144,7 +151,8 @@ class AioBase:
                         if not self.pong_received:
                             await self.close(
                                 reason=CloseReason.POLICY_VIOLATION,
-                                message='Ping/Pong timeout')
+                                message='Ping/Pong timeout',
+                            )
                             break
                         self.pong_received = False
                         self.wsock.write(self.ws.send(Ping()))
@@ -170,9 +178,12 @@ class AioBase:
             try:
                 if isinstance(event, Request):
                     self.subprotocol = self.choose_subprotocol(event)
-                    out_data += self.ws.send(AcceptConnection(
-                        subprotocol=self.subprotocol,
-                        extensions=[PerMessageDeflate()]))
+                    out_data += self.ws.send(
+                        AcceptConnection(
+                            subprotocol=self.subprotocol,
+                            extensions=[PerMessageDeflate()],
+                        )
+                    )
                 elif isinstance(event, CloseConnection):
                     if self.is_server:
                         out_data += self.ws.send(event.response())
@@ -187,10 +198,15 @@ class AioBase:
                     self.pong_received = True
                 elif isinstance(event, (TextMessage, BytesMessage)):
                     self.incoming_message_len += len(event.data)
-                    if self.max_message_size and \
-                            self.incoming_message_len > self.max_message_size:
-                        out_data += self.ws.send(CloseConnection(
-                            CloseReason.MESSAGE_TOO_BIG, 'Message is too big'))
+                    if (
+                        self.max_message_size
+                        and self.incoming_message_len > self.max_message_size
+                    ):
+                        out_data += self.ws.send(
+                            CloseConnection(
+                                CloseReason.MESSAGE_TOO_BIG, 'Message is too big'
+                            )
+                        )
                         self.event.set()
                         keep_going = False
                         break
@@ -205,7 +221,8 @@ class AioBase:
                         if not isinstance(self.incoming_message, bytearray):
                             # convert to bytearray and append
                             self.incoming_message = bytearray(
-                                (self.incoming_message + event.data).encode())
+                                (self.incoming_message + event.data).encode()
+                            )
                         else:
                             # append to bytearray
                             self.incoming_message += event.data.encode()
@@ -213,7 +230,8 @@ class AioBase:
                         if not isinstance(self.incoming_message, bytearray):
                             # convert to mutable bytearray and append
                             self.incoming_message = bytearray(
-                                self.incoming_message + event.data)
+                                self.incoming_message + event.data
+                            )
                         else:
                             # append to bytearray
                             self.incoming_message += event.data
@@ -224,8 +242,7 @@ class AioBase:
                         self.input_buffer.append(self.incoming_message)
                     elif isinstance(event, TextMessage):
                         # convert multi-part message back to text
-                        self.input_buffer.append(
-                            self.incoming_message.decode())
+                        self.input_buffer.append(self.incoming_message.decode())
                     else:
                         # convert multi-part message back to bytes
                         self.input_buffer.append(bytes(self.incoming_message))
@@ -250,12 +267,21 @@ class AioServer(AioBase):
     ``accept()`` class method to create individual instances of the server,
     each bound to a client request.
     """
-    def __init__(self, request, subprotocols=None, receive_bytes=4096,
-                 ping_interval=None, max_message_size=None):
-        super().__init__(connection_type=ConnectionType.SERVER,
-                         receive_bytes=receive_bytes,
-                         ping_interval=ping_interval,
-                         max_message_size=max_message_size)
+
+    def __init__(
+        self,
+        request,
+        subprotocols=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+    ):
+        super().__init__(
+            connection_type=ConnectionType.SERVER,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+        )
         self.request = request
         self.headers = {}
         self.subprotocols = subprotocols or []
@@ -264,9 +290,17 @@ class AioServer(AioBase):
         self.mode = 'unknown'
 
     @classmethod
-    async def accept(cls, aiohttp=None, asgi=None, sock=None, headers=None,
-                     subprotocols=None, receive_bytes=4096, ping_interval=None,
-                     max_message_size=None):
+    async def accept(
+        cls,
+        aiohttp=None,
+        asgi=None,
+        sock=None,
+        headers=None,
+        subprotocols=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+    ):
         """Accept a WebSocket connection from a client.
 
         :param aiohttp: The request object from aiohttp. If this argument is
@@ -296,20 +330,23 @@ class AioServer(AioBase):
                                  is ``None``.
         """
         if aiohttp and (asgi or sock):
-            raise ValueError('aiohttp argument cannot be used with asgi or '
-                             'sock')
+            raise ValueError('aiohttp argument cannot be used with asgi or sock')
         if asgi and (aiohttp or sock):
-            raise ValueError('asgi argument cannot be used with aiohttp or '
-                             'sock')
+            raise ValueError('asgi argument cannot be used with aiohttp or sock')
         if asgi:  # pragma: no cover
             from .asgi import WebSocketASGI
-            return await WebSocketASGI.accept(asgi[0], asgi[1], asgi[2],
-                                              subprotocols=subprotocols)
 
-        ws = cls({'aiohttp': aiohttp, 'sock': sock, 'headers': headers},
-                 subprotocols=subprotocols, receive_bytes=receive_bytes,
-                 ping_interval=ping_interval,
-                 max_message_size=max_message_size)
+            return await WebSocketASGI.accept(
+                asgi[0], asgi[1], asgi[2], subprotocols=subprotocols
+            )
+
+        ws = cls(
+            {'aiohttp': aiohttp, 'sock': sock, 'headers': headers},
+            subprotocols=subprotocols,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+        )
         await ws._accept()
         return ws
 
@@ -321,8 +358,7 @@ class AioServer(AioBase):
             self.mode = 'custom'
         elif self.request['aiohttp']:
             # default implementation, request is an aiohttp request object
-            sock = self.request['aiohttp'].transport.get_extra_info(
-                'socket').dup()
+            sock = self.request['aiohttp'].transport.get_extra_info('socket').dup()
             self.headers = self.request['aiohttp'].headers
             self.mode = 'aiohttp'
         else:  # pragma: no cover
@@ -363,13 +399,23 @@ class AioClient(AioBase):
     ``connect()`` class method to create an instance that is connected to a
     server.
     """
-    def __init__(self, url, subprotocols=None, headers=None,
-                 receive_bytes=4096, ping_interval=None, max_message_size=None,
-                 ssl_context=None):
-        super().__init__(connection_type=ConnectionType.CLIENT,
-                         receive_bytes=receive_bytes,
-                         ping_interval=ping_interval,
-                         max_message_size=max_message_size)
+
+    def __init__(
+        self,
+        url,
+        subprotocols=None,
+        headers=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+        ssl_context=None,
+    ):
+        super().__init__(
+            connection_type=ConnectionType.CLIENT,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+        )
         self.url = url
         self.ssl_context = ssl_context
         parsed_url = urlsplit(url)
@@ -391,10 +437,18 @@ class AioClient(AioBase):
             self.extra_headeers = headers
 
     @classmethod
-    async def connect(cls, url, subprotocols=None, headers=None,
-                      receive_bytes=4096, ping_interval=None,
-                      max_message_size=None, ssl_context=None,
-                      thread_class=None, event_class=None):
+    async def connect(
+        cls,
+        url,
+        subprotocols=None,
+        headers=None,
+        receive_bytes=4096,
+        ping_interval=None,
+        max_message_size=None,
+        ssl_context=None,
+        thread_class=None,
+        event_class=None,
+    ):
         """Returns a WebSocket client connection.
 
         :param url: The connection URL. Both ``ws://`` and ``wss://`` URLs are
@@ -425,9 +479,15 @@ class AioClient(AioBase):
         :param ssl_context: An ``SSLContext`` instance, if a default SSL
                             context isn't sufficient.
         """
-        ws = cls(url, subprotocols=subprotocols, headers=headers,
-                 receive_bytes=receive_bytes, ping_interval=ping_interval,
-                 max_message_size=max_message_size, ssl_context=ssl_context)
+        ws = cls(
+            url,
+            subprotocols=subprotocols,
+            headers=headers,
+            receive_bytes=receive_bytes,
+            ping_interval=ping_interval,
+            max_message_size=max_message_size,
+            ssl_context=ssl_context,
+        )
         await ws._connect()
         return ws
 
@@ -435,15 +495,22 @@ class AioClient(AioBase):
         if self.is_secure:  # pragma: no cover
             if self.ssl_context is None:
                 self.ssl_context = ssl.create_default_context(
-                    purpose=ssl.Purpose.SERVER_AUTH)
+                    purpose=ssl.Purpose.SERVER_AUTH
+                )
         self.rsock, self.wsock = await asyncio.open_connection(
-            self.host, self.port, ssl=self.ssl_context)
+            self.host, self.port, ssl=self.ssl_context
+        )
         await super().connect()
 
     async def handshake(self):
-        out_data = self.ws.send(Request(host=self.host, target=self.path,
-                                        subprotocols=self.subprotocols,
-                                        extra_headers=self.extra_headeers))
+        out_data = self.ws.send(
+            Request(
+                host=self.host,
+                target=self.path,
+                subprotocols=self.subprotocols,
+                extra_headers=self.extra_headeers,
+            )
+        )
         self.wsock.write(out_data)
 
         while True:

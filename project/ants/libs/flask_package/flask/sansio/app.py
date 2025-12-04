@@ -41,12 +41,12 @@ if t.TYPE_CHECKING:  # pragma: no cover
     from .blueprints import Blueprint
 
 T_shell_context_processor = t.TypeVar(
-    "T_shell_context_processor", bound=ft.ShellContextProcessorCallable
+    'T_shell_context_processor', bound=ft.ShellContextProcessorCallable
 )
-T_teardown = t.TypeVar("T_teardown", bound=ft.TeardownCallable)
-T_template_filter = t.TypeVar("T_template_filter", bound=ft.TemplateFilterCallable)
-T_template_global = t.TypeVar("T_template_global", bound=ft.TemplateGlobalCallable)
-T_template_test = t.TypeVar("T_template_test", bound=ft.TemplateTestCallable)
+T_teardown = t.TypeVar('T_teardown', bound=ft.TeardownCallable)
+T_template_filter = t.TypeVar('T_template_filter', bound=ft.TemplateFilterCallable)
+T_template_global = t.TypeVar('T_template_global', bound=ft.TemplateGlobalCallable)
+T_template_test = t.TypeVar('T_template_test', bound=ft.TemplateTestCallable)
 
 
 def _make_timedelta(value: timedelta | int | None) -> timedelta | None:
@@ -205,7 +205,7 @@ class App(Scaffold):
     #:
     #: This attribute can also be configured from the config with the
     #: ``TESTING`` configuration key.  Defaults to ``False``.
-    testing = ConfigAttribute[bool]("TESTING")
+    testing = ConfigAttribute[bool]('TESTING')
 
     #: If a secret key is set, cryptographic components can use this to
     #: sign cookies and other things. Set this to a complex random value
@@ -213,7 +213,7 @@ class App(Scaffold):
     #:
     #: This attribute can also be configured from the config with the
     #: :data:`SECRET_KEY` configuration key. Defaults to ``None``.
-    secret_key = ConfigAttribute[t.Union[str, bytes, None]]("SECRET_KEY")
+    secret_key = ConfigAttribute[t.Union[str, bytes, None]]('SECRET_KEY')
 
     #: A :class:`~datetime.timedelta` which is used to set the expiration
     #: date of a permanent session.  The default is 31 days which makes a
@@ -223,7 +223,7 @@ class App(Scaffold):
     #: ``PERMANENT_SESSION_LIFETIME`` configuration key.  Defaults to
     #: ``timedelta(days=31)``
     permanent_session_lifetime = ConfigAttribute[timedelta](
-        "PERMANENT_SESSION_LIFETIME",
+        'PERMANENT_SESSION_LIFETIME',
         get_converter=_make_timedelta,  # type: ignore[arg-type]
     )
 
@@ -283,11 +283,11 @@ class App(Scaffold):
         self,
         import_name: str,
         static_url_path: str | None = None,
-        static_folder: str | os.PathLike[str] | None = "static",
+        static_folder: str | os.PathLike[str] | None = 'static',
         static_host: str | None = None,
         host_matching: bool = False,
         subdomain_matching: bool = False,
-        template_folder: str | os.PathLike[str] | None = "templates",
+        template_folder: str | os.PathLike[str] | None = 'templates',
         instance_path: str | None = None,
         instance_relative_config: bool = False,
         root_path: str | None = None,
@@ -304,8 +304,8 @@ class App(Scaffold):
             instance_path = self.auto_find_instance_path()
         elif not os.path.isabs(instance_path):
             raise ValueError(
-                "If an instance path is provided it must be absolute."
-                " A relative path was given instead."
+                'If an instance path is provided it must be absolute.'
+                ' A relative path was given instead.'
             )
 
         #: Holds the path to the instance folder.
@@ -418,12 +418,12 @@ class App(Scaffold):
         if self._got_first_request:
             raise AssertionError(
                 f"The setup method '{f_name}' can no longer be called"
-                " on the application. It has already handled its first"
-                " request, any changes will not be applied"
-                " consistently.\n"
-                "Make sure all imports, decorators, functions, etc."
-                " needed to set up the application are done before"
-                " running it."
+                ' on the application. It has already handled its first'
+                ' request, any changes will not be applied'
+                ' consistently.\n'
+                'Make sure all imports, decorators, functions, etc.'
+                ' needed to set up the application are done before'
+                ' running it.'
             )
 
     @cached_property
@@ -436,10 +436,10 @@ class App(Scaffold):
 
         .. versionadded:: 0.8
         """
-        if self.import_name == "__main__":
-            fn: str | None = getattr(sys.modules["__main__"], "__file__", None)
+        if self.import_name == '__main__':
+            fn: str | None = getattr(sys.modules['__main__'], '__file__', None)
             if fn is None:
-                return "__main__"
+                return '__main__'
             return os.path.splitext(os.path.basename(fn))[0]
         return self.import_name
 
@@ -496,7 +496,7 @@ class App(Scaffold):
         if instance_relative:
             root_path = self.instance_path
         defaults = dict(self.default_config)
-        defaults["DEBUG"] = get_debug_flag()
+        defaults['DEBUG'] = get_debug_flag()
         return self.config_class(root_path, defaults)
 
     def make_aborter(self) -> Aborter:
@@ -521,8 +521,8 @@ class App(Scaffold):
         """
         prefix, package_path = find_package(self.import_name)
         if prefix is None:
-            return os.path.join(package_path, "instance")
-        return os.path.join(prefix, "var", f"{self.name}-instance")
+            return os.path.join(package_path, 'instance')
+        return os.path.join(prefix, 'var', f'{self.name}-instance')
 
     def create_global_jinja_loader(self) -> DispatchingJinjaLoader:
         """Creates the loader for the Jinja2 environment.  Can be used to
@@ -548,7 +548,7 @@ class App(Scaffold):
         """
         if filename is None:
             return True
-        return filename.endswith((".html", ".htm", ".xml", ".xhtml", ".svg"))
+        return filename.endswith(('.html', '.htm', '.xml', '.xhtml', '.svg'))
 
     @property
     def debug(self) -> bool:
@@ -561,13 +561,13 @@ class App(Scaffold):
 
         Default: ``False``
         """
-        return self.config["DEBUG"]  # type: ignore[no-any-return]
+        return self.config['DEBUG']  # type: ignore[no-any-return]
 
     @debug.setter
     def debug(self, value: bool) -> None:
-        self.config["DEBUG"] = value
+        self.config['DEBUG'] = value
 
-        if self.config["TEMPLATES_AUTO_RELOAD"] is None:
+        if self.config['TEMPLATES_AUTO_RELOAD'] is None:
             self.jinja_env.auto_reload = value
 
     @setupmethod
@@ -616,35 +616,35 @@ class App(Scaffold):
     ) -> None:
         if endpoint is None:
             endpoint = _endpoint_from_view_func(view_func)  # type: ignore
-        options["endpoint"] = endpoint
-        methods = options.pop("methods", None)
+        options['endpoint'] = endpoint
+        methods = options.pop('methods', None)
 
         # if the methods are not given and the view_func object knows its
         # methods we can use that instead.  If neither exists, we go with
         # a tuple of only ``GET`` as default.
         if methods is None:
-            methods = getattr(view_func, "methods", None) or ("GET",)
+            methods = getattr(view_func, 'methods', None) or ('GET',)
         if isinstance(methods, str):
             raise TypeError(
-                "Allowed methods must be a list of strings, for"
+                'Allowed methods must be a list of strings, for'
                 ' example: @app.route(..., methods=["POST"])'
             )
         methods = {item.upper() for item in methods}
 
         # Methods that should always be added
-        required_methods = set(getattr(view_func, "required_methods", ()))
+        required_methods = set(getattr(view_func, 'required_methods', ()))
 
         # starting with Flask 0.8 the view_func object can disable and
         # force-enable the automatic options handling.
         if provide_automatic_options is None:
             provide_automatic_options = getattr(
-                view_func, "provide_automatic_options", None
+                view_func, 'provide_automatic_options', None
             )
 
         if provide_automatic_options is None:
-            if "OPTIONS" not in methods:
+            if 'OPTIONS' not in methods:
                 provide_automatic_options = True
-                required_methods.add("OPTIONS")
+                required_methods.add('OPTIONS')
             else:
                 provide_automatic_options = False
 
@@ -659,8 +659,8 @@ class App(Scaffold):
             old_func = self.view_functions.get(endpoint)
             if old_func is not None and old_func != view_func:
                 raise AssertionError(
-                    "View function mapping is overwriting an existing"
-                    f" endpoint function: {endpoint}"
+                    'View function mapping is overwriting an existing'
+                    f' endpoint function: {endpoint}'
                 )
             self.view_functions[endpoint] = view_func
 
@@ -866,10 +866,10 @@ class App(Scaffold):
 
         .. versionadded:: 0.8
         """
-        if self.config["TRAP_HTTP_EXCEPTIONS"]:
+        if self.config['TRAP_HTTP_EXCEPTIONS']:
             return True
 
-        trap_bad_request = self.config["TRAP_BAD_REQUEST_ERRORS"]
+        trap_bad_request = self.config['TRAP_BAD_REQUEST_ERRORS']
 
         # if unset, trap key errors in debug mode
         if (
@@ -923,9 +923,9 @@ class App(Scaffold):
 
         # url_for may be called outside a request context, parse the
         # passed endpoint instead of using request.blueprints.
-        if "." in endpoint:
+        if '.' in endpoint:
             names = chain(
-                names, reversed(_split_blueprint_path(endpoint.rpartition(".")[0]))
+                names, reversed(_split_blueprint_path(endpoint.rpartition('.')[0]))
             )
 
         for name in names:

@@ -7,9 +7,9 @@
 
 #                             * Code review nav *
 #                        (see comments in __init__.py)
-#==============================================================================
+# ==============================================================================
 # ← Prev: _bidict.py       Current: _orderedbase.py   Next: _frozenordered.py →
-#==============================================================================
+# ==============================================================================
 
 
 """Provide :class:`OrderedBidictBase`."""
@@ -133,6 +133,7 @@ class OrderedBidictBase(BidictBase[KT, VT]):
         super().__init__(*args, **kw)
 
     if t.TYPE_CHECKING:
+
         @property
         def inverse(self) -> OrderedBidictBase[VT, KT]: ...
 
@@ -160,12 +161,21 @@ class OrderedBidictBase(BidictBase[KT, VT]):
         korv_by_node_set = korv_by_node.__setitem__
         self._sntl.nxt = self._sntl.prv = self._sntl
         new_node = self._sntl.new_last_node
-        for (k, v) in iteritems(other):
+        for k, v in iteritems(other):
             korv_by_node_set(new_node(), k if bykey else v)
 
-    def _prep_write(self, newkey: KT, newval: VT, oldkey: OKT[KT], oldval: OVT[VT], save_unwrite: bool) -> PreparedWrite:
+    def _prep_write(
+        self,
+        newkey: KT,
+        newval: VT,
+        oldkey: OKT[KT],
+        oldval: OVT[VT],
+        save_unwrite: bool,
+    ) -> PreparedWrite:
         """See :meth:`bidict.BidictBase._prep_write`."""
-        write, unwrite = super()._prep_write(newkey, newval, oldkey, oldval, save_unwrite)
+        write, unwrite = super()._prep_write(
+            newkey, newval, oldkey, oldval, save_unwrite
+        )
         assoc, dissoc = self._assoc_node, self._dissoc_node
         node_by_korv, bykey = self._node_by_korv, self._bykey
         if oldval is MISSING and oldkey is MISSING:  # no key or value duplication
@@ -174,7 +184,9 @@ class OrderedBidictBase(BidictBase[KT, VT]):
             write.append(partial(assoc, newnode, newkey, newval))
             if save_unwrite:
                 unwrite.append(partial(dissoc, newnode))
-        elif oldval is not MISSING and oldkey is not MISSING:  # key and value duplication across two different items
+        elif (
+            oldval is not MISSING and oldkey is not MISSING
+        ):  # key and value duplication across two different items
             # {0: 1, 2: 3} + (0, 3) => {0: 3}
             #    n1, n2             =>   n1   (collapse n1 and n2 into n1)
             # oldkey: 2, oldval: 1, oldnode: n2, newkey: 0, newval: 3, newnode: n1
@@ -184,16 +196,22 @@ class OrderedBidictBase(BidictBase[KT, VT]):
             else:
                 oldnode = node_by_korv[newval]
                 newnode = node_by_korv[oldval]
-            write.extend((
-                partial(dissoc, oldnode),
-                partial(assoc, newnode, newkey, newval),
-            ))
+            write.extend(
+                (
+                    partial(dissoc, oldnode),
+                    partial(assoc, newnode, newkey, newval),
+                )
+            )
             if save_unwrite:
-                unwrite.extend((
-                    partial(assoc, newnode, newkey, oldval),
-                    partial(assoc, oldnode, oldkey, newval),
-                    partial(oldnode.relink,),
-                ))
+                unwrite.extend(
+                    (
+                        partial(assoc, newnode, newkey, oldval),
+                        partial(assoc, oldnode, oldkey, newval),
+                        partial(
+                            oldnode.relink,
+                        ),
+                    )
+                )
         elif oldval is not MISSING:  # just key duplication
             # {0: 1, 2: 3} + (2, 4) => {0: 1, 2: 4}
             # oldkey: MISSING, oldval: 3, newkey: 2, newval: 4
@@ -233,6 +251,6 @@ class OrderedBidictBase(BidictBase[KT, VT]):
 
 
 #                             * Code review nav *
-#==============================================================================
+# ==============================================================================
 # ← Prev: _bidict.py       Current: _orderedbase.py   Next: _frozenordered.py →
-#==============================================================================
+# ==============================================================================

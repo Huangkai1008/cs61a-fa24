@@ -44,7 +44,7 @@ def is_resource_modified(
     if etag is None and data is not None:
         etag = generate_etag(data)
     elif data is not None:
-        raise TypeError("both data and etag given")
+        raise TypeError('both data and etag given')
 
     unmodified = False
     if isinstance(last_modified, str):
@@ -108,7 +108,7 @@ _cookie_re = re.compile(
     """,
     flags=re.ASCII | re.VERBOSE,
 )
-_cookie_unslash_re = re.compile(rb"\\([0-3][0-7]{2}|.)")
+_cookie_unslash_re = re.compile(rb'\\([0-3][0-7]{2}|.)')
 
 
 def _cookie_unslash_replace(m: t.Match[bytes]) -> bytes:
@@ -117,7 +117,7 @@ def _cookie_unslash_replace(m: t.Match[bytes]) -> bytes:
     if len(v) == 1:
         return v
 
-    return int(v, 8).to_bytes(1, "big")
+    return int(v, 8).to_bytes(1, 'big')
 
 
 def parse_cookie(
@@ -146,7 +146,7 @@ def parse_cookie(
     if not cookie:
         return cls()
 
-    cookie = f"{cookie};"
+    cookie = f'{cookie};'
     out = []
 
     for ck, cv in _cookie_re.findall(cookie):
@@ -160,7 +160,7 @@ def parse_cookie(
             # Work with bytes here, since a UTF-8 character could be multiple bytes.
             cv = _cookie_unslash_re.sub(
                 _cookie_unslash_replace, cv[1:-1].encode()
-            ).decode(errors="replace")
+            ).decode(errors='replace')
 
         out.append((ck, cv))
 

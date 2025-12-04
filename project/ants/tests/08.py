@@ -1,28 +1,25 @@
 test = {
-  'name': 'Problem 8',
-  'points': 0,
-  'suites': [
-    {
-      'cases': [
+    'name': 'Problem 8',
+    'points': 0,
+    'suites': [
         {
-          'answer': 'c1637d7df9f040dc0b1cd3b7d43616a9',
-          'choices': [
-            'No, I will go do them right now',
-            'Yes!'
-          ],
-          'hidden': False,
-          'locked': True,
-          'multiline': False,
-          'question': 'Did you complete all the unlocking tests for each subpart?'
-        }
-      ],
-      'scored': False,
-      'type': 'concept'
-    },
-    {
-      'cases': [
+            'cases': [
+                {
+                    'answer': 'c1637d7df9f040dc0b1cd3b7d43616a9',
+                    'choices': ['No, I will go do them right now', 'Yes!'],
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                    'question': 'Did you complete all the unlocking tests for each subpart?',
+                }
+            ],
+            'scored': False,
+            'type': 'concept',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> # Abstraction tests
           >>> original = ContainerAnt.__init__
           >>> ContainerAnt.__init__ = lambda self, health: print("init") #If this errors, you are not calling the parent constructor correctly.
@@ -33,31 +30,31 @@ test = {
           >>> hasattr(bodyguard, 'ant_contained')
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                }
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       """,
-      'teardown': '',
-      'type': 'doctest'
-    },
-    {
-      'cases': [
+            'teardown': '',
+            'type': 'doctest',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> bodyguard = BodyguardAnt()
           >>> bodyguard.action(gamestate) # Action without contained ant should not error
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing bodyguard performs thrower's action
           >>> bodyguard = BodyguardAnt()
           >>> thrower = ThrowerAnt()
@@ -70,12 +67,12 @@ test = {
           >>> bee.health
           1
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing bodyguard performs thrower's action
           >>> bodyguard = BodyguardAnt()
           >>> thrower = ThrowerAnt()
@@ -88,12 +85,12 @@ test = {
           >>> bee.health
           1
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing removing a bodyguard doesn't remove contained ant
           >>> place = gamestate.places['tunnel_0_0']
           >>> bodyguard = BodyguardAnt()
@@ -107,12 +104,12 @@ test = {
           >>> bodyguard.place is None
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing removing a bodyguard doesn't remove contained ant
           >>> place = gamestate.places['tunnel_0_0']
           >>> bodyguard = BodyguardAnt()
@@ -126,12 +123,12 @@ test = {
           >>> bodyguard.place is None
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing bodyguarded ant keeps instance attributes
           >>> test_ant = Ant()
           >>> def new_action(gamestate):
@@ -145,12 +142,12 @@ test = {
           >>> place.ant.ant_contained.health
           9001
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing single BodyguardAnt cannot hold two other ants
           >>> bodyguard = BodyguardAnt()
           >>> first_ant = ThrowerAnt()
@@ -163,12 +160,12 @@ test = {
           ...
           AssertionError: Too many ants in tunnel_0_0
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing BodyguardAnt cannot hold another BodyguardAnt
           >>> bodyguard1 = BodyguardAnt()
           >>> bodyguard2 = BodyguardAnt()
@@ -179,12 +176,12 @@ test = {
           ...
           AssertionError: Too many ants in tunnel_0_0
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing BodyguardAnt takes all the damage
           >>> thrower = ThrowerAnt()
           >>> bodyguard = BodyguardAnt()
@@ -211,12 +208,12 @@ test = {
           >>> place.ant is None
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # test proper call to death callback
           >>> original_zero_health_callback = Insect.zero_health_callback
           >>> Insect.zero_health_callback = lambda x: print("insect died")
@@ -234,38 +231,38 @@ test = {
           insect died
           >>> Insect.zero_health_callback = original_zero_health_callback
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       >>> beehive, layout = Hive(AssaultPlan()), dry_layout
       >>> gamestate = GameState(beehive, ant_types(), layout, (1, 9))
       >>> #
       """,
-      'teardown': '',
-      'type': 'doctest'
-    },
-    {
-      'cases': [
+            'teardown': '',
+            'type': 'doctest',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> from ants import *
           >>> BodyguardAnt.implemented
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': '',
-      'teardown': '',
-      'type': 'doctest'
-    }
-  ]
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                }
+            ],
+            'scored': True,
+            'setup': '',
+            'teardown': '',
+            'type': 'doctest',
+        },
+    ],
 }

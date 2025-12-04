@@ -50,18 +50,18 @@ def get_current_url(
         host against.
     """
     parts = {
-        "scheme": environ["wsgi.url_scheme"],
-        "host": get_host(environ, trusted_hosts),
+        'scheme': environ['wsgi.url_scheme'],
+        'host': get_host(environ, trusted_hosts),
     }
 
     if not host_only:
-        parts["root_path"] = environ.get("SCRIPT_NAME", "")
+        parts['root_path'] = environ.get('SCRIPT_NAME', '')
 
         if not root_only:
-            parts["path"] = environ.get("PATH_INFO", "")
+            parts['path'] = environ.get('PATH_INFO', '')
 
             if not strip_querystring:
-                parts["query_string"] = environ.get("QUERY_STRING", "").encode("latin1")
+                parts['query_string'] = environ.get('QUERY_STRING', '').encode('latin1')
 
     return _sansio_utils.get_current_url(**parts)
 
@@ -69,13 +69,13 @@ def get_current_url(
 def _get_server(
     environ: WSGIEnvironment,
 ) -> tuple[str, int | None] | None:
-    name = environ.get("SERVER_NAME")
+    name = environ.get('SERVER_NAME')
 
     if name is None:
         return None
 
     try:
-        port: int | None = int(environ.get("SERVER_PORT", None))
+        port: int | None = int(environ.get('SERVER_PORT', None))
     except (TypeError, ValueError):
         # unix socket
         port = None
@@ -104,8 +104,8 @@ def get_host(
         trusted.
     """
     return _sansio_utils.get_host(
-        environ["wsgi.url_scheme"],
-        environ.get("HTTP_HOST"),
+        environ['wsgi.url_scheme'],
+        environ.get('HTTP_HOST'),
         _get_server(environ),
         trusted_hosts,
     )
@@ -121,8 +121,8 @@ def get_content_length(environ: WSGIEnvironment) -> int | None:
     .. versionadded:: 0.9
     """
     return _sansio_utils.get_content_length(
-        http_content_length=environ.get("CONTENT_LENGTH"),
-        http_transfer_encoding=environ.get("HTTP_TRANSFER_ENCODING"),
+        http_content_length=environ.get('CONTENT_LENGTH'),
+        http_transfer_encoding=environ.get('HTTP_TRANSFER_ENCODING'),
     )
 
 
@@ -165,7 +165,7 @@ def get_input_stream(
 
     .. versionadded:: 0.9
     """
-    stream = t.cast(t.IO[bytes], environ["wsgi.input"])
+    stream = t.cast(t.IO[bytes], environ['wsgi.input'])
     content_length = get_content_length(environ)
 
     if content_length is not None and max_content_length is not None:
@@ -174,7 +174,7 @@ def get_input_stream(
 
     # A WSGI server can set this to indicate that it terminates the input stream. In
     # that case the stream is safe without wrapping, or can enforce a max length.
-    if "wsgi.input_terminated" in environ:
+    if 'wsgi.input_terminated' in environ:
         if max_content_length is not None:
             # If this is moved above, it can cause the stream to hang if a read attempt
             # is made when the client sends no data. For example, the development server
@@ -204,8 +204,8 @@ def get_path_info(environ: WSGIEnvironment) -> str:
 
     .. versionadded:: 0.9
     """
-    path: bytes = environ.get("PATH_INFO", "").encode("latin1")
-    return path.decode(errors="replace")
+    path: bytes = environ.get('PATH_INFO', '').encode('latin1')
+    return path.decode(errors='replace')
 
 
 class ClosingIterator:
@@ -244,7 +244,7 @@ class ClosingIterator:
             callbacks = [callbacks]
         else:
             callbacks = list(callbacks)
-        iterable_close = getattr(iterable, "close", None)
+        iterable_close = getattr(iterable, 'close', None)
         if iterable_close:
             callbacks.insert(0, iterable_close)
         self._callbacks = callbacks
@@ -278,7 +278,7 @@ def wrap_file(
     :param file: a :class:`file`-like object with a :meth:`~file.read` method.
     :param buffer_size: number of bytes for one iteration.
     """
-    return environ.get("wsgi.file_wrapper", FileWrapper)(  # type: ignore
+    return environ.get('wsgi.file_wrapper', FileWrapper)(  # type: ignore
         file, buffer_size
     )
 
@@ -306,22 +306,22 @@ class FileWrapper:
         self.buffer_size = buffer_size
 
     def close(self) -> None:
-        if hasattr(self.file, "close"):
+        if hasattr(self.file, 'close'):
             self.file.close()
 
     def seekable(self) -> bool:
-        if hasattr(self.file, "seekable"):
+        if hasattr(self.file, 'seekable'):
             return self.file.seekable()
-        if hasattr(self.file, "seek"):
+        if hasattr(self.file, 'seek'):
             return True
         return False
 
     def seek(self, *args: t.Any) -> None:
-        if hasattr(self.file, "seek"):
+        if hasattr(self.file, 'seek'):
             self.file.seek(*args)
 
     def tell(self) -> int | None:
-        if hasattr(self.file, "tell"):
+        if hasattr(self.file, 'tell'):
             return self.file.tell()
         return None
 
@@ -367,7 +367,7 @@ class _RangeWrapper:
             self.end_byte = start_byte + byte_range
 
         self.read_length = 0
-        self.seekable = hasattr(iterable, "seekable") and iterable.seekable()
+        self.seekable = hasattr(iterable, 'seekable') and iterable.seekable()
         self.end_reached = False
 
     def __iter__(self) -> _RangeWrapper:
@@ -418,7 +418,7 @@ class _RangeWrapper:
         raise StopIteration()
 
     def close(self) -> None:
-        if hasattr(self.iterable, "close"):
+        if hasattr(self.iterable, 'close'):
             self.iterable.close()
 
 
@@ -515,7 +515,7 @@ class LimitedStream(io.RawIOBase):
         if not self.is_exhausted:
             return self.readall()
 
-        return b""
+        return b''
 
     def readinto(self, b: bytearray) -> int | None:  # type: ignore[override]
         size = len(b)
@@ -525,7 +525,7 @@ class LimitedStream(io.RawIOBase):
             self.on_exhausted()
             return 0
 
-        if hasattr(self._stream, "readinto"):
+        if hasattr(self._stream, 'readinto'):
             # Use stream.readinto if it's available.
             if size <= remaining:
                 # The size fits in the remaining limit, use the buffer directly.
@@ -568,7 +568,7 @@ class LimitedStream(io.RawIOBase):
     def readall(self) -> bytes:
         if self.is_exhausted:
             self.on_exhausted()
-            return b""
+            return b''
 
         out = bytearray()
 

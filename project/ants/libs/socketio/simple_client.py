@@ -12,6 +12,7 @@ class SimpleClient:
     The positional and keyword arguments given in the constructor are passed
     to the underlying :func:`socketio.Client` object.
     """
+
     def __init__(self, *args, **kwargs):
         self.client_args = args
         self.client_kwargs = kwargs
@@ -22,8 +23,16 @@ class SimpleClient:
         self.input_event = Event()
         self.input_buffer = []
 
-    def connect(self, url, headers={}, auth=None, transports=None,
-                namespace='/', socketio_path='socket.io', wait_timeout=5):
+    def connect(
+        self,
+        url,
+        headers={},
+        auth=None,
+        transports=None,
+        namespace='/',
+        socketio_path='socket.io',
+        wait_timeout=5,
+    ):
         """Connect to a Socket.IO server.
 
         :param url: The URL of the Socket.IO server. It can include custom
@@ -79,10 +88,15 @@ class SimpleClient:
             self.input_buffer.append([event, *args])
             self.input_event.set()
 
-        self.client.connect(url, headers=headers, auth=auth,
-                            transports=transports, namespaces=[namespace],
-                            socketio_path=socketio_path,
-                            wait_timeout=wait_timeout)
+        self.client.connect(
+            url,
+            headers=headers,
+            auth=auth,
+            transports=transports,
+            namespaces=[namespace],
+            socketio_path=socketio_path,
+            wait_timeout=wait_timeout,
+        )
 
     @property
     def sid(self):
@@ -150,8 +164,9 @@ class SimpleClient:
             if not self.connected:
                 raise DisconnectedError()
             try:
-                return self.client.call(event, data, namespace=self.namespace,
-                                        timeout=timeout)
+                return self.client.call(
+                    event, data, namespace=self.namespace, timeout=timeout
+                )
             except SocketIOError:
                 pass
 
@@ -167,8 +182,7 @@ class SimpleClient:
         additional list elements.
         """
         while not self.input_buffer:
-            if not self.connected_event.wait(
-                    timeout=timeout):  # pragma: no cover
+            if not self.connected_event.wait(timeout=timeout):  # pragma: no cover
                 raise TimeoutError()
             if not self.connected:
                 raise DisconnectedError()

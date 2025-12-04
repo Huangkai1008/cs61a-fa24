@@ -1,11 +1,11 @@
 from typing import Any, Dict, NoReturn, Pattern, Tuple, Type, TypeVar, Union
 
 __all__ = [
-    "ProtocolError",
-    "LocalProtocolError",
-    "RemoteProtocolError",
-    "validate",
-    "bytesify",
+    'ProtocolError',
+    'LocalProtocolError',
+    'RemoteProtocolError',
+    'validate',
+    'bytesify',
 ]
 
 
@@ -40,7 +40,7 @@ class ProtocolError(Exception):
 
     def __init__(self, msg: str, error_status_hint: int = 400) -> None:
         if type(self) is ProtocolError:
-            raise TypeError("tried to directly instantiate ProtocolError")
+            raise TypeError('tried to directly instantiate ProtocolError')
         Exception.__init__(self, msg)
         self.error_status_hint = error_status_hint
 
@@ -82,7 +82,7 @@ class RemoteProtocolError(ProtocolError):
 
 
 def validate(
-    regex: Pattern[bytes], data: bytes, msg: str = "malformed data", *format_args: Any
+    regex: Pattern[bytes], data: bytes, msg: str = 'malformed data', *format_args: Any
 ) -> Dict[str, bytes]:
     match = regex.fullmatch(data)
     if not match:
@@ -101,7 +101,7 @@ def validate(
 # The bonus property is useful if you want to take the return value from
 # next_event() and do some sort of dispatch based on type(event).
 
-_T_Sentinel = TypeVar("_T_Sentinel", bound="Sentinel")
+_T_Sentinel = TypeVar('_T_Sentinel', bound='Sentinel')
 
 
 class Sentinel(type):
@@ -110,7 +110,7 @@ class Sentinel(type):
         name: str,
         bases: Tuple[type, ...],
         namespace: Dict[str, Any],
-        **kwds: Any
+        **kwds: Any,
     ) -> _T_Sentinel:
         assert bases == (Sentinel,)
         v = super().__new__(cls, name, bases, namespace, **kwds)
@@ -129,7 +129,7 @@ def bytesify(s: Union[bytes, bytearray, memoryview, int, str]) -> bytes:
     if type(s) is bytes:
         return s
     if isinstance(s, str):
-        s = s.encode("ascii")
+        s = s.encode('ascii')
     if isinstance(s, int):
-        raise TypeError("expected bytes-like object, not int")
+        raise TypeError('expected bytes-like object, not int')
     return bytes(s)

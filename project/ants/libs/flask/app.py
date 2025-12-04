@@ -61,12 +61,12 @@ if t.TYPE_CHECKING:  # pragma: no cover
     from .testing import FlaskCliRunner
 
 T_shell_context_processor = t.TypeVar(
-    "T_shell_context_processor", bound=ft.ShellContextProcessorCallable
+    'T_shell_context_processor', bound=ft.ShellContextProcessorCallable
 )
-T_teardown = t.TypeVar("T_teardown", bound=ft.TeardownCallable)
-T_template_filter = t.TypeVar("T_template_filter", bound=ft.TemplateFilterCallable)
-T_template_global = t.TypeVar("T_template_global", bound=ft.TemplateGlobalCallable)
-T_template_test = t.TypeVar("T_template_test", bound=ft.TemplateTestCallable)
+T_teardown = t.TypeVar('T_teardown', bound=ft.TeardownCallable)
+T_template_filter = t.TypeVar('T_template_filter', bound=ft.TemplateFilterCallable)
+T_template_global = t.TypeVar('T_template_global', bound=ft.TemplateGlobalCallable)
+T_template_test = t.TypeVar('T_template_test', bound=ft.TemplateTestCallable)
 
 
 def _make_timedelta(value: timedelta | int | None) -> timedelta | None:
@@ -175,29 +175,29 @@ class Flask(App):
 
     default_config = ImmutableDict(
         {
-            "DEBUG": None,
-            "TESTING": False,
-            "PROPAGATE_EXCEPTIONS": None,
-            "SECRET_KEY": None,
-            "PERMANENT_SESSION_LIFETIME": timedelta(days=31),
-            "USE_X_SENDFILE": False,
-            "SERVER_NAME": None,
-            "APPLICATION_ROOT": "/",
-            "SESSION_COOKIE_NAME": "session",
-            "SESSION_COOKIE_DOMAIN": None,
-            "SESSION_COOKIE_PATH": None,
-            "SESSION_COOKIE_HTTPONLY": True,
-            "SESSION_COOKIE_SECURE": False,
-            "SESSION_COOKIE_SAMESITE": None,
-            "SESSION_REFRESH_EACH_REQUEST": True,
-            "MAX_CONTENT_LENGTH": None,
-            "SEND_FILE_MAX_AGE_DEFAULT": None,
-            "TRAP_BAD_REQUEST_ERRORS": None,
-            "TRAP_HTTP_EXCEPTIONS": False,
-            "EXPLAIN_TEMPLATE_LOADING": False,
-            "PREFERRED_URL_SCHEME": "http",
-            "TEMPLATES_AUTO_RELOAD": None,
-            "MAX_COOKIE_SIZE": 4093,
+            'DEBUG': None,
+            'TESTING': False,
+            'PROPAGATE_EXCEPTIONS': None,
+            'SECRET_KEY': None,
+            'PERMANENT_SESSION_LIFETIME': timedelta(days=31),
+            'USE_X_SENDFILE': False,
+            'SERVER_NAME': None,
+            'APPLICATION_ROOT': '/',
+            'SESSION_COOKIE_NAME': 'session',
+            'SESSION_COOKIE_DOMAIN': None,
+            'SESSION_COOKIE_PATH': None,
+            'SESSION_COOKIE_HTTPONLY': True,
+            'SESSION_COOKIE_SECURE': False,
+            'SESSION_COOKIE_SAMESITE': None,
+            'SESSION_REFRESH_EACH_REQUEST': True,
+            'MAX_CONTENT_LENGTH': None,
+            'SEND_FILE_MAX_AGE_DEFAULT': None,
+            'TRAP_BAD_REQUEST_ERRORS': None,
+            'TRAP_HTTP_EXCEPTIONS': False,
+            'EXPLAIN_TEMPLATE_LOADING': False,
+            'PREFERRED_URL_SCHEME': 'http',
+            'TEMPLATES_AUTO_RELOAD': None,
+            'MAX_COOKIE_SIZE': 4093,
         }
     )
 
@@ -219,11 +219,11 @@ class Flask(App):
         self,
         import_name: str,
         static_url_path: str | None = None,
-        static_folder: str | os.PathLike[str] | None = "static",
+        static_folder: str | os.PathLike[str] | None = 'static',
         static_host: str | None = None,
         host_matching: bool = False,
         subdomain_matching: bool = False,
-        template_folder: str | os.PathLike[str] | None = "templates",
+        template_folder: str | os.PathLike[str] | None = 'templates',
         instance_path: str | None = None,
         instance_relative_config: bool = False,
         root_path: str | None = None,
@@ -247,15 +247,15 @@ class Flask(App):
         # For one, it might be created while the server is running (e.g. during
         # development). Also, Google App Engine stores static files somewhere
         if self.has_static_folder:
-            assert (
-                bool(static_host) == host_matching
-            ), "Invalid static_host/host_matching combination"
+            assert bool(static_host) == host_matching, (
+                'Invalid static_host/host_matching combination'
+            )
             # Use a weakref to avoid creating a reference cycle between the app
             # and the view function (see #3761).
             self_ref = weakref.ref(self)
             self.add_url_rule(
-                f"{self.static_url_path}/<path:filename>",
-                endpoint="static",
+                f'{self.static_url_path}/<path:filename>',
+                endpoint='static',
                 host=static_host,
                 view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
             )
@@ -277,7 +277,7 @@ class Flask(App):
 
         .. versionadded:: 0.9
         """
-        value = current_app.config["SEND_FILE_MAX_AGE_DEFAULT"]
+        value = current_app.config['SEND_FILE_MAX_AGE_DEFAULT']
 
         if value is None:
             return None
@@ -309,7 +309,7 @@ class Flask(App):
             t.cast(str, self.static_folder), filename, max_age=max_age
         )
 
-    def open_resource(self, resource: str, mode: str = "rb") -> t.IO[t.AnyStr]:
+    def open_resource(self, resource: str, mode: str = 'rb') -> t.IO[t.AnyStr]:
         """Open a resource file relative to :attr:`root_path` for
         reading.
 
@@ -331,12 +331,12 @@ class Flask(App):
         class.
 
         """
-        if mode not in {"r", "rt", "rb"}:
-            raise ValueError("Resources can only be opened for reading.")
+        if mode not in {'r', 'rt', 'rb'}:
+            raise ValueError('Resources can only be opened for reading.')
 
         return open(os.path.join(self.root_path, resource), mode)
 
-    def open_instance_resource(self, resource: str, mode: str = "rb") -> t.IO[t.AnyStr]:
+    def open_instance_resource(self, resource: str, mode: str = 'rb') -> t.IO[t.AnyStr]:
         """Opens a resource from the application's instance folder
         (:attr:`instance_path`).  Otherwise works like
         :meth:`open_resource`.  Instance resources can also be opened for
@@ -362,16 +362,16 @@ class Flask(App):
         """
         options = dict(self.jinja_options)
 
-        if "autoescape" not in options:
-            options["autoescape"] = self.select_jinja_autoescape
+        if 'autoescape' not in options:
+            options['autoescape'] = self.select_jinja_autoescape
 
-        if "auto_reload" not in options:
-            auto_reload = self.config["TEMPLATES_AUTO_RELOAD"]
+        if 'auto_reload' not in options:
+            auto_reload = self.config['TEMPLATES_AUTO_RELOAD']
 
             if auto_reload is None:
                 auto_reload = self.debug
 
-            options["auto_reload"] = auto_reload
+            options['auto_reload'] = auto_reload
 
         rv = self.jinja_environment(self, **options)
         rv.globals.update(
@@ -385,7 +385,7 @@ class Flask(App):
             session=session,
             g=g,
         )
-        rv.policies["json.dumps_function"] = self.json.dumps
+        rv.policies['json.dumps_function'] = self.json.dumps
         return rv
 
     def create_url_adapter(self, request: Request | None) -> MapAdapter | None:
@@ -414,16 +414,16 @@ class Flask(App):
 
             return self.url_map.bind_to_environ(
                 request.environ,
-                server_name=self.config["SERVER_NAME"],
+                server_name=self.config['SERVER_NAME'],
                 subdomain=subdomain,
             )
         # We need at the very least the server name to be set for this
         # to work.
-        if self.config["SERVER_NAME"] is not None:
+        if self.config['SERVER_NAME'] is not None:
             return self.url_map.bind(
-                self.config["SERVER_NAME"],
-                script_name=self.config["APPLICATION_ROOT"],
-                url_scheme=self.config["PREFERRED_URL_SCHEME"],
+                self.config['SERVER_NAME'],
+                script_name=self.config['APPLICATION_ROOT'],
+                url_scheme=self.config['PREFERRED_URL_SCHEME'],
             )
 
         return None
@@ -448,7 +448,7 @@ class Flask(App):
             not self.debug
             or not isinstance(request.routing_exception, RequestRedirect)
             or request.routing_exception.code in {307, 308}
-            or request.method in {"GET", "HEAD", "OPTIONS"}
+            or request.method in {'GET', 'HEAD', 'OPTIONS'}
         ):
             raise request.routing_exception  # type: ignore[misc]
 
@@ -491,7 +491,7 @@ class Flask(App):
 
         .. versionadded:: 0.11
         """
-        rv = {"app": self, "g": g}
+        rv = {'app': self, 'g': g}
         for processor in self.shell_context_processors:
             rv.update(processor())
         return rv
@@ -561,14 +561,14 @@ class Flask(App):
         """
         # Ignore this call so that it doesn't start another server if
         # the 'flask run' command is used.
-        if os.environ.get("FLASK_RUN_FROM_CLI") == "true":
+        if os.environ.get('FLASK_RUN_FROM_CLI') == 'true':
             if not is_running_from_reloader():
                 click.secho(
                     " * Ignoring a call to 'app.run()' that would block"
                     " the current 'flask' CLI command.\n"
                     "   Only call 'app.run()' in an 'if __name__ =="
                     ' "__main__"\' guard.',
-                    fg="red",
+                    fg='red',
                 )
 
             return
@@ -577,24 +577,24 @@ class Flask(App):
             cli.load_dotenv()
 
             # if set, env var overrides existing value
-            if "FLASK_DEBUG" in os.environ:
+            if 'FLASK_DEBUG' in os.environ:
                 self.debug = get_debug_flag()
 
         # debug passed to method overrides all other sources
         if debug is not None:
             self.debug = bool(debug)
 
-        server_name = self.config.get("SERVER_NAME")
+        server_name = self.config.get('SERVER_NAME')
         sn_host = sn_port = None
 
         if server_name:
-            sn_host, _, sn_port = server_name.partition(":")
+            sn_host, _, sn_port = server_name.partition(':')
 
         if not host:
             if sn_host:
                 host = sn_host
             else:
-                host = "127.0.0.1"
+                host = '127.0.0.1'
 
         if port or port == 0:
             port = int(port)
@@ -603,9 +603,9 @@ class Flask(App):
         else:
             port = 5000
 
-        options.setdefault("use_reloader", self.debug)
-        options.setdefault("use_debugger", self.debug)
-        options.setdefault("threaded", True)
+        options.setdefault('use_reloader', self.debug)
+        options.setdefault('use_debugger', self.debug)
+        options.setdefault('threaded', True)
 
         cli.show_server_banner(self.debug, self.name)
 
@@ -747,7 +747,7 @@ class Flask(App):
         .. versionadded:: 0.7
         """
         if isinstance(e, BadRequestKeyError) and (
-            self.debug or self.config["TRAP_BAD_REQUEST_ERRORS"]
+            self.debug or self.config['TRAP_BAD_REQUEST_ERRORS']
         ):
             e.show_exception = True
 
@@ -791,7 +791,7 @@ class Flask(App):
         """
         exc_info = sys.exc_info()
         got_request_exception.send(self, _async_wrapper=self.ensure_sync, exception=e)
-        propagate = self.config["PROPAGATE_EXCEPTIONS"]
+        propagate = self.config['PROPAGATE_EXCEPTIONS']
 
         if propagate is None:
             propagate = self.testing or self.debug
@@ -826,7 +826,7 @@ class Flask(App):
         .. versionadded:: 0.8
         """
         self.logger.error(
-            f"Exception on {request.path} [{request.method}]", exc_info=exc_info
+            f'Exception on {request.path} [{request.method}]', exc_info=exc_info
         )
 
     def dispatch_request(self) -> ft.ResponseReturnValue:
@@ -846,8 +846,8 @@ class Flask(App):
         # if we provide automatic options for this URL and the
         # request came with the OPTIONS method, reply automatically
         if (
-            getattr(rule, "provide_automatic_options", False)
-            and req.method == "OPTIONS"
+            getattr(rule, 'provide_automatic_options', False)
+            and req.method == 'OPTIONS'
         ):
             return self.make_default_options_response()
         # otherwise dispatch to the handler for that endpoint
@@ -899,7 +899,7 @@ class Flask(App):
             if not from_error_handler:
                 raise
             self.logger.exception(
-                "Request finalizing failed with an error while handling an error"
+                'Request finalizing failed with an error while handling an error'
             )
         return response
 
@@ -1018,9 +1018,9 @@ class Flask(App):
 
             # If the endpoint starts with "." and the request matches a
             # blueprint, the endpoint is relative to the blueprint.
-            if endpoint[:1] == ".":
+            if endpoint[:1] == '.':
                 if blueprint_name is not None:
-                    endpoint = f"{blueprint_name}{endpoint}"
+                    endpoint = f'{blueprint_name}{endpoint}'
                 else:
                     endpoint = endpoint[1:]
 
@@ -1041,10 +1041,10 @@ class Flask(App):
 
             if url_adapter is None:
                 raise RuntimeError(
-                    "Unable to build URLs outside an active request"
+                    'Unable to build URLs outside an active request'
                     " without 'SERVER_NAME' configured. Also configure"
                     " 'APPLICATION_ROOT' and 'PREFERRED_URL_SCHEME' as"
-                    " needed."
+                    ' needed.'
                 )
 
             # When outside a request, generate a URL with scheme and
@@ -1075,7 +1075,7 @@ class Flask(App):
 
         if _anchor is not None:
             _anchor = _url_quote(_anchor, safe="%!#$&'()*+,/:;=?@")
-            rv = f"{rv}#{_anchor}"
+            rv = f'{rv}#{_anchor}'
 
         return rv
 
@@ -1154,17 +1154,17 @@ class Flask(App):
             # other sized tuples are not allowed
             else:
                 raise TypeError(
-                    "The view function did not return a valid response tuple."
-                    " The tuple must have the form (body, status, headers),"
-                    " (body, status), or (body, headers)."
+                    'The view function did not return a valid response tuple.'
+                    ' The tuple must have the form (body, status, headers),'
+                    ' (body, status), or (body, headers).'
                 )
 
         # the body must not be None
         if rv is None:
             raise TypeError(
-                f"The view function for {request.endpoint!r} did not"
-                " return a valid response. The function either returned"
-                " None or ended without a return statement."
+                f'The view function for {request.endpoint!r} did not'
+                ' return a valid response. The function either returned'
+                ' None or ended without a return statement.'
             )
 
         # make sure the body is an instance of the response class
@@ -1191,19 +1191,19 @@ class Flask(App):
                     )
                 except TypeError as e:
                     raise TypeError(
-                        f"{e}\nThe view function did not return a valid"
-                        " response. The return type must be a string,"
-                        " dict, list, tuple with headers or status,"
-                        " Response instance, or WSGI callable, but it"
-                        f" was a {type(rv).__name__}."
+                        f'{e}\nThe view function did not return a valid'
+                        ' response. The return type must be a string,'
+                        ' dict, list, tuple with headers or status,'
+                        ' Response instance, or WSGI callable, but it'
+                        f' was a {type(rv).__name__}.'
                     ).with_traceback(sys.exc_info()[2]) from None
             else:
                 raise TypeError(
-                    "The view function did not return a valid"
-                    " response. The return type must be a string,"
-                    " dict, list, tuple with headers or status,"
-                    " Response instance, or WSGI callable, but it was a"
-                    f" {type(rv).__name__}."
+                    'The view function did not return a valid'
+                    ' response. The return type must be a string,'
+                    ' dict, list, tuple with headers or status,'
+                    ' Response instance, or WSGI callable, but it was a'
+                    f' {type(rv).__name__}.'
                 )
 
         rv = t.cast(Response, rv)
@@ -1469,9 +1469,9 @@ class Flask(App):
                 raise
             return response(environ, start_response)
         finally:
-            if "werkzeug.debug.preserve_context" in environ:
-                environ["werkzeug.debug.preserve_context"](_cv_app.get())
-                environ["werkzeug.debug.preserve_context"](_cv_request.get())
+            if 'werkzeug.debug.preserve_context' in environ:
+                environ['werkzeug.debug.preserve_context'](_cv_app.get())
+                environ['werkzeug.debug.preserve_context'](_cv_request.get())
 
             if error is not None and self.should_ignore_error(error):
                 error = None

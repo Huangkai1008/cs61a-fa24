@@ -37,8 +37,7 @@ class Packet(object):
             return self.encode_cache
         if self.binary:
             if b64:
-                encoded_packet = 'b' + base64.b64encode(self.data).decode(
-                    'utf-8')
+                encoded_packet = 'b' + base64.b64encode(self.data).decode('utf-8')
             else:
                 encoded_packet = self.data
         else:
@@ -46,8 +45,7 @@ class Packet(object):
             if isinstance(self.data, str):
                 encoded_packet += self.data
             elif isinstance(self.data, dict) or isinstance(self.data, list):
-                encoded_packet += self.json.dumps(self.data,
-                                                  separators=(',', ':'))
+                encoded_packet += self.json.dumps(self.data, separators=(',', ':'))
             elif self.data is not None:
                 encoded_packet += str(self.data)
         self.encode_cache = encoded_packet

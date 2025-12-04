@@ -142,14 +142,14 @@ def after_this_request(
     if ctx is None:
         raise RuntimeError(
             "'after_this_request' can only be used when a request"
-            " context is active, such as in a view function."
+            ' context is active, such as in a view function.'
         )
 
     ctx._after_request_functions.append(f)
     return f
 
 
-F = t.TypeVar("F", bound=t.Callable[..., t.Any])
+F = t.TypeVar('F', bound=t.Callable[..., t.Any])
 
 
 def copy_current_request_context(f: F) -> F:
@@ -181,7 +181,7 @@ def copy_current_request_context(f: F) -> F:
     if ctx is None:
         raise RuntimeError(
             "'copy_current_request_context' can only be used when a"
-            " request context is active, such as in a view function."
+            ' request context is active, such as in a view function.'
         )
 
     ctx = ctx.copy()
@@ -266,7 +266,7 @@ class AppContext:
 
         if ctx is not self:
             raise AssertionError(
-                f"Popped wrong app context. ({ctx!r} instead of {self!r})"
+                f'Popped wrong app context. ({ctx!r} instead of {self!r})'
             )
 
         appcontext_popped.send(self.app, _async_wrapper=self.app.ensure_sync)
@@ -409,7 +409,7 @@ class RequestContext:
                     exc = sys.exc_info()[1]
                 self.app.do_teardown_request(exc)
 
-                request_close = getattr(self.request, "close", None)
+                request_close = getattr(self.request, 'close', None)
                 if request_close is not None:
                     request_close()
         finally:
@@ -420,14 +420,14 @@ class RequestContext:
             # get rid of circular dependencies at the end of the request
             # so that we don't require the GC to be active.
             if clear_request:
-                ctx.request.environ["werkzeug.request"] = None
+                ctx.request.environ['werkzeug.request'] = None
 
             if app_ctx is not None:
                 app_ctx.pop(exc)
 
             if ctx is not self:
                 raise AssertionError(
-                    f"Popped wrong request context. ({ctx!r} instead of {self!r})"
+                    f'Popped wrong request context. ({ctx!r} instead of {self!r})'
                 )
 
     def __enter__(self) -> RequestContext:
@@ -444,6 +444,6 @@ class RequestContext:
 
     def __repr__(self) -> str:
         return (
-            f"<{type(self).__name__} {self.request.url!r}"
-            f" [{self.request.method}] of {self.app.name}>"
+            f'<{type(self).__name__} {self.request.url!r}'
+            f' [{self.request.method}] of {self.app.name}>'
         )

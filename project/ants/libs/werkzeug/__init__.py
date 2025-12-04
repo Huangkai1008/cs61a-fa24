@@ -9,17 +9,17 @@ from .wrappers import Response as Response
 
 
 def __getattr__(name: str) -> t.Any:
-    if name == "__version__":
+    if name == '__version__':
         import importlib.metadata
         import warnings
 
         warnings.warn(
             "The '__version__' attribute is deprecated and will be removed in"
-            " Werkzeug 3.1. Use feature detection or"
-            " 'importlib.metadata.version(\"werkzeug\")' instead.",
+            ' Werkzeug 3.1. Use feature detection or'
+            ' \'importlib.metadata.version("werkzeug")\' instead.',
             DeprecationWarning,
             stacklevel=2,
         )
-        return importlib.metadata.version("werkzeug")
+        return importlib.metadata.version('werkzeug')
 
     raise AttributeError(name)

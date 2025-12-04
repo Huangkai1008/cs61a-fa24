@@ -74,7 +74,7 @@ class Connection:
         self,
         connection_type: ConnectionType,
         extensions: Optional[List[Extension]] = None,
-        trailing_data: bytes = b"",
+        trailing_data: bytes = b'',
     ) -> None:
         self.client = connection_type is ConnectionType.CLIENT
         self._events: Deque[Event] = deque()
@@ -87,7 +87,7 @@ class Connection:
         return self._state
 
     def send(self, event: Event) -> bytes:
-        data = b""
+        data = b''
         if isinstance(event, Message) and self.state == ConnectionState.OPEN:
             data += self._proto.send_data(event.data, event.message_finished)
         elif isinstance(event, Ping) and self.state == ConnectionState.OPEN:
@@ -105,7 +105,7 @@ class Connection:
                 self._state = ConnectionState.LOCAL_CLOSING
         else:
             raise LocalProtocolError(
-                f"Event {event} cannot be sent in state {self.state}."
+                f'Event {event} cannot be sent in state {self.state}.'
             )
         return data
 
@@ -132,7 +132,7 @@ class Connection:
         if self.state in (ConnectionState.OPEN, ConnectionState.LOCAL_CLOSING):
             self._proto.receive_bytes(data)
         elif self.state is ConnectionState.CLOSED:
-            raise LocalProtocolError("Connection already closed.")
+            raise LocalProtocolError('Connection already closed.')
         else:
             pass  # pragma: no cover
 

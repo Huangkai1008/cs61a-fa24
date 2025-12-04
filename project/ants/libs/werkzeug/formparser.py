@@ -41,11 +41,10 @@ if t.TYPE_CHECKING:
             content_type: str | None,
             filename: str | None,
             content_length: int | None = None,
-        ) -> t.IO[bytes]:
-            ...
+        ) -> t.IO[bytes]: ...
 
 
-F = t.TypeVar("F", bound=t.Callable[..., t.Any])
+F = t.TypeVar('F', bound=t.Callable[..., t.Any])
 
 
 def default_stream_factory(
@@ -57,9 +56,9 @@ def default_stream_factory(
     max_size = 1024 * 500
 
     if SpooledTemporaryFile is not None:
-        return t.cast(t.IO[bytes], SpooledTemporaryFile(max_size=max_size, mode="rb+"))
+        return t.cast(t.IO[bytes], SpooledTemporaryFile(max_size=max_size, mode='rb+'))
     elif total_content_length is None or total_content_length > max_size:
-        return t.cast(t.IO[bytes], TemporaryFile("rb+"))
+        return t.cast(t.IO[bytes], TemporaryFile('rb+'))
 
     return BytesIO()
 
@@ -197,7 +196,7 @@ class FormDataParser:
         """
         stream = get_input_stream(environ, max_content_length=self.max_content_length)
         content_length = get_content_length(environ)
-        mimetype, options = parse_options_header(environ.get("CONTENT_TYPE"))
+        mimetype, options = parse_options_header(environ.get('CONTENT_TYPE'))
         return self.parse(
             stream,
             content_length=content_length,
@@ -226,9 +225,9 @@ class FormDataParser:
             The invalid ``application/x-url-encoded`` content type is not
             treated as ``application/x-www-form-urlencoded``.
         """
-        if mimetype == "multipart/form-data":
+        if mimetype == 'multipart/form-data':
             parse_func = self._parse_multipart
-        elif mimetype == "application/x-www-form-urlencoded":
+        elif mimetype == 'application/x-www-form-urlencoded':
             parse_func = self._parse_urlencoded
         else:
             return stream, self.cls(), self.cls()
@@ -257,10 +256,10 @@ class FormDataParser:
             max_form_parts=self.max_form_parts,
             cls=self.cls,
         )
-        boundary = options.get("boundary", "").encode("ascii")
+        boundary = options.get('boundary', '').encode('ascii')
 
         if not boundary:
-            raise ValueError("Missing boundary")
+            raise ValueError('Missing boundary')
 
         form, files = parser.parse(stream, boundary, content_length)
         return stream, form, files
@@ -283,7 +282,7 @@ class FormDataParser:
             items = parse_qsl(
                 stream.read().decode(),
                 keep_blank_values=True,
-                errors="werkzeug.url_quote",
+                errors='werkzeug.url_quote',
             )
         except ValueError as e:
             raise RequestEntityTooLarge() from e
@@ -319,26 +318,26 @@ class MultiPartParser:
 
     def get_part_charset(self, headers: Headers) -> str:
         # Figure out input charset for current part
-        content_type = headers.get("content-type")
+        content_type = headers.get('content-type')
 
         if content_type:
             parameters = parse_options_header(content_type)[1]
-            ct_charset = parameters.get("charset", "").lower()
+            ct_charset = parameters.get('charset', '').lower()
 
             # A safe list of encodings. Modern clients should only send ASCII or UTF-8.
             # This list will not be extended further.
-            if ct_charset in {"ascii", "us-ascii", "utf-8", "iso-8859-1"}:
+            if ct_charset in {'ascii', 'us-ascii', 'utf-8', 'iso-8859-1'}:
                 return ct_charset
 
-        return "utf-8"
+        return 'utf-8'
 
     def start_file_streaming(
         self, event: File, total_content_length: int | None
     ) -> t.IO[bytes]:
-        content_type = event.headers.get("content-type")
+        content_type = event.headers.get('content-type')
 
         try:
-            content_length = _plain_int(event.headers["content-length"])
+            content_length = _plain_int(event.headers['content-length'])
         except (KeyError, ValueError):
             content_length = 0
 
@@ -382,8 +381,8 @@ class MultiPartParser:
                     _write(event.data)
                     if not event.more_data:
                         if isinstance(current_part, Field):
-                            value = b"".join(container).decode(
-                                self.get_part_charset(current_part.headers), "replace"
+                            value = b''.join(container).decode(
+                                self.get_part_charset(current_part.headers), 'replace'
                             )
                             fields.append((current_part.name, value))
                         else:

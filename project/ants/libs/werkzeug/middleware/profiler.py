@@ -11,6 +11,7 @@ that may be slowing down your application.
 :copyright: 2007 Pallets
 :license: BSD-3-Clause
 """
+
 from __future__ import annotations
 
 import os.path
@@ -89,10 +90,10 @@ class ProfilerMiddleware:
         self,
         app: WSGIApplication,
         stream: t.IO[str] | None = sys.stdout,
-        sort_by: t.Iterable[str] = ("time", "calls"),
+        sort_by: t.Iterable[str] = ('time', 'calls'),
         restrictions: t.Iterable[str | int | float] = (),
         profile_dir: str | None = None,
-        filename_format: str = "{method}.{path}.{elapsed:.0f}ms.{time:.0f}.prof",
+        filename_format: str = '{method}.{path}.{elapsed:.0f}ms.{time:.0f}.prof',
     ) -> None:
         self._app = app
         self._stream = stream
@@ -112,30 +113,30 @@ class ProfilerMiddleware:
 
         def runapp() -> None:
             app_iter = self._app(
-                environ, t.cast("StartResponse", catching_start_response)
+                environ, t.cast('StartResponse', catching_start_response)
             )
             response_body.extend(app_iter)
 
-            if hasattr(app_iter, "close"):
+            if hasattr(app_iter, 'close'):
                 app_iter.close()
 
         profile = Profile()
         start = time.time()
         profile.runcall(runapp)
-        body = b"".join(response_body)
+        body = b''.join(response_body)
         elapsed = time.time() - start
 
         if self._profile_dir is not None:
             if callable(self._filename_format):
-                environ["werkzeug.profiler"] = {
-                    "elapsed": elapsed * 1000.0,
-                    "time": time.time(),
+                environ['werkzeug.profiler'] = {
+                    'elapsed': elapsed * 1000.0,
+                    'time': time.time(),
                 }
                 filename = self._filename_format(environ)
             else:
                 filename = self._filename_format.format(
-                    method=environ["REQUEST_METHOD"],
-                    path=environ["PATH_INFO"].strip("/").replace("/", ".") or "root",
+                    method=environ['REQUEST_METHOD'],
+                    path=environ['PATH_INFO'].strip('/').replace('/', '.') or 'root',
                     elapsed=elapsed * 1000.0,
                     time=time.time(),
                 )
@@ -145,10 +146,10 @@ class ProfilerMiddleware:
         if self._stream is not None:
             stats = Stats(profile, stream=self._stream)
             stats.sort_stats(*self._sort_by)
-            print("-" * 80, file=self._stream)
-            path_info = environ.get("PATH_INFO", "")
-            print(f"PATH: {path_info!r}", file=self._stream)
+            print('-' * 80, file=self._stream)
+            path_info = environ.get('PATH_INFO', '')
+            print(f'PATH: {path_info!r}', file=self._stream)
             stats.print_stats(*self._restrictions)
-            print(f"{'-' * 80}\n", file=self._stream)
+            print(f'{"-" * 80}\n', file=self._stream)
 
         return [body]

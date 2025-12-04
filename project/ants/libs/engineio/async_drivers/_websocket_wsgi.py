@@ -6,6 +6,7 @@ class SimpleWebSocketWSGI:  # pragma: no cover
     This wrapper class provides a threading WebSocket interface that is
     compatible with eventlet's implementation.
     """
+
     def __init__(self, handler, server, **kwargs):
         self.app = handler
         self.server_args = kwargs

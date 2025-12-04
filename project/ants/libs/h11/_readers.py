@@ -34,10 +34,10 @@ from ._state import (
 )
 from ._util import LocalProtocolError, RemoteProtocolError, Sentinel, validate
 
-__all__ = ["READERS"]
+__all__ = ['READERS']
 
-header_field_re = re.compile(header_field.encode("ascii"))
-obs_fold_re = re.compile(rb"[ \t]+")
+header_field_re = re.compile(header_field.encode('ascii'))
+obs_fold_re = re.compile(rb'[ \t]+')
 
 
 def _obsolete_line_fold(lines: Iterable[bytes]) -> Iterable[bytes]:
@@ -47,11 +47,11 @@ def _obsolete_line_fold(lines: Iterable[bytes]) -> Iterable[bytes]:
         match = obs_fold_re.match(line)
         if match:
             if last is None:
-                raise LocalProtocolError("continuation line at start of headers")
+                raise LocalProtocolError('continuation line at start of headers')
             if not isinstance(last, bytearray):
                 # Cast to a mutable type, avoiding copy on append to ensure O(n) time
                 last = bytearray(last)
-            last += b" "
+            last += b' '
             last += line[match.end() :]
         else:
             if last is not None:
@@ -65,30 +65,30 @@ def _decode_header_lines(
     lines: Iterable[bytes],
 ) -> Iterable[Tuple[bytes, bytes]]:
     for line in _obsolete_line_fold(lines):
-        matches = validate(header_field_re, line, "illegal header line: {!r}", line)
-        yield (matches["field_name"], matches["field_value"])
+        matches = validate(header_field_re, line, 'illegal header line: {!r}', line)
+        yield (matches['field_name'], matches['field_value'])
 
 
-request_line_re = re.compile(request_line.encode("ascii"))
+request_line_re = re.compile(request_line.encode('ascii'))
 
 
 def maybe_read_from_IDLE_client(buf: ReceiveBuffer) -> Optional[Request]:
     lines = buf.maybe_extract_lines()
     if lines is None:
         if buf.is_next_line_obviously_invalid_request_line():
-            raise LocalProtocolError("illegal request line")
+            raise LocalProtocolError('illegal request line')
         return None
     if not lines:
-        raise LocalProtocolError("no request line received")
+        raise LocalProtocolError('no request line received')
     matches = validate(
-        request_line_re, lines[0], "illegal request line: {!r}", lines[0]
+        request_line_re, lines[0], 'illegal request line: {!r}', lines[0]
     )
     return Request(
         headers=list(_decode_header_lines(lines[1:])), _parsed=True, **matches
     )
 
 
-status_line_re = re.compile(status_line.encode("ascii"))
+status_line_re = re.compile(status_line.encode('ascii'))
 
 
 def maybe_read_from_SEND_RESPONSE_server(
@@ -97,16 +97,16 @@ def maybe_read_from_SEND_RESPONSE_server(
     lines = buf.maybe_extract_lines()
     if lines is None:
         if buf.is_next_line_obviously_invalid_request_line():
-            raise LocalProtocolError("illegal request line")
+            raise LocalProtocolError('illegal request line')
         return None
     if not lines:
-        raise LocalProtocolError("no response line received")
-    matches = validate(status_line_re, lines[0], "illegal status line: {!r}", lines[0])
+        raise LocalProtocolError('no response line received')
+    matches = validate(status_line_re, lines[0], 'illegal status line: {!r}', lines[0])
     http_version = (
-        b"1.1" if matches["http_version"] is None else matches["http_version"]
+        b'1.1' if matches['http_version'] is None else matches['http_version']
     )
-    reason = b"" if matches["reason"] is None else matches["reason"]
-    status_code = int(matches["status_code"])
+    reason = b'' if matches['reason'] is None else matches['reason']
+    status_code = int(matches['status_code'])
     class_: Union[Type[InformationalResponse], Type[Response]] = (
         InformationalResponse if status_code < 200 else Response
     )
@@ -135,14 +135,14 @@ class ContentLengthReader:
 
     def read_eof(self) -> NoReturn:
         raise RemoteProtocolError(
-            "peer closed connection without sending complete message body "
-            "(received {} bytes, expected {})".format(
+            'peer closed connection without sending complete message body '
+            '(received {} bytes, expected {})'.format(
                 self._length - self._remaining, self._length
             )
         )
 
 
-chunk_header_re = re.compile(chunk_header.encode("ascii"))
+chunk_header_re = re.compile(chunk_header.encode('ascii'))
 
 
 class ChunkedReader:
@@ -177,11 +177,11 @@ class ChunkedReader:
             matches = validate(
                 chunk_header_re,
                 chunk_header,
-                "illegal chunk header: {!r}",
+                'illegal chunk header: {!r}',
                 chunk_header,
             )
             # XX FIXME: we discard chunk extensions. Does anyone care?
-            self._bytes_in_chunk = int(matches["chunk_size"], base=16)
+            self._bytes_in_chunk = int(matches['chunk_size'], base=16)
             if self._bytes_in_chunk == 0:
                 self._reading_trailer = True
                 return self(buf)
@@ -202,8 +202,8 @@ class ChunkedReader:
 
     def read_eof(self) -> NoReturn:
         raise RemoteProtocolError(
-            "peer closed connection without sending complete message body "
-            "(incomplete chunked read)"
+            'peer closed connection without sending complete message body '
+            '(incomplete chunked read)'
         )
 
 
@@ -220,7 +220,7 @@ class Http10Reader:
 
 def expect_nothing(buf: ReceiveBuffer) -> None:
     if buf:
-        raise LocalProtocolError("Got data when expecting EOF")
+        raise LocalProtocolError('Got data when expecting EOF')
     return None
 
 
@@ -240,8 +240,8 @@ READERS: ReadersType = {
     (SERVER, MUST_CLOSE): expect_nothing,
     (SERVER, CLOSED): expect_nothing,
     SEND_BODY: {
-        "chunked": ChunkedReader,
-        "content-length": ContentLengthReader,
-        "http/1.0": Http10Reader,
+        'chunked': ChunkedReader,
+        'content-length': ContentLengthReader,
+        'http/1.0': Http10Reader,
     },
 }

@@ -45,7 +45,7 @@ def find_best_app(module: ModuleType) -> Flask:
     from . import Flask
 
     # Search for the most common names first.
-    for attr_name in ("app", "application"):
+    for attr_name in ('app', 'application'):
         app = getattr(module, attr_name, None)
 
         if isinstance(app, Flask):
@@ -58,13 +58,13 @@ def find_best_app(module: ModuleType) -> Flask:
         return matches[0]
     elif len(matches) > 1:
         raise NoAppException(
-            "Detected multiple Flask applications in module"
+            'Detected multiple Flask applications in module'
             f" '{module.__name__}'. Use '{module.__name__}:name'"
-            " to specify the correct one."
+            ' to specify the correct one.'
         )
 
     # Search for app factory functions.
-    for attr_name in ("create_app", "make_app"):
+    for attr_name in ('create_app', 'make_app'):
         app_factory = getattr(module, attr_name, None)
 
         if inspect.isfunction(app_factory):
@@ -79,15 +79,15 @@ def find_best_app(module: ModuleType) -> Flask:
 
                 raise NoAppException(
                     f"Detected factory '{attr_name}' in module '{module.__name__}',"
-                    " but could not call it without arguments. Use"
+                    ' but could not call it without arguments. Use'
                     f" '{module.__name__}:{attr_name}(args)'"
-                    " to specify arguments."
+                    ' to specify arguments.'
                 ) from e
 
     raise NoAppException(
-        "Failed to find Flask application or factory in module"
+        'Failed to find Flask application or factory in module'
         f" '{module.__name__}'. Use '{module.__name__}:name'"
-        " to specify one."
+        ' to specify one.'
     )
 
 
@@ -126,10 +126,10 @@ def find_app_by_string(module: ModuleType, app_name: str) -> Flask:
     # Parse app_name as a single expression to determine if it's a valid
     # attribute name or function call.
     try:
-        expr = ast.parse(app_name.strip(), mode="eval").body
+        expr = ast.parse(app_name.strip(), mode='eval').body
     except SyntaxError:
         raise NoAppException(
-            f"Failed to parse {app_name!r} as an attribute name or function call."
+            f'Failed to parse {app_name!r} as an attribute name or function call.'
         ) from None
 
     if isinstance(expr, ast.Name):
@@ -140,7 +140,7 @@ def find_app_by_string(module: ModuleType, app_name: str) -> Flask:
         # Ensure the function name is an attribute name only.
         if not isinstance(expr.func, ast.Name):
             raise NoAppException(
-                f"Function reference must be a simple name: {app_name!r}."
+                f'Function reference must be a simple name: {app_name!r}.'
             )
 
         name = expr.func.id
@@ -157,18 +157,18 @@ def find_app_by_string(module: ModuleType, app_name: str) -> Flask:
             # literal_eval gives cryptic error messages, show a generic
             # message with the full expression instead.
             raise NoAppException(
-                f"Failed to parse arguments as literal values: {app_name!r}."
+                f'Failed to parse arguments as literal values: {app_name!r}.'
             ) from None
     else:
         raise NoAppException(
-            f"Failed to parse {app_name!r} as an attribute name or function call."
+            f'Failed to parse {app_name!r} as an attribute name or function call.'
         )
 
     try:
         attr = getattr(module, name)
     except AttributeError as e:
         raise NoAppException(
-            f"Failed to find attribute {name!r} in {module.__name__!r}."
+            f'Failed to find attribute {name!r} in {module.__name__!r}.'
         ) from e
 
     # If the attribute is a function, call it with any args and kwargs
@@ -181,9 +181,9 @@ def find_app_by_string(module: ModuleType, app_name: str) -> Flask:
                 raise
 
             raise NoAppException(
-                f"The factory {app_name!r} in module"
-                f" {module.__name__!r} could not be called with the"
-                " specified arguments."
+                f'The factory {app_name!r} in module'
+                f' {module.__name__!r} could not be called with the'
+                ' specified arguments.'
             ) from e
     else:
         app = attr
@@ -192,7 +192,7 @@ def find_app_by_string(module: ModuleType, app_name: str) -> Flask:
         return app
 
     raise NoAppException(
-        "A valid Flask application was not obtained from"
+        'A valid Flask application was not obtained from'
         f" '{module.__name__}:{app_name}'."
     )
 
@@ -204,10 +204,10 @@ def prepare_import(path: str) -> str:
     path = os.path.realpath(path)
 
     fname, ext = os.path.splitext(path)
-    if ext == ".py":
+    if ext == '.py':
         path = fname
 
-    if os.path.basename(path) == "__init__":
+    if os.path.basename(path) == '__init__':
         path = os.path.dirname(path)
 
     module_name = []
@@ -217,27 +217,25 @@ def prepare_import(path: str) -> str:
         path, name = os.path.split(path)
         module_name.append(name)
 
-        if not os.path.exists(os.path.join(path, "__init__.py")):
+        if not os.path.exists(os.path.join(path, '__init__.py')):
             break
 
     if sys.path[0] != path:
         sys.path.insert(0, path)
 
-    return ".".join(module_name[::-1])
+    return '.'.join(module_name[::-1])
 
 
 @t.overload
 def locate_app(
     module_name: str, app_name: str | None, raise_if_not_found: t.Literal[True] = True
-) -> Flask:
-    ...
+) -> Flask: ...
 
 
 @t.overload
 def locate_app(
     module_name: str, app_name: str | None, raise_if_not_found: t.Literal[False] = ...
-) -> Flask | None:
-    ...
+) -> Flask | None: ...
 
 
 def locate_app(
@@ -250,11 +248,11 @@ def locate_app(
         # Determine this by checking whether the trace has a depth > 1.
         if sys.exc_info()[2].tb_next:  # type: ignore[union-attr]
             raise NoAppException(
-                f"While importing {module_name!r}, an ImportError was"
-                f" raised:\n\n{traceback.format_exc()}"
+                f'While importing {module_name!r}, an ImportError was'
+                f' raised:\n\n{traceback.format_exc()}'
             ) from None
         elif raise_if_not_found:
-            raise NoAppException(f"Could not import {module_name!r}.") from None
+            raise NoAppException(f'Could not import {module_name!r}.') from None
         else:
             return None
 
@@ -270,21 +268,21 @@ def get_version(ctx: click.Context, param: click.Parameter, value: t.Any) -> Non
     if not value or ctx.resilient_parsing:
         return
 
-    flask_version = importlib.metadata.version("flask")
-    werkzeug_version = importlib.metadata.version("werkzeug")
+    flask_version = importlib.metadata.version('flask')
+    werkzeug_version = importlib.metadata.version('werkzeug')
 
     click.echo(
-        f"Python {platform.python_version()}\n"
-        f"Flask {flask_version}\n"
-        f"Werkzeug {werkzeug_version}",
+        f'Python {platform.python_version()}\n'
+        f'Flask {flask_version}\n'
+        f'Werkzeug {werkzeug_version}',
         color=ctx.color,
     )
     ctx.exit()
 
 
 version_option = click.Option(
-    ["--version"],
-    help="Show the Flask version.",
+    ['--version'],
+    help='Show the Flask version.',
     expose_value=False,
     callback=get_version,
     is_flag=True,
@@ -331,12 +329,12 @@ class ScriptInfo:
         else:
             if self.app_import_path:
                 path, name = (
-                    re.split(r":(?![\\/])", self.app_import_path, maxsplit=1) + [None]
+                    re.split(r':(?![\\/])', self.app_import_path, maxsplit=1) + [None]
                 )[:2]
                 import_name = prepare_import(path)
                 app = locate_app(import_name, name)
             else:
-                for path in ("wsgi.py", "app.py"):
+                for path in ('wsgi.py', 'app.py'):
                     import_name = prepare_import(path)
                     app = locate_app(import_name, None, raise_if_not_found=False)
 
@@ -345,10 +343,10 @@ class ScriptInfo:
 
         if app is None:
             raise NoAppException(
-                "Could not locate a Flask application. Use the"
+                'Could not locate a Flask application. Use the'
                 " 'flask --app' option, 'FLASK_APP' environment"
                 " variable, or a 'wsgi.py' or 'app.py' file in the"
-                " current directory."
+                ' current directory.'
             )
 
         if self.set_debug_flag:
@@ -362,7 +360,7 @@ class ScriptInfo:
 
 pass_script_info = click.make_pass_decorator(ScriptInfo, ensure=True)
 
-F = t.TypeVar("F", bound=t.Callable[..., t.Any])
+F = t.TypeVar('F', bound=t.Callable[..., t.Any])
 
 
 def with_appcontext(f: F) -> F:
@@ -405,7 +403,7 @@ class AppGroup(click.Group):
         :class:`click.Group` but it wraps callbacks in :func:`with_appcontext`
         unless it's disabled by passing ``with_appcontext=False``.
         """
-        wrap_for_ctx = kwargs.pop("with_appcontext", True)
+        wrap_for_ctx = kwargs.pop('with_appcontext', True)
 
         def decorator(f: t.Callable[..., t.Any]) -> click.Command:
             if wrap_for_ctx:
@@ -421,7 +419,7 @@ class AppGroup(click.Group):
         :class:`click.Group` but it defaults the group class to
         :class:`AppGroup`.
         """
-        kwargs.setdefault("cls", AppGroup)
+        kwargs.setdefault('cls', AppGroup)
         return super().group(*args, **kwargs)  # type: ignore[no-any-return]
 
 
@@ -439,13 +437,13 @@ def _set_app(ctx: click.Context, param: click.Option, value: str | None) -> str 
 # no_args_is_help bypasses eager processing, so this option must be
 # processed manually in that case to ensure FLASK_APP gets picked up.
 _app_option = click.Option(
-    ["-A", "--app"],
-    metavar="IMPORT",
+    ['-A', '--app'],
+    metavar='IMPORT',
     help=(
         "The Flask application or factory function to load, in the form 'module:name'."
-        " Module can be a dotted import or file path. Name is not required if it is"
+        ' Module can be a dotted import or file path. Name is not required if it is'
         " 'app', 'application', 'create_app', or 'make_app', and can be 'name(args)' to"
-        " pass arguments."
+        ' pass arguments.'
     ),
     is_eager=True,
     expose_value=False,
@@ -466,13 +464,13 @@ def _set_debug(ctx: click.Context, param: click.Option, value: bool) -> bool | N
 
     # Set with env var instead of ScriptInfo.load so that it can be
     # accessed early during a factory function.
-    os.environ["FLASK_DEBUG"] = "1" if value else "0"
+    os.environ['FLASK_DEBUG'] = '1' if value else '0'
     return value
 
 
 _debug_option = click.Option(
-    ["--debug/--no-debug"],
-    help="Set debug mode.",
+    ['--debug/--no-debug'],
+    help='Set debug mode.',
     expose_value=False,
     callback=_set_debug,
 )
@@ -487,10 +485,10 @@ def _env_file_callback(
     import importlib
 
     try:
-        importlib.import_module("dotenv")
+        importlib.import_module('dotenv')
     except ImportError:
         raise click.BadParameter(
-            "python-dotenv must be installed to load an env file.",
+            'python-dotenv must be installed to load an env file.',
             ctx=ctx,
             param=param,
         ) from None
@@ -504,9 +502,9 @@ def _env_file_callback(
 # This option is eager so env vars are loaded as early as possible to be
 # used by other options.
 _env_file_option = click.Option(
-    ["-e", "--env-file"],
+    ['-e', '--env-file'],
     type=click.Path(exists=True, dir_okay=False),
-    help="Load environment variables from this file. python-dotenv must be installed.",
+    help='Load environment variables from this file. python-dotenv must be installed.',
     is_eager=True,
     expose_value=False,
     callback=_env_file_callback,
@@ -551,7 +549,7 @@ class FlaskGroup(AppGroup):
         set_debug_flag: bool = True,
         **extra: t.Any,
     ) -> None:
-        params = list(extra.pop("params", None) or ())
+        params = list(extra.pop('params', None) or ())
         # Processing is done with option callbacks instead of a group
         # callback. This allows users to make a custom group callback
         # without losing the behavior. --env-file must come first so
@@ -561,10 +559,10 @@ class FlaskGroup(AppGroup):
         if add_version_option:
             params.append(version_option)
 
-        if "context_settings" not in extra:
-            extra["context_settings"] = {}
+        if 'context_settings' not in extra:
+            extra['context_settings'] = {}
 
-        extra["context_settings"].setdefault("auto_envvar_prefix", "FLASK")
+        extra['context_settings'].setdefault('auto_envvar_prefix', 'FLASK')
 
         super().__init__(params=params, **extra)
 
@@ -591,7 +589,7 @@ class FlaskGroup(AppGroup):
             # so use the backport for consistency.
             import importlib_metadata as metadata
 
-        for ep in metadata.entry_points(group="flask.commands"):
+        for ep in metadata.entry_points(group='flask.commands'):
             self.add_command(ep.load(), ep.name)
 
         self._loaded_plugin_commands = True
@@ -612,7 +610,7 @@ class FlaskGroup(AppGroup):
         try:
             app = info.load_app()
         except NoAppException as e:
-            click.secho(f"Error: {e.format_message()}\n", err=True, fg="red")
+            click.secho(f'Error: {e.format_message()}\n', err=True, fg='red')
             return None
 
         # Push an app context for the loaded app unless it is already
@@ -636,11 +634,11 @@ class FlaskGroup(AppGroup):
         except NoAppException as e:
             # When an app couldn't be loaded, show the error message
             # without the traceback.
-            click.secho(f"Error: {e.format_message()}\n", err=True, fg="red")
+            click.secho(f'Error: {e.format_message()}\n', err=True, fg='red')
         except Exception:
             # When any other errors occurred during loading, show the
             # full traceback.
-            click.secho(f"{traceback.format_exc()}\n", err=True, fg="red")
+            click.secho(f'{traceback.format_exc()}\n', err=True, fg='red')
 
         return sorted(rv)
 
@@ -654,15 +652,15 @@ class FlaskGroup(AppGroup):
         # Set a flag to tell app.run to become a no-op. If app.run was
         # not in a __name__ == __main__ guard, it would start the server
         # when importing, blocking whatever command is being called.
-        os.environ["FLASK_RUN_FROM_CLI"] = "true"
+        os.environ['FLASK_RUN_FROM_CLI'] = 'true'
 
         # Attempt to load .env and .flask env files. The --env-file
         # option can cause another file to be loaded.
         if get_load_dotenv(self.load_dotenv):
             load_dotenv()
 
-        if "obj" not in extra and "obj" not in self.context_settings:
-            extra["obj"] = ScriptInfo(
+        if 'obj' not in extra and 'obj' not in self.context_settings:
+            extra['obj'] = ScriptInfo(
                 create_app=self.create_app, set_debug_flag=self.set_debug_flag
             )
 
@@ -715,11 +713,11 @@ def load_dotenv(path: str | os.PathLike[str] | None = None) -> bool:
     try:
         import dotenv
     except ImportError:
-        if path or os.path.isfile(".env") or os.path.isfile(".flaskenv"):
+        if path or os.path.isfile('.env') or os.path.isfile('.flaskenv'):
             click.secho(
-                " * Tip: There are .env or .flaskenv files present."
+                ' * Tip: There are .env or .flaskenv files present.'
                 ' Do "pip install python-dotenv" to use them.',
-                fg="yellow",
+                fg='yellow',
                 err=True,
             )
 
@@ -729,19 +727,19 @@ def load_dotenv(path: str | os.PathLike[str] | None = None) -> bool:
     # the default files.
     if path is not None:
         if os.path.isfile(path):
-            return dotenv.load_dotenv(path, encoding="utf-8")
+            return dotenv.load_dotenv(path, encoding='utf-8')
 
         return False
 
     loaded = False
 
-    for name in (".env", ".flaskenv"):
+    for name in ('.env', '.flaskenv'):
         path = dotenv.find_dotenv(name, usecwd=True)
 
         if not path:
             continue
 
-        dotenv.load_dotenv(path, encoding="utf-8")
+        dotenv.load_dotenv(path, encoding='utf-8')
         loaded = True
 
     return loaded  # True if at least one file was located and loaded.
@@ -758,7 +756,7 @@ def show_server_banner(debug: bool, app_import_path: str | None) -> None:
         click.echo(f" * Serving Flask app '{app_import_path}'")
 
     if debug is not None:
-        click.echo(f" * Debug mode: {'on' if debug else 'off'}")
+        click.echo(f' * Debug mode: {"on" if debug else "off"}')
 
 
 class CertParamType(click.ParamType):
@@ -767,7 +765,7 @@ class CertParamType(click.ParamType):
     :class:`~ssl.SSLContext` object.
     """
 
-    name = "path"
+    name = 'path'
 
     def __init__(self) -> None:
         self.path_type = click.Path(exists=True, dir_okay=False, resolve_path=True)
@@ -789,12 +787,12 @@ class CertParamType(click.ParamType):
         except click.BadParameter:
             value = click.STRING(value, param, ctx).lower()
 
-            if value == "adhoc":
+            if value == 'adhoc':
                 try:
                     import cryptography  # noqa: F401
                 except ImportError:
                     raise click.BadParameter(
-                        "Using ad-hoc certificates requires the cryptography library.",
+                        'Using ad-hoc certificates requires the cryptography library.',
                         ctx,
                         param,
                     ) from None
@@ -813,8 +811,8 @@ def _validate_key(ctx: click.Context, param: click.Parameter, value: t.Any) -> t
     """The ``--key`` option must be specified when ``--cert`` is a file.
     Modifies the ``cert`` param to be a ``(cert, key)`` pair if needed.
     """
-    cert = ctx.params.get("cert")
-    is_adhoc = cert == "adhoc"
+    cert = ctx.params.get('cert')
+    is_adhoc = cert == 'adhoc'
 
     try:
         import ssl
@@ -839,7 +837,7 @@ def _validate_key(ctx: click.Context, param: click.Parameter, value: t.Any) -> t
         if not cert:
             raise click.BadParameter('"--cert" must also be specified.', ctx, param)
 
-        ctx.params["cert"] = cert, value
+        ctx.params['cert'] = cert, value
 
     else:
         if cert and not (is_adhoc or is_context):
@@ -861,56 +859,56 @@ class SeparatedPathType(click.Path):
         return [super().convert(item, param, ctx) for item in items]
 
 
-@click.command("run", short_help="Run a development server.")
-@click.option("--host", "-h", default="127.0.0.1", help="The interface to bind to.")
-@click.option("--port", "-p", default=5000, help="The port to bind to.")
+@click.command('run', short_help='Run a development server.')
+@click.option('--host', '-h', default='127.0.0.1', help='The interface to bind to.')
+@click.option('--port', '-p', default=5000, help='The port to bind to.')
 @click.option(
-    "--cert",
+    '--cert',
     type=CertParamType(),
-    help="Specify a certificate file to use HTTPS.",
+    help='Specify a certificate file to use HTTPS.',
     is_eager=True,
 )
 @click.option(
-    "--key",
+    '--key',
     type=click.Path(exists=True, dir_okay=False, resolve_path=True),
     callback=_validate_key,
     expose_value=False,
-    help="The key file to use when specifying a certificate.",
+    help='The key file to use when specifying a certificate.',
 )
 @click.option(
-    "--reload/--no-reload",
+    '--reload/--no-reload',
     default=None,
-    help="Enable or disable the reloader. By default the reloader "
-    "is active if debug is enabled.",
+    help='Enable or disable the reloader. By default the reloader '
+    'is active if debug is enabled.',
 )
 @click.option(
-    "--debugger/--no-debugger",
+    '--debugger/--no-debugger',
     default=None,
-    help="Enable or disable the debugger. By default the debugger "
-    "is active if debug is enabled.",
+    help='Enable or disable the debugger. By default the debugger '
+    'is active if debug is enabled.',
 )
 @click.option(
-    "--with-threads/--without-threads",
+    '--with-threads/--without-threads',
     default=True,
-    help="Enable or disable multithreading.",
+    help='Enable or disable multithreading.',
 )
 @click.option(
-    "--extra-files",
+    '--extra-files',
     default=None,
     type=SeparatedPathType(),
     help=(
-        "Extra files that trigger a reload on change. Multiple paths"
-        f" are separated by {os.path.pathsep!r}."
+        'Extra files that trigger a reload on change. Multiple paths'
+        f' are separated by {os.path.pathsep!r}.'
     ),
 )
 @click.option(
-    "--exclude-patterns",
+    '--exclude-patterns',
     default=None,
     type=SeparatedPathType(),
     help=(
-        "Files matching these fnmatch patterns will not trigger a reload"
-        " on change. Multiple patterns are separated by"
-        f" {os.path.pathsep!r}."
+        'Files matching these fnmatch patterns will not trigger a reload'
+        ' on change. Multiple patterns are separated by'
+        f' {os.path.pathsep!r}.'
     ),
 )
 @pass_script_info
@@ -921,7 +919,7 @@ def run_command(
     reload: bool,
     debugger: bool,
     with_threads: bool,
-    cert: ssl.SSLContext | tuple[str, str | None] | t.Literal["adhoc"] | None,
+    cert: ssl.SSLContext | tuple[str, str | None] | t.Literal['adhoc'] | None,
     extra_files: list[str] | None,
     exclude_patterns: list[str] | None,
 ) -> None:
@@ -978,7 +976,7 @@ def run_command(
 run_command.params.insert(0, _debug_option)
 
 
-@click.command("shell", short_help="Run a shell in the app context.")
+@click.command('shell', short_help='Run a shell in the app context.')
 @with_appcontext
 def shell_command() -> None:
     """Run an interactive Python shell in the context of a given
@@ -991,25 +989,25 @@ def shell_command() -> None:
     import code
 
     banner = (
-        f"Python {sys.version} on {sys.platform}\n"
-        f"App: {current_app.import_name}\n"
-        f"Instance: {current_app.instance_path}"
+        f'Python {sys.version} on {sys.platform}\n'
+        f'App: {current_app.import_name}\n'
+        f'Instance: {current_app.instance_path}'
     )
     ctx: dict[str, t.Any] = {}
 
     # Support the regular Python interpreter startup script if someone
     # is using it.
-    startup = os.environ.get("PYTHONSTARTUP")
+    startup = os.environ.get('PYTHONSTARTUP')
     if startup and os.path.isfile(startup):
         with open(startup) as f:
-            eval(compile(f.read(), startup, "exec"), ctx)
+            eval(compile(f.read(), startup, 'exec'), ctx)
 
     ctx.update(current_app.make_shell_context())
 
     # Site, customize, or startup script can set a hook to call when
     # entering interactive mode. The default one sets up readline with
     # tab and history completion.
-    interactive_hook = getattr(sys, "__interactivehook__", None)
+    interactive_hook = getattr(sys, '__interactivehook__', None)
 
     if interactive_hook is not None:
         try:
@@ -1027,28 +1025,28 @@ def shell_command() -> None:
     code.interact(banner=banner, local=ctx)
 
 
-@click.command("routes", short_help="Show the routes for the app.")
+@click.command('routes', short_help='Show the routes for the app.')
 @click.option(
-    "--sort",
-    "-s",
-    type=click.Choice(("endpoint", "methods", "domain", "rule", "match")),
-    default="endpoint",
+    '--sort',
+    '-s',
+    type=click.Choice(('endpoint', 'methods', 'domain', 'rule', 'match')),
+    default='endpoint',
     help=(
         "Method to sort routes by. 'match' is the order that Flask will match routes"
-        " when dispatching a request."
+        ' when dispatching a request.'
     ),
 )
-@click.option("--all-methods", is_flag=True, help="Show HEAD and OPTIONS methods.")
+@click.option('--all-methods', is_flag=True, help='Show HEAD and OPTIONS methods.')
 @with_appcontext
 def routes_command(sort: str, all_methods: bool) -> None:
     """Show all registered routes with endpoints and methods."""
     rules = list(current_app.url_map.iter_rules())
 
     if not rules:
-        click.echo("No routes were registered.")
+        click.echo('No routes were registered.')
         return
 
-    ignored_methods = set() if all_methods else {"HEAD", "OPTIONS"}
+    ignored_methods = set() if all_methods else {'HEAD', 'OPTIONS'}
     host_matching = current_app.url_map.host_matching
     has_domain = any(rule.host if host_matching else rule.subdomain for rule in rules)
     rows = []
@@ -1056,24 +1054,24 @@ def routes_command(sort: str, all_methods: bool) -> None:
     for rule in rules:
         row = [
             rule.endpoint,
-            ", ".join(sorted((rule.methods or set()) - ignored_methods)),
+            ', '.join(sorted((rule.methods or set()) - ignored_methods)),
         ]
 
         if has_domain:
-            row.append((rule.host if host_matching else rule.subdomain) or "")
+            row.append((rule.host if host_matching else rule.subdomain) or '')
 
         row.append(rule.rule)
         rows.append(row)
 
-    headers = ["Endpoint", "Methods"]
-    sorts = ["endpoint", "methods"]
+    headers = ['Endpoint', 'Methods']
+    sorts = ['endpoint', 'methods']
 
     if has_domain:
-        headers.append("Host" if host_matching else "Subdomain")
-        sorts.append("domain")
+        headers.append('Host' if host_matching else 'Subdomain')
+        sorts.append('domain')
 
-    headers.append("Rule")
-    sorts.append("rule")
+    headers.append('Rule')
+    sorts.append('rule')
 
     try:
         rows.sort(key=itemgetter(sorts.index(sort)))
@@ -1082,15 +1080,15 @@ def routes_command(sort: str, all_methods: bool) -> None:
 
     rows.insert(0, headers)
     widths = [max(len(row[i]) for row in rows) for i in range(len(headers))]
-    rows.insert(1, ["-" * w for w in widths])
-    template = "  ".join(f"{{{i}:<{w}}}" for i, w in enumerate(widths))
+    rows.insert(1, ['-' * w for w in widths])
+    template = '  '.join(f'{{{i}:<{w}}}' for i, w in enumerate(widths))
 
     for row in rows:
         click.echo(template.format(*row))
 
 
 cli = FlaskGroup(
-    name="flask",
+    name='flask',
     help="""\
 A general utility script for Flask applications.
 
@@ -1105,5 +1103,5 @@ def main() -> None:
     cli.main()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

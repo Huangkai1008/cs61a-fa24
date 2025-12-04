@@ -1,6 +1,7 @@
 """Functions that expose information about templates that might be
 interesting for introspection.
 """
+
 import typing as t
 
 from . import nodes
@@ -14,8 +15,8 @@ if t.TYPE_CHECKING:
 class TrackingCodeGenerator(CodeGenerator):
     """We abuse the code generator for introspection."""
 
-    def __init__(self, environment: "Environment") -> None:
-        super().__init__(environment, "<introspection>", "<introspection>")
+    def __init__(self, environment: 'Environment') -> None:
+        super().__init__(environment, '<introspection>', '<introspection>')
         self.undeclared_identifiers: t.Set[str] = set()
 
     def write(self, x: str) -> None:
@@ -26,7 +27,7 @@ class TrackingCodeGenerator(CodeGenerator):
         super().enter_frame(frame)
 
         for _, (action, param) in frame.symbols.loads.items():
-            if action == "resolve" and param not in self.environment.globals:
+            if action == 'resolve' and param not in self.environment.globals:
                 self.undeclared_identifiers.add(param)
 
 

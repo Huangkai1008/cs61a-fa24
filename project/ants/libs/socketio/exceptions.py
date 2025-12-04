@@ -13,6 +13,7 @@ class ConnectionRefusedError(ConnectionError):
     is not accepted. The positional arguments provided with the exception are
     returned with the error packet to the client.
     """
+
     def __init__(self, *args):
         if len(args) == 0:
             self.error_args = {'message': 'Connection rejected by server'}

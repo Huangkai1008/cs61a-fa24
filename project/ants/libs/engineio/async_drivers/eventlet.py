@@ -11,6 +11,7 @@ class EventletThread:  # pragma: no cover
     Eventlet's own Thread class has a strange bug that causes _DummyThread
     objects to be created and leaked, since they are never garbage collected.
     """
+
     def __init__(self, target, args=None, kwargs=None):
         self.target = target
         self.args = args or ()
@@ -28,8 +29,7 @@ class EventletThread:  # pragma: no cover
 class WebSocketWSGI(_WebSocketWSGI):
     def __init__(self, handler, server):
         try:
-            super().__init__(
-                handler, max_frame_length=int(server.max_http_buffer_size))
+            super().__init__(handler, max_frame_length=int(server.max_http_buffer_size))
         except TypeError:  # pragma: no cover
             # older versions of eventlet do not support a max frame size
             super().__init__(handler)
@@ -37,9 +37,11 @@ class WebSocketWSGI(_WebSocketWSGI):
 
     def __call__(self, environ, start_response):
         if 'eventlet.input' not in environ:
-            raise RuntimeError('You need to use the eventlet server. '
-                               'See the Deployment section of the '
-                               'documentation for more information.')
+            raise RuntimeError(
+                'You need to use the eventlet server. '
+                'See the Deployment section of the '
+                'documentation for more information.'
+            )
         self._sock = environ['eventlet.input'].get_socket()
         return super().__call__(environ, start_response)
 

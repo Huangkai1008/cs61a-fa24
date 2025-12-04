@@ -18,11 +18,11 @@ def _codec_error_url_quote(e: UnicodeError) -> tuple[str, int]:
     """
     # the docs state that UnicodeError does have these attributes,
     # but mypy isn't picking them up
-    out = quote(e.object[e.start : e.end], safe="")  # type: ignore
+    out = quote(e.object[e.start : e.end], safe='')  # type: ignore
     return out, e.end  # type: ignore
 
 
-codecs.register_error("werkzeug.url_quote", _codec_error_url_quote)
+codecs.register_error('werkzeug.url_quote', _codec_error_url_quote)
 
 
 def _make_unquote_part(name: str, chars: str) -> t.Callable[[str], str]:
@@ -30,20 +30,20 @@ def _make_unquote_part(name: str, chars: str) -> t.Callable[[str], str]:
     given. This allows working with unquoted characters if possible while not changing
     the meaning of a given part of a URL.
     """
-    choices = "|".join(f"{ord(c):02X}" for c in sorted(chars))
-    pattern = re.compile(f"((?:%(?:{choices}))+)", re.I)
+    choices = '|'.join(f'{ord(c):02X}' for c in sorted(chars))
+    pattern = re.compile(f'((?:%(?:{choices}))+)', re.I)
 
     def _unquote_partial(value: str) -> str:
         parts = iter(pattern.split(value))
         out = []
 
         for part in parts:
-            out.append(unquote(part, "utf-8", "werkzeug.url_quote"))
-            out.append(next(parts, ""))
+            out.append(unquote(part, 'utf-8', 'werkzeug.url_quote'))
+            out.append(next(parts, ''))
 
-        return "".join(out)
+        return ''.join(out)
 
-    _unquote_partial.__name__ = f"_unquote_{name}"
+    _unquote_partial.__name__ = f'_unquote_{name}'
     return _unquote_partial
 
 
@@ -51,10 +51,10 @@ def _make_unquote_part(name: str, chars: str) -> t.Callable[[str], str]:
 # based on https://url.spec.whatwg.org/#percent-encoded-bytes
 # always keep all controls, space, and % quoted
 _always_unsafe = bytes((*range(0x21), 0x25, 0x7F)).decode()
-_unquote_fragment = _make_unquote_part("fragment", _always_unsafe)
-_unquote_query = _make_unquote_part("query", _always_unsafe + "&=+#")
-_unquote_path = _make_unquote_part("path", _always_unsafe + "/?#")
-_unquote_user = _make_unquote_part("user", _always_unsafe + ":@/?#")
+_unquote_fragment = _make_unquote_part('fragment', _always_unsafe)
+_unquote_query = _make_unquote_part('query', _always_unsafe + '&=+#')
+_unquote_path = _make_unquote_part('path', _always_unsafe + '/?#')
+_unquote_user = _make_unquote_part('user', _always_unsafe + ':@/?#')
 
 
 def uri_to_iri(uri: str) -> str:
@@ -89,22 +89,22 @@ def uri_to_iri(uri: str) -> str:
     if parts.hostname:
         netloc = _decode_idna(parts.hostname)
     else:
-        netloc = ""
+        netloc = ''
 
-    if ":" in netloc:
-        netloc = f"[{netloc}]"
+    if ':' in netloc:
+        netloc = f'[{netloc}]'
 
     if parts.port:
-        netloc = f"{netloc}:{parts.port}"
+        netloc = f'{netloc}:{parts.port}'
 
     if parts.username:
         auth = _unquote_user(parts.username)
 
         if parts.password:
             password = _unquote_user(parts.password)
-            auth = f"{auth}:{password}"
+            auth = f'{auth}:{password}'
 
-        netloc = f"{auth}@{netloc}"
+        netloc = f'{auth}@{netloc}'
 
     return urlunsplit((parts.scheme, netloc, path, query, fragment))
 
@@ -142,24 +142,24 @@ def iri_to_uri(iri: str) -> str:
     fragment = quote(parts.fragment, safe="%!#$&'()*+,/:;=?@")
 
     if parts.hostname:
-        netloc = parts.hostname.encode("idna").decode("ascii")
+        netloc = parts.hostname.encode('idna').decode('ascii')
     else:
-        netloc = ""
+        netloc = ''
 
-    if ":" in netloc:
-        netloc = f"[{netloc}]"
+    if ':' in netloc:
+        netloc = f'[{netloc}]'
 
     if parts.port:
-        netloc = f"{netloc}:{parts.port}"
+        netloc = f'{netloc}:{parts.port}'
 
     if parts.username:
         auth = quote(parts.username, safe="%!$&'()*+,;=")
 
         if parts.password:
             password = quote(parts.password, safe="%!$&'()*+,;=")
-            auth = f"{auth}:{password}"
+            auth = f'{auth}:{password}'
 
-        netloc = f"{auth}@{netloc}"
+        netloc = f'{auth}@{netloc}'
 
     return urlunsplit((parts.scheme, netloc, path, query, fragment))
 
@@ -175,7 +175,7 @@ def _invalid_iri_to_uri(iri: str) -> str:
     :meta private:
     """
     try:
-        iri.encode("ascii")
+        iri.encode('ascii')
     except UnicodeError:
         pass
     else:
@@ -187,27 +187,27 @@ def _invalid_iri_to_uri(iri: str) -> str:
 
 def _decode_idna(domain: str) -> str:
     try:
-        data = domain.encode("ascii")
+        data = domain.encode('ascii')
     except UnicodeEncodeError:
         # If the domain is not ASCII, it's decoded already.
         return domain
 
     try:
         # Try decoding in one shot.
-        return data.decode("idna")
+        return data.decode('idna')
     except UnicodeDecodeError:
         pass
 
     # Decode each part separately, leaving invalid parts as punycode.
     parts = []
 
-    for part in data.split(b"."):
+    for part in data.split(b'.'):
         try:
-            parts.append(part.decode("idna"))
+            parts.append(part.decode('idna'))
         except UnicodeDecodeError:
-            parts.append(part.decode("ascii"))
+            parts.append(part.decode('ascii'))
 
-    return ".".join(parts)
+    return '.'.join(parts)
 
 
 def _urlencode(query: t.Mapping[str, str] | t.Iterable[tuple[str, str]]) -> str:

@@ -15,8 +15,7 @@ def get_tornado_handler(engineio_server):
                 if engineio_server.cors_allowed_origins == '*':
                     self.allowed_origins = None
                 else:
-                    self.allowed_origins = [
-                        engineio_server.cors_allowed_origins]
+                    self.allowed_origins = [engineio_server.cors_allowed_origins]
             else:
                 self.allowed_origins = engineio_server.cors_allowed_origins
             self.receive_queue = asyncio.Queue()
@@ -64,6 +63,7 @@ def translate_request(handler):
     """This function takes the arguments passed to the request handler and
     uses them to generate a WSGI compatible environ dictionary.
     """
+
     class AwaitablePayload(object):
         def __init__(self, payload):
             self.payload = payload or b''
@@ -100,7 +100,7 @@ def translate_request(handler):
         'REMOTE_PORT': '0',
         'SERVER_NAME': 'aiohttp',
         'SERVER_PORT': '0',
-        'tornado.handler': handler
+        'tornado.handler': handler,
     }
 
     for hdr_name, hdr_value in handler.request.headers.items():
@@ -147,6 +147,7 @@ class WebSocket(object):  # pragma: no cover
     This wrapper class provides a tornado WebSocket interface that is
     somewhat compatible with eventlet's implementation.
     """
+
     def __init__(self, handler, server):
         self.handler = handler
         self.tornado_handler = None
@@ -162,14 +163,14 @@ class WebSocket(object):  # pragma: no cover
     async def send(self, message):
         try:
             self.tornado_handler.write_message(
-                message, binary=isinstance(message, bytes))
+                message, binary=isinstance(message, bytes)
+            )
         except tornado.websocket.WebSocketClosedError:
             raise exceptions.EngineIOError()
 
     async def wait(self):
         msg = await self.tornado_handler.get_next_message()
-        if not isinstance(msg, bytes) and \
-                not isinstance(msg, str):
+        if not isinstance(msg, bytes) and not isinstance(msg, str):
             raise IOError()
         return msg
 

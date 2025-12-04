@@ -6,7 +6,6 @@
 
 """Define bidict package metadata."""
 
-
 __version__ = '0.22.1'
 __author__ = {'name': 'Joshua Bronson', 'email': 'jabronson@gmail.com'}
 __copyright__ = '© 2009-2022 Joshua Bronson'

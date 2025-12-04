@@ -1,5 +1,6 @@
 import sys
-sys.path.append('libs') # Include files in the "libs" folder
+
+sys.path.append('libs')  # Include files in the "libs" folder
 
 
 from flask import Flask, render_template, request, jsonify
@@ -10,15 +11,15 @@ import logging, socket
 import webbrowser
 
 
-app = Flask(__name__, static_folder='static') # Create flask app
-socketio = SocketIO(app) # Use websocket
-game, game_state = None, None # Global variable to represent a game and a gamestate
+app = Flask(__name__, static_folder='static')  # Create flask app
+socketio = SocketIO(app)  # Use websocket
+game, game_state = None, None  # Global variable to represent a game and a gamestate
 
 
 # Disable verbose for Flask messages
 def disable_verbose():
     log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR) # Disable verbose for Flask messages
+    log.setLevel(logging.ERROR)  # Disable verbose for Flask messages
 
 
 # Create new game
@@ -32,7 +33,7 @@ def create_new_game():
 # Automatically called by socketio when client connects to server
 @socketio.on('connect')
 def handle_connect():
-    socketio.emit('loadLobby', {}) # Send loadLobby signal to frontend
+    socketio.emit('loadLobby', {})  # Send loadLobby signal to frontend
     """
     Note: index() is also called when the user loads the webpage, so technically this function can be merged into index()
     But this is here because index() must return to render the html, but we want to load the lobby only after rendering the html,
@@ -52,7 +53,7 @@ def index():
 @app.route('/initialize_game', methods=['POST'])
 def initialize_game():
     "Called by the front end when it's time to start a game."
-    next(game) # Advance the game
+    next(game)  # Advance the game
 
     game_data = {
         'dimensions_x': game_state.dimensions[0],
@@ -63,31 +64,31 @@ def initialize_game():
     wet_places = [place for place in game_state.places.values() if type(place) is Water]
 
     # Parse the names of places to figure out where they are.
-    game_data['wet_places'] = [[int(place.name.split('_')[1]), int(place.name.split('_')[2])] for place in wet_places]
+    game_data['wet_places'] = [
+        [int(place.name.split('_')[1]), int(place.name.split('_')[2])]
+        for place in wet_places
+    ]
 
-    return jsonify(game_data) # Send game_data back to frontend
+    return jsonify(game_data)  # Send game_data back to frontend
 
 
 @app.route('/deploy_ants', methods=['POST'])
 def deploy_ants():
     "Called by the front end when it's time to deploy an ant."
     data = request.get_json()
-    pos = data.get('pos').split('-') # in the form of 'row-col'
+    pos = data.get('pos').split('-')  # in the form of 'row-col'
     tunnel = f'tunnel_{pos[0]}_{pos[1]}'
     ant_name = data.get('ant')
-    message = {
-        'deployed': False,
-        'insect_id': None
-    }
+    message = {'deployed': False, 'insect_id': None}
 
     ant = None
     try:
         ant = game_state.deploy_ant(tunnel, ant_name)
-    except KeyError: # tile is wet
+    except KeyError:  # tile is wet
         tunnel = f'water_{pos[0]}_{pos[1]}'
         ant = game_state.deploy_ant(tunnel, ant_name)
     finally:
-        if ant: # If successfuly deployed ant
+        if ant:  # If successfuly deployed ant
             message['deployed'] = True
             message['insect_id'] = ant.id
 
@@ -120,7 +121,11 @@ def update_stats():
     data = {
         'food': game_state.food,
         'turn': game_state.time,
-        'available_ants': [ant.name for ant in game_state.ant_types.values() if ant.food_cost <= game_state.food]
+        'available_ants': [
+            ant.name
+            for ant in game_state.ant_types.values()
+            if ant.food_cost <= game_state.food
+        ],
     }
     return jsonify(data)
 
@@ -129,9 +134,8 @@ def move_bee(bee, place):
     "Send message to frontend to move a bee from one place to another."
     data = {
         'bee_id': bee.id,
-
         # Not a good way to get the position. Changes should be made to Place class in ants.py
-        'destination': place.name.split('_')[1:], # [x, y] where x is row, y is col
+        'destination': place.name.split('_')[1:],  # [x, y] where x is row, y is col
         'current_pos': bee.place.name.split('_')[1:],
     }
     socketio.emit('moveBee', data)
@@ -142,9 +146,8 @@ def move_bee_from_hive(bee, place):
     data = {
         'bee_id': bee.id,
         'bee_name': bee.name,
-
         # Not a good way to get the position. Changes should be made to Place class in ants.py
-        'destination': place.name.split('_')[1:] # [x, y] where x is row, y is col
+        'destination': place.name.split('_')[1:],  # [x, y] where x is row, y is col
     }
     socketio.emit('moveBeeFromHive', data)
 
@@ -153,17 +156,20 @@ def insect_move_decorator(func):
     """A decorator that takes in the original move_to method of a bee.
     Calls corresponding GUI functions to move bee before calling the original method.
     """
+
     def inner(self, place):
         if type(self.place) == Hive:
             move_bee_from_hive(self, place)
         else:
             move_bee(self, place)
         return func(self, place)
+
     return inner
 
 
 def throw_at_decorator(func):
     """A decorator for Thrower's throw_at method."""
+
     def inner(self, target):
         if target is not None:
             data = {
@@ -172,15 +178,18 @@ def throw_at_decorator(func):
             }
             socketio.emit('throwAt', data)
         func(self, target)
+
     return inner
 
 
 def reduce_health_decorator(func):
     """A decorator for Insect's reduce_health method."""
+
     def inner(self, amount):
         data = {'insect_id': self.id}
         socketio.emit('reduceHealth', data)
         return func(self, amount)
+
     return inner
 
 
@@ -222,17 +231,16 @@ if __name__ == '__main__':
     disable_verbose()
     decorate_events()
     create_new_game()
-    for port in [31415, 8000, 5555, 5000]: # Determining an open port
+    for port in [31415, 8000, 5555, 5000]:  # Determining an open port
         if is_port_open(port):
             open_port = port
             break
     else:
-        raise Exception("Ports 8000, 5555, and 5000 are all occupied")
+        raise Exception('Ports 8000, 5555, and 5000 are all occupied')
     display_messages(open_port)
-    webbrowser.open("http://localhost:" + str(open_port), new=0, autoraise=True)
+    webbrowser.open('http://localhost:' + str(open_port), new=0, autoraise=True)
     sys.tracebacklimit = 1
     socketio.run(app, debug=False, port=open_port)
-
 
 
 """

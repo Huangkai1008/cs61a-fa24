@@ -1,10 +1,24 @@
 import functools
 from engineio import json as _json
 
-(CONNECT, DISCONNECT, EVENT, ACK, CONNECT_ERROR, BINARY_EVENT, BINARY_ACK) = \
-    (0, 1, 2, 3, 4, 5, 6)
-packet_names = ['CONNECT', 'DISCONNECT', 'EVENT', 'ACK', 'CONNECT_ERROR',
-                'BINARY_EVENT', 'BINARY_ACK']
+(CONNECT, DISCONNECT, EVENT, ACK, CONNECT_ERROR, BINARY_EVENT, BINARY_ACK) = (
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+)
+packet_names = [
+    'CONNECT',
+    'DISCONNECT',
+    'EVENT',
+    'ACK',
+    'CONNECT_ERROR',
+    'BINARY_EVENT',
+    'BINARY_ACK',
+]
 
 
 class Packet(object):
@@ -22,15 +36,22 @@ class Packet(object):
     uses_binary_events = True
     json = _json
 
-    def __init__(self, packet_type=EVENT, data=None, namespace=None, id=None,
-                 binary=None, encoded_packet=None):
+    def __init__(
+        self,
+        packet_type=EVENT,
+        data=None,
+        namespace=None,
+        id=None,
+        binary=None,
+        encoded_packet=None,
+    ):
         self.packet_type = packet_type
         self.data = data
         self.namespace = namespace
         self.id = id
-        if self.uses_binary_events and \
-                (binary or (binary is None and self._data_is_binary(
-                    self.data))):
+        if self.uses_binary_events and (
+            binary or (binary is None and self._data_is_binary(self.data))
+        ):
             if self.packet_type == EVENT:
                 self.packet_type = BINARY_EVENT
             elif self.packet_type == ACK:
@@ -87,7 +108,7 @@ class Packet(object):
             if dash > 10:
                 raise ValueError('too many attachments')
             attachment_count = int(ep[0:dash])
-            ep = ep[dash + 1:]
+            ep = ep[dash + 1 :]
         if ep and ep[0:1] == '/':
             sep = ep.find(',')
             if sep == -1:
@@ -95,7 +116,7 @@ class Packet(object):
                 ep = ''
             else:
                 self.namespace = ep[0:sep]
-                ep = ep[sep + 1:]
+                ep = ep[sep + 1 :]
             q = self.namespace.find('?')
             if q != -1:
                 self.namespace = self.namespace[0:q]
@@ -127,20 +148,21 @@ class Packet(object):
         """Reconstruct a decoded packet using the given list of binary
         attachments.
         """
-        self.data = self._reconstruct_binary_internal(self.data,
-                                                      self.attachments)
+        self.data = self._reconstruct_binary_internal(self.data, self.attachments)
 
     def _reconstruct_binary_internal(self, data, attachments):
         if isinstance(data, list):
-            return [self._reconstruct_binary_internal(item, attachments)
-                    for item in data]
+            return [
+                self._reconstruct_binary_internal(item, attachments) for item in data
+            ]
         elif isinstance(data, dict):
             if data.get('_placeholder') and 'num' in data:
                 return attachments[data['num']]
             else:
-                return {key: self._reconstruct_binary_internal(value,
-                                                               attachments)
-                        for key, value in data.items()}
+                return {
+                    key: self._reconstruct_binary_internal(value, attachments)
+                    for key, value in data.items()
+                }
         else:
             return data
 
@@ -155,11 +177,14 @@ class Packet(object):
             attachments.append(data)
             return {'_placeholder': True, 'num': len(attachments) - 1}
         elif isinstance(data, list):
-            return [self._deconstruct_binary_internal(item, attachments)
-                    for item in data]
+            return [
+                self._deconstruct_binary_internal(item, attachments) for item in data
+            ]
         elif isinstance(data, dict):
-            return {key: self._deconstruct_binary_internal(value, attachments)
-                    for key, value in data.items()}
+            return {
+                key: self._deconstruct_binary_internal(value, attachments)
+                for key, value in data.items()
+            }
         else:
             return data
 
@@ -169,13 +194,16 @@ class Packet(object):
             return True
         elif isinstance(data, list):
             return functools.reduce(
-                lambda a, b: a or b, [self._data_is_binary(item)
-                                      for item in data], False)
+                lambda a, b: a or b,
+                [self._data_is_binary(item) for item in data],
+                False,
+            )
         elif isinstance(data, dict):
             return functools.reduce(
-                lambda a, b: a or b, [self._data_is_binary(item)
-                                      for item in data.values()],
-                False)
+                lambda a, b: a or b,
+                [self._data_is_binary(item) for item in data.values()],
+                False,
+            )
         else:
             return False
 

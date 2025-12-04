@@ -97,19 +97,19 @@ class Authorization:
         if not value:
             return None
 
-        scheme, _, rest = value.partition(" ")
+        scheme, _, rest = value.partition(' ')
         scheme = scheme.lower()
         rest = rest.strip()
 
-        if scheme == "basic":
+        if scheme == 'basic':
             try:
-                username, _, password = base64.b64decode(rest).decode().partition(":")
+                username, _, password = base64.b64decode(rest).decode().partition(':')
             except (binascii.Error, UnicodeError):
                 return None
 
-            return cls(scheme, {"username": username, "password": password})
+            return cls(scheme, {'username': username, 'password': password})
 
-        if "=" in rest.rstrip("="):
+        if '=' in rest.rstrip('='):
             # = that is not trailing, this is parameters.
             return cls(scheme, parse_dict_header(rest), None)
 
@@ -121,22 +121,22 @@ class Authorization:
 
         .. versionadded:: 2.0
         """
-        if self.type == "basic":
+        if self.type == 'basic':
             value = base64.b64encode(
-                f"{self.username}:{self.password}".encode()
-            ).decode("utf8")
-            return f"Basic {value}"
+                f'{self.username}:{self.password}'.encode()
+            ).decode('utf8')
+            return f'Basic {value}'
 
         if self.token is not None:
-            return f"{self.type.title()} {self.token}"
+            return f'{self.type.title()} {self.token}'
 
-        return f"{self.type.title()} {dump_header(self.parameters)}"
+        return f'{self.type.title()} {dump_header(self.parameters)}'
 
     def __str__(self) -> str:
         return self.to_header()
 
     def __repr__(self) -> str:
-        return f"<{type(self).__name__} {self.to_header()}>"
+        return f'<{type(self).__name__} {self.to_header()}>'
 
 
 class WWWAuthenticate:
@@ -244,7 +244,7 @@ class WWWAuthenticate:
         return self[name]
 
     def __setattr__(self, name: str, value: str | None) -> None:
-        if name in {"_type", "_parameters", "_token", "_on_update"}:
+        if name in {'_type', '_parameters', '_token', '_on_update'}:
             super().__setattr__(name, value)
         else:
             self[name] = value
@@ -280,11 +280,11 @@ class WWWAuthenticate:
         if not value:
             return None
 
-        scheme, _, rest = value.partition(" ")
+        scheme, _, rest = value.partition(' ')
         scheme = scheme.lower()
         rest = rest.strip()
 
-        if "=" in rest.rstrip("="):
+        if '=' in rest.rstrip('='):
             # = that is not trailing, this is parameters.
             return cls(scheme, parse_dict_header(rest), None)
 
@@ -294,25 +294,25 @@ class WWWAuthenticate:
     def to_header(self) -> str:
         """Produce a ``WWW-Authenticate`` header value representing this data."""
         if self.token is not None:
-            return f"{self.type.title()} {self.token}"
+            return f'{self.type.title()} {self.token}'
 
-        if self.type == "digest":
+        if self.type == 'digest':
             items = []
 
             for key, value in self.parameters.items():
-                if key in {"realm", "domain", "nonce", "opaque", "qop"}:
+                if key in {'realm', 'domain', 'nonce', 'opaque', 'qop'}:
                     value = quote_header_value(value, allow_token=False)
                 else:
                     value = quote_header_value(value)
 
-                items.append(f"{key}={value}")
+                items.append(f'{key}={value}')
 
-            return f"Digest {', '.join(items)}"
+            return f'Digest {", ".join(items)}'
 
-        return f"{self.type.title()} {dump_header(self.parameters)}"
+        return f'{self.type.title()} {dump_header(self.parameters)}'
 
     def __str__(self) -> str:
         return self.to_header()
 
     def __repr__(self) -> str:
-        return f"<{type(self).__name__} {self.to_header()}>"
+        return f'<{type(self).__name__} {self.to_header()}>'

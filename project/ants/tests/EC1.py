@@ -1,11 +1,11 @@
 test = {
-  'name': 'Problem EC 1',
-  'points': 1,
-  'suites': [
-    {
-      'cases': [
+    'name': 'Problem EC 1',
+    'points': 1,
+    'suites': [
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> # Testing status parameters
           >>> slow = SlowThrower()
           >>> SlowThrower.food_cost
@@ -15,12 +15,12 @@ test = {
           d89cf7c79d5a479b0f636734143ed5e6
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing Slow
           >>> slow = SlowThrower()
           >>> bee = Bee(3)
@@ -44,12 +44,12 @@ test = {
           7f44338412808161209e944b1ee0f78c
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing Slow
           >>> slow = SlowThrower()
           >>> bee = Bee(3)
@@ -74,12 +74,12 @@ test = {
           ba5c35f55ba3229d1eb021382d9d19c5
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing that Bee.action was not modified
           >>> slow = SlowThrower()
           >>> bee = Bee(3)
@@ -100,12 +100,12 @@ test = {
           >>> bee.place.name
           'tunnel_0_2'
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing normal Bee movement after Slow effect
           >>> slow = SlowThrower()
           >>> bee = Bee(3)
@@ -149,20 +149,20 @@ test = {
           >>> bee.place.name
           'tunnel_0_1'
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       >>> beehive, layout = Hive(AssaultPlan()), dry_layout
       >>> dimensions = (1, 9)
       >>> gamestate = GameState(beehive, ant_types(), layout, dimensions)
       """,
-      'teardown': '',
-      'type': 'doctest'
-    }
-  ]
+            'teardown': '',
+            'type': 'doctest',
+        }
+    ],
 }

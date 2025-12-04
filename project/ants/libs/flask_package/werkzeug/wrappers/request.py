@@ -113,20 +113,20 @@ class Request(_SansIORequest):
         shallow: bool = False,
     ) -> None:
         super().__init__(
-            method=environ.get("REQUEST_METHOD", "GET"),
-            scheme=environ.get("wsgi.url_scheme", "http"),
+            method=environ.get('REQUEST_METHOD', 'GET'),
+            scheme=environ.get('wsgi.url_scheme', 'http'),
             server=_get_server(environ),
-            root_path=_wsgi_decoding_dance(environ.get("SCRIPT_NAME") or ""),
-            path=_wsgi_decoding_dance(environ.get("PATH_INFO") or ""),
-            query_string=environ.get("QUERY_STRING", "").encode("latin1"),
+            root_path=_wsgi_decoding_dance(environ.get('SCRIPT_NAME') or ''),
+            path=_wsgi_decoding_dance(environ.get('PATH_INFO') or ''),
+            query_string=environ.get('QUERY_STRING', '').encode('latin1'),
             headers=EnvironHeaders(environ),
-            remote_addr=environ.get("REMOTE_ADDR"),
+            remote_addr=environ.get('REMOTE_ADDR'),
         )
         self.environ = environ
         self.shallow = shallow
 
         if populate_request and not shallow:
-            self.environ["werkzeug.request"] = self
+            self.environ['werkzeug.request'] = self
 
     @classmethod
     def from_values(cls, *args: t.Any, **kwargs: t.Any) -> Request:
@@ -191,7 +191,7 @@ class Request(_SansIORequest):
                     resp = e.get_response(args[-2])
                 return resp(*args[-2:])
 
-        return t.cast("WSGIApplication", application)
+        return t.cast('WSGIApplication', application)
 
     def _get_file_stream(
         self,
@@ -233,7 +233,7 @@ class Request(_SansIORequest):
 
         .. versionadded:: 0.8
         """
-        return bool(self.environ.get("CONTENT_TYPE"))
+        return bool(self.environ.get('CONTENT_TYPE'))
 
     def make_form_data_parser(self) -> FormDataParser:
         """Creates the form data parser. Instantiates the
@@ -259,7 +259,7 @@ class Request(_SansIORequest):
         .. versionadded:: 0.8
         """
         # abort early if we have already consumed the stream
-        if "form" in self.__dict__:
+        if 'form' in self.__dict__:
             return
 
         if self.want_form_data_parsed:
@@ -280,7 +280,7 @@ class Request(_SansIORequest):
         # inject the values into the instance dict so that we bypass
         # our cached_property non-data descriptor.
         d = self.__dict__
-        d["stream"], d["form"], d["files"] = data
+        d['stream'], d['form'], d['files'] = data
 
     def _get_stream_for_parsing(self) -> t.IO[bytes]:
         """This is the same as accessing :attr:`stream` with the difference
@@ -289,7 +289,7 @@ class Request(_SansIORequest):
 
         .. versionadded:: 0.9.3
         """
-        cached_data = getattr(self, "_cached_data", None)
+        cached_data = getattr(self, '_cached_data', None)
         if cached_data is not None:
             return BytesIO(cached_data)
         return self.stream
@@ -301,7 +301,7 @@ class Request(_SansIORequest):
 
         .. versionadded:: 0.9
         """
-        files = self.__dict__.get("files")
+        files = self.__dict__.get('files')
         for _key, value in iter_multi_items(files or ()):
             value.close()
 
@@ -341,7 +341,7 @@ class Request(_SansIORequest):
         if self.shallow:
             raise RuntimeError(
                 "This request was created with 'shallow=True', reading"
-                " from the input stream is disabled."
+                ' from the input stream is disabled.'
             )
 
         return get_input_stream(
@@ -349,7 +349,7 @@ class Request(_SansIORequest):
         )
 
     input_stream = environ_property[t.IO[bytes]](
-        "wsgi.input",
+        'wsgi.input',
         doc="""The raw WSGI input stream, without any safety checks.
 
         This is dangerous to use. It does not guard against infinite streams or reading
@@ -374,8 +374,7 @@ class Request(_SansIORequest):
         cache: bool = True,
         as_text: t.Literal[False] = False,
         parse_form_data: bool = False,
-    ) -> bytes:
-        ...
+    ) -> bytes: ...
 
     @t.overload
     def get_data(
@@ -383,8 +382,7 @@ class Request(_SansIORequest):
         cache: bool = True,
         as_text: t.Literal[True] = ...,
         parse_form_data: bool = False,
-    ) -> str:
-        ...
+    ) -> str: ...
 
     def get_data(
         self, cache: bool = True, as_text: bool = False, parse_form_data: bool = False
@@ -413,7 +411,7 @@ class Request(_SansIORequest):
 
         .. versionadded:: 0.9
         """
-        rv = getattr(self, "_cached_data", None)
+        rv = getattr(self, '_cached_data', None)
         if rv is None:
             if parse_form_data:
                 self._load_form_data()
@@ -421,7 +419,7 @@ class Request(_SansIORequest):
             if cache:
                 self._cached_data = rv
         if as_text:
-            rv = rv.decode(errors="replace")
+            rv = rv.decode(errors='replace')
         return rv
 
     @cached_property
@@ -455,7 +453,7 @@ class Request(_SansIORequest):
         """
         sources = [self.args]
 
-        if self.method != "GET":
+        if self.method != 'GET':
             # GET requests can have a body, and some caching proxies
             # might not treat that differently than a normal GET
             # request, allowing form data to "invisibly" affect the
@@ -510,23 +508,23 @@ class Request(_SansIORequest):
         return self.root_url
 
     remote_user = environ_property[str](
-        "REMOTE_USER",
+        'REMOTE_USER',
         doc="""If the server supports user authentication, and the
         script is protected, this attribute contains the username the
         user has authenticated as.""",
     )
     is_multithread = environ_property[bool](
-        "wsgi.multithread",
+        'wsgi.multithread',
         doc="""boolean that is `True` if the application is served by a
         multithreaded WSGI server.""",
     )
     is_multiprocess = environ_property[bool](
-        "wsgi.multiprocess",
+        'wsgi.multiprocess',
         doc="""boolean that is `True` if the application is served by a
         WSGI server that spawns multiple processes.""",
     )
     is_run_once = environ_property[bool](
-        "wsgi.run_once",
+        'wsgi.run_once',
         doc="""boolean that is `True` if the application will be
         executed only once in a process lifetime.  This is the case for
         CGI for example, but it's not guaranteed that the execution only
@@ -564,14 +562,12 @@ class Request(_SansIORequest):
     @t.overload
     def get_json(
         self, force: bool = ..., silent: t.Literal[False] = ..., cache: bool = ...
-    ) -> t.Any:
-        ...
+    ) -> t.Any: ...
 
     @t.overload
     def get_json(
         self, force: bool = ..., silent: bool = ..., cache: bool = ...
-    ) -> t.Any | None:
-        ...
+    ) -> t.Any | None: ...
 
     def get_json(
         self, force: bool = False, silent: bool = False, cache: bool = True
@@ -642,9 +638,9 @@ class Request(_SansIORequest):
             Raise a 415 error instead of 400.
         """
         if e is not None:
-            raise BadRequest(f"Failed to decode JSON object: {e}")
+            raise BadRequest(f'Failed to decode JSON object: {e}')
 
         raise UnsupportedMediaType(
-            "Did not attempt to load JSON data because the request"
+            'Did not attempt to load JSON data because the request'
             " Content-Type was not 'application/json'."
         )

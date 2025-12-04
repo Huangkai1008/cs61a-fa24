@@ -4,6 +4,7 @@ wsproto/utilities
 
 Utility functions that do not belong in a separate module.
 """
+
 import base64
 import hashlib
 import os
@@ -15,7 +16,7 @@ from .events import Event
 from .typing import Headers
 
 # RFC6455, Section 1.3 - Opening Handshake
-ACCEPT_GUID = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+ACCEPT_GUID = b'258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
 
 class ProtocolError(Exception):
@@ -63,7 +64,7 @@ def normed_header_dict(h11_headers: Union[Headers, H11Headers]) -> Dict[bytes, b
         name_to_values.setdefault(name, []).append(value)
     name_to_normed_value = {}
     for name, values in name_to_values.items():
-        name_to_normed_value[name] = b", ".join(values)
+        name_to_normed_value[name] = b', '.join(values)
     return name_to_normed_value
 
 
@@ -73,7 +74,7 @@ def normed_header_dict(h11_headers: Union[Headers, H11Headers]) -> Dict[bytes, b
 # wrong, because those can contain quoted strings, which can in turn contain
 # commas. XX FIXME
 def split_comma_header(value: bytes) -> List[str]:
-    return [piece.decode("ascii").strip() for piece in value.split(b",")]
+    return [piece.decode('ascii').strip() for piece in value.split(b',')]
 
 
 def generate_nonce() -> bytes:

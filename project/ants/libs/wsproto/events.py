@@ -4,6 +4,7 @@ wsproto/events
 
 Events that result from processing data on a WebSocket connection.
 """
+
 from abc import ABC
 from dataclasses import dataclass, field
 from typing import Generic, List, Optional, Sequence, TypeVar, Union
@@ -156,7 +157,6 @@ class RejectData(Event):
 
 @dataclass(frozen=True)
 class CloseConnection(Event):
-
     """The end of a Websocket connection, represents a closure frame.
 
     **wsproto does not automatically send a response to a close event.** To
@@ -181,12 +181,12 @@ class CloseConnection(Event):
     code: int
     reason: Optional[str] = None
 
-    def response(self) -> "CloseConnection":
+    def response(self) -> 'CloseConnection':
         """Generate an RFC-compliant close frame to send back to the peer."""
         return CloseConnection(code=self.code, reason=self.reason)
 
 
-T = TypeVar("T", bytes, str)
+T = TypeVar('T', bytes, str)
 
 
 @dataclass(frozen=True)
@@ -273,9 +273,9 @@ class Ping(Event):
        An optional payload to emit with the ping frame.
     """
 
-    payload: bytes = b""
+    payload: bytes = b''
 
-    def response(self) -> "Pong":
+    def response(self) -> 'Pong':
         """Generate an RFC-compliant :class:`Pong` response to this ping."""
         return Pong(payload=self.payload)
 
@@ -292,4 +292,4 @@ class Pong(Event):
 
     """
 
-    payload: bytes = b""
+    payload: bytes = b''

@@ -57,7 +57,7 @@ class Extension:
 
 
 class PerMessageDeflate(Extension):
-    name = "permessage-deflate"
+    name = 'permessage-deflate'
 
     DEFAULT_CLIENT_MAX_WINDOW_BITS = 15
     DEFAULT_SERVER_MAX_WINDOW_BITS = 15
@@ -96,7 +96,7 @@ class PerMessageDeflate(Extension):
     @client_max_window_bits.setter
     def client_max_window_bits(self, value: int) -> None:
         if value < 9 or value > 15:
-            raise ValueError("Window size must be between 9 and 15 inclusive")
+            raise ValueError('Window size must be between 9 and 15 inclusive')
         self._client_max_window_bits = value
 
     @property
@@ -106,7 +106,7 @@ class PerMessageDeflate(Extension):
     @server_max_window_bits.setter
     def server_max_window_bits(self, value: int) -> None:
         if value < 9 or value > 15:
-            raise ValueError("Window size must be between 9 and 15 inclusive")
+            raise ValueError('Window size must be between 9 and 15 inclusive')
         self._server_max_window_bits = value
 
     def _compressible_opcode(self, opcode: Opcode) -> bool:
@@ -117,28 +117,28 @@ class PerMessageDeflate(Extension):
 
     def offer(self) -> Union[bool, str]:
         parameters = [
-            "client_max_window_bits=%d" % self.client_max_window_bits,
-            "server_max_window_bits=%d" % self.server_max_window_bits,
+            'client_max_window_bits=%d' % self.client_max_window_bits,
+            'server_max_window_bits=%d' % self.server_max_window_bits,
         ]
 
         if self.client_no_context_takeover:
-            parameters.append("client_no_context_takeover")
+            parameters.append('client_no_context_takeover')
         if self.server_no_context_takeover:
-            parameters.append("server_no_context_takeover")
+            parameters.append('server_no_context_takeover')
 
-        return "; ".join(parameters)
+        return '; '.join(parameters)
 
     def finalize(self, offer: str) -> None:
-        bits = [b.strip() for b in offer.split(";")]
+        bits = [b.strip() for b in offer.split(';')]
         for bit in bits[1:]:
-            if bit.startswith("client_no_context_takeover"):
+            if bit.startswith('client_no_context_takeover'):
                 self.client_no_context_takeover = True
-            elif bit.startswith("server_no_context_takeover"):
+            elif bit.startswith('server_no_context_takeover'):
                 self.server_no_context_takeover = True
-            elif bit.startswith("client_max_window_bits"):
-                self.client_max_window_bits = int(bit.split("=", 1)[1].strip())
-            elif bit.startswith("server_max_window_bits"):
-                self.server_max_window_bits = int(bit.split("=", 1)[1].strip())
+            elif bit.startswith('client_max_window_bits'):
+                self.client_max_window_bits = int(bit.split('=', 1)[1].strip())
+            elif bit.startswith('server_max_window_bits'):
+                self.server_max_window_bits = int(bit.split('=', 1)[1].strip())
 
         self._enabled = True
 
@@ -146,20 +146,20 @@ class PerMessageDeflate(Extension):
         client_max_window_bits = None
         server_max_window_bits = None
 
-        bits = [b.strip() for b in params.split(";")]
+        bits = [b.strip() for b in params.split(';')]
         for bit in bits[1:]:
-            if bit.startswith("client_no_context_takeover"):
+            if bit.startswith('client_no_context_takeover'):
                 self.client_no_context_takeover = True
-            elif bit.startswith("server_no_context_takeover"):
+            elif bit.startswith('server_no_context_takeover'):
                 self.server_no_context_takeover = True
-            elif bit.startswith("client_max_window_bits"):
-                if "=" in bit:
-                    client_max_window_bits = int(bit.split("=", 1)[1].strip())
+            elif bit.startswith('client_max_window_bits'):
+                if '=' in bit:
+                    client_max_window_bits = int(bit.split('=', 1)[1].strip())
                 else:
                     client_max_window_bits = self.client_max_window_bits
-            elif bit.startswith("server_max_window_bits"):
-                if "=" in bit:
-                    server_max_window_bits = int(bit.split("=", 1)[1].strip())
+            elif bit.startswith('server_max_window_bits'):
+                if '=' in bit:
+                    server_max_window_bits = int(bit.split('=', 1)[1].strip())
                 else:
                     server_max_window_bits = self.server_max_window_bits
 
@@ -171,21 +171,21 @@ class PerMessageDeflate(Extension):
         parameters = []
 
         if self.client_no_context_takeover:
-            parameters.append("client_no_context_takeover")
+            parameters.append('client_no_context_takeover')
         if self.server_no_context_takeover:
-            parameters.append("server_no_context_takeover")
+            parameters.append('server_no_context_takeover')
         try:
             if client_max_window_bits is not None:
-                parameters.append("client_max_window_bits=%d" % client_max_window_bits)
+                parameters.append('client_max_window_bits=%d' % client_max_window_bits)
                 self.client_max_window_bits = client_max_window_bits
             if server_max_window_bits is not None:
-                parameters.append("server_max_window_bits=%d" % server_max_window_bits)
+                parameters.append('server_max_window_bits=%d' % server_max_window_bits)
                 self.server_max_window_bits = server_max_window_bits
         except ValueError:
             return None
         else:
             self._enabled = True
-            return "; ".join(parameters)
+            return '; '.join(parameters)
 
     def frame_inbound_header(
         self,
@@ -240,7 +240,7 @@ class PerMessageDeflate(Extension):
         assert self._decompressor is not None
 
         try:
-            data = self._decompressor.decompress(b"\x00\x00\xff\xff")
+            data = self._decompressor.decompress(b'\x00\x00\xff\xff')
             data += self._decompressor.flush()
         except zlib.error:
             return CloseReason.INVALID_FRAME_PAYLOAD_DATA
@@ -298,14 +298,14 @@ class PerMessageDeflate(Extension):
         return (rsv, data)
 
     def __repr__(self) -> str:
-        descr = ["client_max_window_bits=%d" % self.client_max_window_bits]
+        descr = ['client_max_window_bits=%d' % self.client_max_window_bits]
         if self.client_no_context_takeover:
-            descr.append("client_no_context_takeover")
-        descr.append("server_max_window_bits=%d" % self.server_max_window_bits)
+            descr.append('client_no_context_takeover')
+        descr.append('server_max_window_bits=%d' % self.server_max_window_bits)
         if self.server_no_context_takeover:
-            descr.append("server_no_context_takeover")
+            descr.append('server_no_context_takeover')
 
-        return "<{} {}>".format(self.__class__.__name__, "; ".join(descr))
+        return '<{} {}>'.format(self.__class__.__name__, '; '.join(descr))
 
 
 #: SUPPORTED_EXTENSIONS maps all supported extension names to their class.

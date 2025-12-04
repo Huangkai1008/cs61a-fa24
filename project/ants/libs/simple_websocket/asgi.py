@@ -24,8 +24,7 @@ class WebSocketASGI:  # pragma: no cover
             if subprotocol in self.subprotocols:
                 self.subprotocol = subprotocol
                 break
-        await self._send({'type': 'websocket.accept',
-                         'subprotocol': self.subprotocol})
+        await self._send({'type': 'websocket.accept', 'subprotocol': self.subprotocol})
 
     async def receive(self):
         message = await self._receive()

@@ -38,9 +38,16 @@ class ASGIApp:
         })
         uvicorn.run(app, '127.0.0.1', 5000)
     """
-    def __init__(self, engineio_server, other_asgi_app=None,
-                 static_files=None, engineio_path='engine.io',
-                 on_startup=None, on_shutdown=None):
+
+    def __init__(
+        self,
+        engineio_server,
+        other_asgi_app=None,
+        static_files=None,
+        engineio_path='engine.io',
+        on_startup=None,
+        on_shutdown=None,
+    ):
         self.engineio_server = engineio_server
         self.other_asgi_app = other_asgi_app
         self.engineio_path = engineio_path
@@ -53,12 +60,16 @@ class ASGIApp:
         self.on_shutdown = on_shutdown
 
     async def __call__(self, scope, receive, send):
-        if scope['type'] in ['http', 'websocket'] and \
-                scope['path'].startswith(self.engineio_path):
+        if scope['type'] in ['http', 'websocket'] and scope['path'].startswith(
+            self.engineio_path
+        ):
             await self.engineio_server.handle_request(scope, receive, send)
         else:
-            static_file = get_static_file(scope['path'], self.static_files) \
-                if scope['type'] == 'http' and self.static_files else None
+            static_file = (
+                get_static_file(scope['path'], self.static_files)
+                if scope['type'] == 'http' and self.static_files
+                else None
+            )
             if scope['type'] == 'lifespan':
                 await self.lifespan(scope, receive, send)
             elif static_file and os.path.exists(static_file['filename']):
@@ -68,22 +79,28 @@ class ASGIApp:
             else:
                 await self.not_found(receive, send)
 
-    async def serve_static_file(self, static_file, receive,
-                                send):  # pragma: no cover
+    async def serve_static_file(self, static_file, receive, send):  # pragma: no cover
         event = await receive()
         if event['type'] == 'http.request':
             with open(static_file['filename'], 'rb') as f:
                 payload = f.read()
-            await send({'type': 'http.response.start',
-                        'status': 200,
-                        'headers': [(b'Content-Type', static_file[
-                            'content_type'].encode('utf-8'))]})
-            await send({'type': 'http.response.body',
-                        'body': payload})
+            await send(
+                {
+                    'type': 'http.response.start',
+                    'status': 200,
+                    'headers': [
+                        (b'Content-Type', static_file['content_type'].encode('utf-8'))
+                    ],
+                }
+            )
+            await send({'type': 'http.response.body', 'body': payload})
 
     async def lifespan(self, scope, receive, send):
-        if self.other_asgi_app is not None and self.on_startup is None and \
-                self.on_shutdown is None:
+        if (
+            self.other_asgi_app is not None
+            and self.on_startup is None
+            and self.on_shutdown is None
+        ):
             # let the other ASGI app handle lifespan events
             await self.other_asgi_app(scope, receive, send)
             return
@@ -93,9 +110,9 @@ class ASGIApp:
             if event['type'] == 'lifespan.startup':
                 if self.on_startup:
                     try:
-                        await self.on_startup() \
-                            if asyncio.iscoroutinefunction(self.on_startup) \
-                            else self.on_startup()
+                        await self.on_startup() if asyncio.iscoroutinefunction(
+                            self.on_startup
+                        ) else self.on_startup()
                     except:
                         await send({'type': 'lifespan.startup.failed'})
                         return
@@ -103,9 +120,9 @@ class ASGIApp:
             elif event['type'] == 'lifespan.shutdown':
                 if self.on_shutdown:
                     try:
-                        await self.on_shutdown() \
-                            if asyncio.iscoroutinefunction(self.on_shutdown) \
-                            else self.on_shutdown()
+                        await self.on_shutdown() if asyncio.iscoroutinefunction(
+                            self.on_shutdown
+                        ) else self.on_shutdown()
                     except:
                         await send({'type': 'lifespan.shutdown.failed'})
                         return
@@ -114,11 +131,14 @@ class ASGIApp:
 
     async def not_found(self, receive, send):
         """Return a 404 Not Found error to the client."""
-        await send({'type': 'http.response.start',
-                    'status': 404,
-                    'headers': [(b'Content-Type', b'text/plain')]})
-        await send({'type': 'http.response.body',
-                    'body': b'Not Found'})
+        await send(
+            {
+                'type': 'http.response.start',
+                'status': 404,
+                'headers': [(b'Content-Type', b'text/plain')],
+            }
+        )
+        await send({'type': 'http.response.body', 'body': b'Not Found'})
 
 
 async def translate_request(scope, receive, send):
@@ -199,23 +219,29 @@ async def make_response(status, headers, payload, environ):
     headers = [(h[0].encode('utf-8'), h[1].encode('utf-8')) for h in headers]
     if environ['asgi.scope']['type'] == 'websocket':
         if status.startswith('200 '):
-            await environ['asgi.send']({'type': 'websocket.accept',
-                                        'headers': headers})
+            await environ['asgi.send']({'type': 'websocket.accept', 'headers': headers})
         else:
             if payload:
-                reason = payload.decode('utf-8') \
-                    if isinstance(payload, bytes) else str(payload)
-                await environ['asgi.send']({'type': 'websocket.close',
-                                            'reason': reason})
+                reason = (
+                    payload.decode('utf-8')
+                    if isinstance(payload, bytes)
+                    else str(payload)
+                )
+                await environ['asgi.send'](
+                    {'type': 'websocket.close', 'reason': reason}
+                )
             else:
                 await environ['asgi.send']({'type': 'websocket.close'})
         return
 
-    await environ['asgi.send']({'type': 'http.response.start',
-                                'status': int(status.split(' ')[0]),
-                                'headers': headers})
-    await environ['asgi.send']({'type': 'http.response.body',
-                                'body': payload})
+    await environ['asgi.send'](
+        {
+            'type': 'http.response.start',
+            'status': int(status.split(' ')[0]),
+            'headers': headers,
+        }
+    )
+    await environ['asgi.send']({'type': 'http.response.body', 'body': payload})
 
 
 class WebSocket(object):  # pragma: no cover
@@ -223,6 +249,7 @@ class WebSocket(object):  # pragma: no cover
     This wrapper class provides an asgi WebSocket interface that is
     somewhat compatible with eventlet's implementation.
     """
+
     def __init__(self, handler, server):
         self.handler = handler
         self.asgi_receive = None
@@ -249,9 +276,9 @@ class WebSocket(object):  # pragma: no cover
             msg_bytes = message
         else:
             msg_text = message
-        await self.asgi_send({'type': 'websocket.send',
-                              'bytes': msg_bytes,
-                              'text': msg_text})
+        await self.asgi_send(
+            {'type': 'websocket.send', 'bytes': msg_bytes, 'text': msg_text}
+        )
 
     async def wait(self):
         event = await self.asgi_receive()

@@ -7,9 +7,9 @@
 
 #                             * Code review nav *
 #                        (see comments in __init__.py)
-#==============================================================================
-#← Prev: _orderedbase.py  Current: _frozenordered.py  Next: _orderedbidict.py →
-#==============================================================================
+# ==============================================================================
+# ← Prev: _orderedbase.py  Current: _frozenordered.py  Next: _orderedbidict.py →
+# ==============================================================================
 
 """Provide :class:`FrozenOrderedBidict`, an immutable, hashable, ordered bidict."""
 
@@ -40,11 +40,12 @@ class FrozenOrderedBidict(OrderedBidictBase[KT, VT]):
     __hash__: t.Callable[[t.Any], int] = frozenbidict.__hash__
 
     if t.TYPE_CHECKING:
+
         @property
         def inverse(self) -> FrozenOrderedBidict[VT, KT]: ...
 
 
 #                             * Code review nav *
-#==============================================================================
-#← Prev: _orderedbase.py  Current: _frozenordered.py  Next: _orderedbidict.py →
-#==============================================================================
+# ==============================================================================
+# ← Prev: _orderedbase.py  Current: _frozenordered.py  Next: _orderedbidict.py →
+# ==============================================================================

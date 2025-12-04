@@ -4,6 +4,7 @@ wsproto
 
 A WebSocket implementation.
 """
+
 from typing import Generator, Optional, Union
 
 from .connection import Connection, ConnectionState, ConnectionType
@@ -11,7 +12,7 @@ from .events import Event
 from .handshake import H11Handshake
 from .typing import Headers
 
-__version__ = "1.2.0"
+__version__ = '1.2.0'
 
 
 class WSConnection:
@@ -56,7 +57,7 @@ class WSConnection:
         :param wsproto.events.Event event: The event to generate data for
         :returns bytes: The data to send to the peer
         """
-        data = b""
+        data = b''
         if self.connection is None:
             data += self.handshake.send(event)
             self.connection = self.handshake.connection
@@ -91,4 +92,4 @@ class WSConnection:
             yield from self.connection.events()
 
 
-__all__ = ("ConnectionType", "WSConnection")
+__all__ = ('ConnectionType', 'WSConnection')

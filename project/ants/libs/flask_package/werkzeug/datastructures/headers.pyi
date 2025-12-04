@@ -12,8 +12,8 @@ from _typeshed.wsgi import WSGIEnvironment
 
 from .mixins import ImmutableHeadersMixin
 
-D = TypeVar("D")
-T = TypeVar("T")
+D = TypeVar('D')
+T = TypeVar('T')
 
 class Headers(dict[str, str]):
     _list: list[tuple[str, str]]

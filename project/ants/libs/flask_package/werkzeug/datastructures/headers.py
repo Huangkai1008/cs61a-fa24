@@ -184,7 +184,7 @@ class Headers:
             Support :class:`MultiDict`. Allow passing ``kwargs``.
         """
         if len(args) > 1:
-            raise TypeError(f"update expected at most 1 arguments, got {len(args)}")
+            raise TypeError(f'update expected at most 1 arguments, got {len(args)}')
 
         if args:
             for key, value in iter_multi_items(args[0]):
@@ -396,7 +396,7 @@ class Headers:
         .. versionadded:: 1.0
         """
         if len(args) > 1:
-            raise TypeError(f"update expected at most 1 arguments, got {len(args)}")
+            raise TypeError(f'update expected at most 1 arguments, got {len(args)}')
 
         if args:
             mapping = args[0]
@@ -437,21 +437,21 @@ class Headers:
         """Returns formatted headers suitable for HTTP transmission."""
         strs = []
         for key, value in self.to_wsgi_list():
-            strs.append(f"{key}: {value}")
-        strs.append("\r\n")
-        return "\r\n".join(strs)
+            strs.append(f'{key}: {value}')
+        strs.append('\r\n')
+        return '\r\n'.join(strs)
 
     def __repr__(self):
-        return f"{type(self).__name__}({list(self)!r})"
+        return f'{type(self).__name__}({list(self)!r})'
 
 
 def _options_header_vkw(value: str, kw: dict[str, t.Any]):
     return http.dump_options_header(
-        value, {k.replace("_", "-"): v for k, v in kw.items()}
+        value, {k.replace('_', '-'): v for k, v in kw.items()}
     )
 
 
-_newline_re = re.compile(r"[\r\n]")
+_newline_re = re.compile(r'[\r\n]')
 
 
 def _str_header_value(value: t.Any) -> str:
@@ -459,7 +459,7 @@ def _str_header_value(value: t.Any) -> str:
         value = str(value)
 
     if _newline_re.search(value) is not None:
-        raise ValueError("Header values must not contain newline characters.")
+        raise ValueError('Header values must not contain newline characters.')
 
     return value
 
@@ -487,10 +487,10 @@ class EnvironHeaders(ImmutableHeadersMixin, Headers):
         # used because get() calls it.
         if not isinstance(key, str):
             raise KeyError(key)
-        key = key.upper().replace("-", "_")
-        if key in {"CONTENT_TYPE", "CONTENT_LENGTH"}:
+        key = key.upper().replace('-', '_')
+        if key in {'CONTENT_TYPE', 'CONTENT_LENGTH'}:
             return self.environ[key]
-        return self.environ[f"HTTP_{key}"]
+        return self.environ[f'HTTP_{key}']
 
     def __len__(self):
         # the iter is necessary because otherwise list calls our
@@ -499,16 +499,16 @@ class EnvironHeaders(ImmutableHeadersMixin, Headers):
 
     def __iter__(self):
         for key, value in self.environ.items():
-            if key.startswith("HTTP_") and key not in {
-                "HTTP_CONTENT_TYPE",
-                "HTTP_CONTENT_LENGTH",
+            if key.startswith('HTTP_') and key not in {
+                'HTTP_CONTENT_TYPE',
+                'HTTP_CONTENT_LENGTH',
             }:
-                yield key[5:].replace("_", "-").title(), value
-            elif key in {"CONTENT_TYPE", "CONTENT_LENGTH"} and value:
-                yield key.replace("_", "-").title(), value
+                yield key[5:].replace('_', '-').title(), value
+            elif key in {'CONTENT_TYPE', 'CONTENT_LENGTH'} and value:
+                yield key.replace('_', '-').title(), value
 
     def copy(self):
-        raise TypeError(f"cannot create {type(self).__name__!r} copies")
+        raise TypeError(f'cannot create {type(self).__name__!r} copies')
 
 
 # circular dependencies

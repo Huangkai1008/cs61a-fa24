@@ -1,55 +1,55 @@
 test = {
-  'name': 'Problem 12',
-  'points': 2,
-  'suites': [
-    {
-      'cases': [
+    'name': 'Problem 12',
+    'points': 2,
+    'suites': [
         {
-          'answer': '7f1e876193ad01466bb1f843c9a17b72',
-          'choices': [
-            r"""
+            'cases': [
+                {
+                    'answer': '7f1e876193ad01466bb1f843c9a17b72',
+                    'choices': [
+                        r"""
             Attacks the nearest bee and doubles the damage of all the ants
             behind her (that haven't already been doubled)
             """,
-            r"""
+                        r"""
             Doubles the damage of all the ants behind her (that haven't
             already been doubled)
             """,
-            r"""
+                        r"""
             Doubles the damage of all the ants in front of her (that haven't
             already been doubled)
             """,
-            r"""
+                        r"""
             Doubles the damage of all the ants in the colony (that haven't
             already been doubled)
-            """
-          ],
-          'hidden': False,
-          'locked': True,
-          'multiline': False,
-          'question': 'What does a QueenAnt do each turn?'
+            """,
+                    ],
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                    'question': 'What does a QueenAnt do each turn?',
+                },
+                {
+                    'answer': '5513089cd61eeda577f95f887b408517',
+                    'choices': [
+                        'If a Bee reaches the end of a tunnel or a QueenAnt dies',
+                        'If there are no ants left in the colony',
+                        'If a second QueenAnt is placed in the colony',
+                        'If a Bee attacks a QueenAnt',
+                    ],
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                    'question': 'Under what circumstances do Ants lose the game?',
+                },
+            ],
+            'scored': False,
+            'type': 'concept',
         },
         {
-          'answer': '5513089cd61eeda577f95f887b408517',
-          'choices': [
-            'If a Bee reaches the end of a tunnel or a QueenAnt dies',
-            'If there are no ants left in the colony',
-            'If a second QueenAnt is placed in the colony',
-            'If a Bee attacks a QueenAnt'
-          ],
-          'hidden': False,
-          'locked': True,
-          'multiline': False,
-          'question': 'Under what circumstances do Ants lose the game?'
-        }
-      ],
-      'scored': False,
-      'type': 'concept'
-    },
-    {
-      'cases': [
-        {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> # Testing QueenAnt parameters
           >>> QueenAnt.food_cost
           7cd035adf49fc93a635b4e8bb2e28bd4
@@ -59,25 +59,25 @@ test = {
           d89cf7c79d5a479b0f636734143ed5e6
           # locked
           """,
-          'hidden': False,
-          'locked': True,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': True,
+                    'multiline': False,
+                }
+            ],
+            'scored': True,
+            'setup': r"""
       >>> from ants import *
       >>> beehive = Hive(AssaultPlan())
       >>> dimensions = (2, 9)
       >>> gamestate = GameState(beehive, ant_types(), dry_layout, dimensions, food=100)
       """,
-      'teardown': '',
-      'type': 'doctest'
-    },
-    {
-      'cases': [
+            'teardown': '',
+            'type': 'doctest',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> # QueenAnt Placement
           >>> queen = ants.QueenAnt()
           >>> front_ant, back_ant = ants.ThrowerAnt(), ants.ThrowerAnt()
@@ -98,12 +98,12 @@ test = {
           >>> front_ant.damage
           1
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing damage multiplier
           >>> queen_tunnel, side_tunnel = [[gamestate.places['tunnel_{0}_{1}'.format(i, j)]
           ...         for j in range(9)] for i in range(2)]
@@ -142,13 +142,13 @@ test = {
           >>> side_bee.health
           9
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+            ],
+            'scored': True,
+            'setup': r"""
       >>> import ants, importlib
       >>> importlib.reload(ants)
       >>> beehive = ants.Hive(ants.AssaultPlan())
@@ -157,13 +157,13 @@ test = {
       ...                            ants.dry_layout, dimensions, food=20)
       >>> ants.ants_lose = lambda: None
       """,
-      'teardown': '',
-      'type': 'doctest'
-    },
-    {
-      'cases': [
+            'teardown': '',
+            'type': 'doctest',
+        },
         {
-          'code': r"""
+            'cases': [
+                {
+                    'code': r"""
           >>> # Testing game over
           >>> queen = ants.QueenAnt()
           >>> tunnel = [gamestate.places['tunnel_0_{0}'.format(i)]
@@ -176,12 +176,12 @@ test = {
           >>> bee.action(gamestate)         # Game should end
           AntsLoseException
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing if queen will not crash with no one to double
           >>> queen = ants.QueenAnt()
           >>> gamestate.places['tunnel_0_2'].add_insect(queen)
@@ -193,12 +193,12 @@ test = {
           >>> bee.health # Queen should still hit the bee
           2
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Testing QueenAnt action method
           >>> queen = ants.QueenAnt()
           >>> bee = ants.Bee(10)
@@ -217,12 +217,12 @@ test = {
           >>> queen.health   # Long live the Queen
           1
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Extensive damage doubling tests
           >>> queen_tunnel, side_tunnel = [[gamestate.places['tunnel_{0}_{1}'.format(i, j)]
           ...         for j in range(9)] for i in range(2)]
@@ -302,12 +302,12 @@ test = {
           >>> (thrower1.damage, thrower2.damage)
           (20002, 20004)
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # Adding/Removing QueenAnt with Container
           >>> place = gamestate.places['tunnel_0_3']
           >>> queen = ants.QueenAnt()
@@ -326,12 +326,12 @@ test = {
           True
           >>> queen.action(gamestate) # should not error
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> # test proper call to zero_health_callback
           >>> original_zero_health_callback = ants.Insect.zero_health_callback
           >>> ants.Insect.zero_health_callback = lambda x: print("insect died")
@@ -339,23 +339,23 @@ test = {
           >>> gamestate.places['tunnel_0_2'].add_insect(real)
           >>> ants.Insect.zero_health_callback = original_zero_health_callback
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        },
-        {
-          'code': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+                {
+                    'code': r"""
           >>> from ants import *
           >>> QueenAnt.implemented
           True
           """,
-          'hidden': False,
-          'locked': False,
-          'multiline': False
-        }
-      ],
-      'scored': True,
-      'setup': r"""
+                    'hidden': False,
+                    'locked': False,
+                    'multiline': False,
+                },
+            ],
+            'scored': True,
+            'setup': r"""
       >>> import ants, importlib
       >>> importlib.reload(ants)
       >>> beehive = ants.Hive(ants.AssaultPlan())
@@ -364,8 +364,8 @@ test = {
       ...                            ants.dry_layout, dimensions, food=20)
       >>> #
       """,
-      'teardown': '',
-      'type': 'doctest'
-    }
-  ]
+            'teardown': '',
+            'type': 'doctest',
+        },
+    ],
 }

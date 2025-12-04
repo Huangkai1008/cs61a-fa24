@@ -189,10 +189,10 @@ class Response(_SansIOResponse):
 
     def __repr__(self) -> str:
         if self.is_sequence:
-            body_info = f"{sum(map(len, self.iter_encoded()))} bytes"
+            body_info = f'{sum(map(len, self.iter_encoded()))} bytes'
         else:
-            body_info = "streamed" if self.is_streamed else "likely-streamed"
-        return f"<{type(self).__name__} {body_info} [{self.status}]>"
+            body_info = 'streamed' if self.is_streamed else 'likely-streamed'
+        return f'<{type(self).__name__} {body_info} [{self.status}]>'
 
     @classmethod
     def force_type(
@@ -228,8 +228,8 @@ class Response(_SansIOResponse):
         if not isinstance(response, Response):
             if environ is None:
                 raise TypeError(
-                    "cannot convert WSGI application into response"
-                    " objects without an environ"
+                    'cannot convert WSGI application into response'
+                    ' objects without an environ'
                 )
 
             from ..test import run_wsgi_app
@@ -260,12 +260,10 @@ class Response(_SansIOResponse):
         return cls(*run_wsgi_app(app, environ, buffered))
 
     @t.overload
-    def get_data(self, as_text: t.Literal[False] = False) -> bytes:
-        ...
+    def get_data(self, as_text: t.Literal[False] = False) -> bytes: ...
 
     @t.overload
-    def get_data(self, as_text: t.Literal[True]) -> str:
-        ...
+    def get_data(self, as_text: t.Literal[True]) -> str: ...
 
     def get_data(self, as_text: bool = False) -> bytes | str:
         """The string representation of the response body.  Whenever you call
@@ -281,7 +279,7 @@ class Response(_SansIOResponse):
         .. versionadded:: 0.9
         """
         self._ensure_sequence()
-        rv = b"".join(self.iter_encoded())
+        rv = b''.join(self.iter_encoded())
 
         if as_text:
             return rv.decode()
@@ -299,12 +297,12 @@ class Response(_SansIOResponse):
             value = value.encode()
         self.response = [value]
         if self.automatically_set_content_length:
-            self.headers["Content-Length"] = str(len(value))
+            self.headers['Content-Length'] = str(len(value))
 
     data = property(
         get_data,
         set_data,
-        doc="A descriptor that calls :meth:`get_data` and :meth:`set_data`.",
+        doc='A descriptor that calls :meth:`get_data` and :meth:`set_data`.',
     )
 
     def calculate_content_length(self) -> int | None:
@@ -329,14 +327,14 @@ class Response(_SansIOResponse):
             return
         if self.direct_passthrough:
             raise RuntimeError(
-                "Attempted implicit sequence conversion but the"
-                " response object is in direct passthrough mode."
+                'Attempted implicit sequence conversion but the'
+                ' response object is in direct passthrough mode.'
             )
         if not self.implicit_sequence_conversion:
             raise RuntimeError(
-                "The response object required the iterable to be a"
-                " sequence, but the implicit conversion was disabled."
-                " Call make_sequence() yourself."
+                'The response object required the iterable to be a'
+                ' sequence, but the implicit conversion was disabled.'
+                ' Call make_sequence() yourself.'
             )
         self.make_sequence()
 
@@ -352,7 +350,7 @@ class Response(_SansIOResponse):
             # if we consume an iterable we have to ensure that the close
             # method of the iterable is called if available when we tear
             # down the response
-            close = getattr(self.response, "close", None)
+            close = getattr(self.response, 'close', None)
             self.response = list(self.iter_encoded())
             if close is not None:
                 self.call_on_close(close)
@@ -401,7 +399,7 @@ class Response(_SansIOResponse):
         .. versionadded:: 0.9
            Can now be used in a with statement.
         """
-        if hasattr(self.response, "close"):
+        if hasattr(self.response, 'close'):
             self.response.close()
         for func in self._on_close:
             func()
@@ -434,7 +432,7 @@ class Response(_SansIOResponse):
         # Always freeze the encoded response body, ignore
         # implicit_sequence_conversion and direct_passthrough.
         self.response = list(self.iter_encoded())
-        self.headers["Content-Length"] = str(sum(map(len, self.response)))
+        self.headers['Content-Length'] = str(sum(map(len, self.response)))
         self.add_etag()
 
     def get_wsgi_headers(self, environ: WSGIEnvironment) -> Headers:
@@ -472,11 +470,11 @@ class Response(_SansIOResponse):
         # speedup.
         for key, value in headers:
             ikey = key.lower()
-            if ikey == "location":
+            if ikey == 'location':
                 location = value
-            elif ikey == "content-location":
+            elif ikey == 'content-location':
                 content_location = value
-            elif ikey == "content-length":
+            elif ikey == 'content-length':
                 content_length = value
 
         if location is not None:
@@ -488,17 +486,17 @@ class Response(_SansIOResponse):
                 current_url = iri_to_uri(current_url)
                 location = urljoin(current_url, location)
 
-            headers["Location"] = location
+            headers['Location'] = location
 
         # make sure the content location is a URL
         if content_location is not None:
-            headers["Content-Location"] = iri_to_uri(content_location)
+            headers['Content-Location'] = iri_to_uri(content_location)
 
         if 100 <= status < 200 or status == 204:
             # Per section 3.3.2 of RFC 7230, "a server MUST NOT send a
             # Content-Length header field in any response with a status
             # code of 1xx (Informational) or 204 (No Content)."
-            headers.remove("Content-Length")
+            headers.remove('Content-Length')
         elif status == 304:
             remove_entity_headers(headers)
 
@@ -515,7 +513,7 @@ class Response(_SansIOResponse):
             and not (100 <= status < 200)
         ):
             content_length = sum(len(x) for x in self.iter_encoded())
-            headers["Content-Length"] = str(content_length)
+            headers['Content-Length'] = str(content_length)
 
         return headers
 
@@ -535,7 +533,7 @@ class Response(_SansIOResponse):
         """
         status = self.status_code
         if (
-            environ["REQUEST_METHOD"] == "HEAD"
+            environ['REQUEST_METHOD'] == 'HEAD'
             or 100 <= status < 200
             or status in (204, 304)
         ):
@@ -595,12 +593,10 @@ class Response(_SansIOResponse):
         return self.get_json()
 
     @t.overload
-    def get_json(self, force: bool = ..., silent: t.Literal[False] = ...) -> t.Any:
-        ...
+    def get_json(self, force: bool = ..., silent: t.Literal[False] = ...) -> t.Any: ...
 
     @t.overload
-    def get_json(self, force: bool = ..., silent: bool = ...) -> t.Any | None:
-        ...
+    def get_json(self, force: bool = ..., silent: bool = ...) -> t.Any | None: ...
 
     def get_json(self, force: bool = False, silent: bool = False) -> t.Any | None:
         """Parse :attr:`data` as JSON. Useful during testing.
@@ -645,15 +641,15 @@ class Response(_SansIOResponse):
         resource is considered unchanged when compared with `If-Range` header.
         """
         return (
-            "HTTP_IF_RANGE" not in environ
+            'HTTP_IF_RANGE' not in environ
             or not is_resource_modified(
                 environ,
-                self.headers.get("etag"),
+                self.headers.get('etag'),
                 None,
-                self.headers.get("last-modified"),
+                self.headers.get('last-modified'),
                 ignore_if_range=False,
             )
-        ) and "HTTP_RANGE" in environ
+        ) and 'HTTP_RANGE' in environ
 
     def _process_range_request(
         self,
@@ -685,9 +681,9 @@ class Response(_SansIOResponse):
             return False
 
         if accept_ranges is True:
-            accept_ranges = "bytes"
+            accept_ranges = 'bytes'
 
-        parsed_range = parse_range_header(environ.get("HTTP_RANGE"))
+        parsed_range = parse_range_header(environ.get('HTTP_RANGE'))
 
         if parsed_range is None:
             raise RequestedRangeNotSatisfiable(complete_length)
@@ -699,8 +695,8 @@ class Response(_SansIOResponse):
             raise RequestedRangeNotSatisfiable(complete_length)
 
         content_length = range_tuple[1] - range_tuple[0]
-        self.headers["Content-Length"] = str(content_length)
-        self.headers["Accept-Ranges"] = accept_ranges
+        self.headers['Content-Length'] = str(content_length)
+        self.headers['Accept-Ranges'] = accept_ranges
         self.content_range = content_range_header  # type: ignore
         self.status_code = 206
         self._wrap_range_response(range_tuple[0], content_length)
@@ -752,31 +748,31 @@ class Response(_SansIOResponse):
             raising a 416 Range Not Satisfiable error.
         """
         environ = _get_environ(request_or_environ)
-        if environ["REQUEST_METHOD"] in ("GET", "HEAD"):
+        if environ['REQUEST_METHOD'] in ('GET', 'HEAD'):
             # if the date is not in the headers, add it now.  We however
             # will not override an already existing header.  Unfortunately
             # this header will be overridden by many WSGI servers including
             # wsgiref.
-            if "date" not in self.headers:
-                self.headers["Date"] = http_date()
+            if 'date' not in self.headers:
+                self.headers['Date'] = http_date()
             is206 = self._process_range_request(environ, complete_length, accept_ranges)
             if not is206 and not is_resource_modified(
                 environ,
-                self.headers.get("etag"),
+                self.headers.get('etag'),
                 None,
-                self.headers.get("last-modified"),
+                self.headers.get('last-modified'),
             ):
-                if parse_etags(environ.get("HTTP_IF_MATCH")):
+                if parse_etags(environ.get('HTTP_IF_MATCH')):
                     self.status_code = 412
                 else:
                     self.status_code = 304
             if (
                 self.automatically_set_content_length
-                and "content-length" not in self.headers
+                and 'content-length' not in self.headers
             ):
                 length = self.calculate_content_length()
                 if length is not None:
-                    self.headers["Content-Length"] = str(length)
+                    self.headers['Content-Length'] = str(length)
         return self
 
     def add_etag(self, overwrite: bool = False, weak: bool = False) -> None:
@@ -786,7 +782,7 @@ class Response(_SansIOResponse):
             SHA-1 is used to generate the value. MD5 may not be
             available in some environments.
         """
-        if overwrite or "etag" not in self.headers:
+        if overwrite or 'etag' not in self.headers:
             self.set_etag(generate_etag(self.get_data()), weak)
 
 
@@ -796,7 +792,7 @@ class ResponseStream:
     response iterable of the response object.
     """
 
-    mode = "wb+"
+    mode = 'wb+'
 
     def __init__(self, response: Response):
         self.response = response
@@ -804,10 +800,10 @@ class ResponseStream:
 
     def write(self, value: bytes) -> int:
         if self.closed:
-            raise ValueError("I/O operation on closed file")
+            raise ValueError('I/O operation on closed file')
         self.response._ensure_sequence(mutable=True)
         self.response.response.append(value)  # type: ignore
-        self.response.headers.pop("Content-Length", None)
+        self.response.headers.pop('Content-Length', None)
         return len(value)
 
     def writelines(self, seq: t.Iterable[bytes]) -> None:
@@ -819,11 +815,11 @@ class ResponseStream:
 
     def flush(self) -> None:
         if self.closed:
-            raise ValueError("I/O operation on closed file")
+            raise ValueError('I/O operation on closed file')
 
     def isatty(self) -> bool:
         if self.closed:
-            raise ValueError("I/O operation on closed file")
+            raise ValueError('I/O operation on closed file')
         return False
 
     def tell(self) -> int:
@@ -832,4 +828,4 @@ class ResponseStream:
 
     @property
     def encoding(self) -> str:
-        return "utf-8"
+        return 'utf-8'

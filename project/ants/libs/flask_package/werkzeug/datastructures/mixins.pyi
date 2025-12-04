@@ -11,9 +11,9 @@ from _typeshed import SupportsKeysAndGetItem
 
 from .headers import Headers
 
-K = TypeVar("K")
-T = TypeVar("T")
-V = TypeVar("V")
+K = TypeVar('K')
+T = TypeVar('T')
+V = TypeVar('V')
 
 def is_immutable(self: object) -> NoReturn: ...
 

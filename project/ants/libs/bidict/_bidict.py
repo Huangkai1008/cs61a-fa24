@@ -7,9 +7,9 @@
 
 #                             * Code review nav *
 #                        (see comments in __init__.py)
-#==============================================================================
+# ==============================================================================
 # ← Prev: _frozenbidict.py     Current: _bidict.py     Next: _orderedbase.py →
-#==============================================================================
+# ==============================================================================
 
 
 """Provide :class:`MutableBidict`."""
@@ -27,6 +27,7 @@ class MutableBidict(BidictBase[KT, VT], MutableBidirectionalMapping[KT, VT]):
     """Base class for mutable bidirectional mappings."""
 
     if t.TYPE_CHECKING:
+
         @property
         def inverse(self) -> MutableBidict[VT, KT]: ...
 
@@ -188,11 +189,12 @@ class bidict(MutableBidict[KT, VT]):
     """
 
     if t.TYPE_CHECKING:
+
         @property
         def inverse(self) -> bidict[VT, KT]: ...
 
 
 #                             * Code review nav *
-#==============================================================================
+# ==============================================================================
 # ← Prev: _frozenbidict.py     Current: _bidict.py     Next: _orderedbase.py →
-#==============================================================================
+# ==============================================================================

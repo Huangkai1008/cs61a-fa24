@@ -14,7 +14,7 @@ if t.TYPE_CHECKING:
     from .sansio.app import App
 
 
-T = t.TypeVar("T")
+T = t.TypeVar('T')
 
 
 class ConfigAttribute(t.Generic[T]):
@@ -27,12 +27,10 @@ class ConfigAttribute(t.Generic[T]):
         self.get_converter = get_converter
 
     @t.overload
-    def __get__(self, obj: None, owner: None) -> te.Self:
-        ...
+    def __get__(self, obj: None, owner: None) -> te.Self: ...
 
     @t.overload
-    def __get__(self, obj: App, owner: type[App]) -> T:
-        ...
+    def __get__(self, obj: App, owner: type[App]) -> T: ...
 
     def __get__(self, obj: App | None, owner: type[App] | None = None) -> T | te.Self:
         if obj is None:
@@ -118,15 +116,15 @@ class Config(dict):  # type: ignore[type-arg]
             if silent:
                 return False
             raise RuntimeError(
-                f"The environment variable {variable_name!r} is not set"
-                " and as such configuration could not be loaded. Set"
-                " this variable and make it point to a configuration"
-                " file"
+                f'The environment variable {variable_name!r} is not set'
+                ' and as such configuration could not be loaded. Set'
+                ' this variable and make it point to a configuration'
+                ' file'
             )
         return self.from_pyfile(rv, silent=silent)
 
     def from_prefixed_env(
-        self, prefix: str = "FLASK", *, loads: t.Callable[[str], t.Any] = json.loads
+        self, prefix: str = 'FLASK', *, loads: t.Callable[[str], t.Any] = json.loads
     ) -> bool:
         """Load any environment variables that start with ``FLASK_``,
         dropping the prefix from the env key for the config key. Values
@@ -151,7 +149,7 @@ class Config(dict):  # type: ignore[type-arg]
 
         .. versionadded:: 2.1
         """
-        prefix = f"{prefix}_"
+        prefix = f'{prefix}_'
         len_prefix = len(prefix)
 
         for key in sorted(os.environ):
@@ -169,14 +167,14 @@ class Config(dict):  # type: ignore[type-arg]
             # Change to key.removeprefix(prefix) on Python >= 3.9.
             key = key[len_prefix:]
 
-            if "__" not in key:
+            if '__' not in key:
                 # A non-nested key, set directly.
                 self[key] = value
                 continue
 
             # Traverse nested dictionaries with keys separated by "__".
             current = self
-            *parts, tail = key.split("__")
+            *parts, tail = key.split('__')
 
             for part in parts:
                 # If an intermediate dict does not exist, create it.
@@ -207,15 +205,15 @@ class Config(dict):  # type: ignore[type-arg]
            `silent` parameter.
         """
         filename = os.path.join(self.root_path, filename)
-        d = types.ModuleType("config")
+        d = types.ModuleType('config')
         d.__file__ = filename
         try:
-            with open(filename, mode="rb") as config_file:
-                exec(compile(config_file.read(), filename, "exec"), d.__dict__)
+            with open(filename, mode='rb') as config_file:
+                exec(compile(config_file.read(), filename, 'exec'), d.__dict__)
         except OSError as e:
             if silent and e.errno in (errno.ENOENT, errno.EISDIR, errno.ENOTDIR):
                 return False
-            e.strerror = f"Unable to load configuration file ({e.strerror})"
+            e.strerror = f'Unable to load configuration file ({e.strerror})'
             raise
         self.from_object(d)
         return True
@@ -295,13 +293,13 @@ class Config(dict):  # type: ignore[type-arg]
         filename = os.path.join(self.root_path, filename)
 
         try:
-            with open(filename, "r" if text else "rb") as f:
+            with open(filename, 'r' if text else 'rb') as f:
                 obj = load(f)
         except OSError as e:
             if silent and e.errno in (errno.ENOENT, errno.EISDIR):
                 return False
 
-            e.strerror = f"Unable to load configuration file ({e.strerror})"
+            e.strerror = f'Unable to load configuration file ({e.strerror})'
             raise
 
         return self.from_mapping(obj)
@@ -369,4 +367,4 @@ class Config(dict):  # type: ignore[type-arg]
         return rv
 
     def __repr__(self) -> str:
-        return f"<{type(self).__name__} {dict.__repr__(self)}>"
+        return f'<{type(self).__name__} {dict.__repr__(self)}>'

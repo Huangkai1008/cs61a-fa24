@@ -30,14 +30,23 @@ original_signal_handler = None
 class BaseClient:
     event_names = ['connect', 'disconnect', 'message']
 
-    def __init__(self, logger=False, json=None, request_timeout=5,
-                 http_session=None, ssl_verify=True, handle_sigint=True,
-                 websocket_extra_options=None):
+    def __init__(
+        self,
+        logger=False,
+        json=None,
+        request_timeout=5,
+        http_session=None,
+        ssl_verify=True,
+        handle_sigint=True,
+        websocket_extra_options=None,
+    ):
         global original_signal_handler
-        if handle_sigint and original_signal_handler is None and \
-                threading.current_thread() == threading.main_thread():
-            original_signal_handler = signal.signal(signal.SIGINT,
-                                                    signal_handler)
+        if (
+            handle_sigint
+            and original_signal_handler is None
+            and threading.current_thread() == threading.main_thread()
+        ):
+            original_signal_handler = signal.signal(signal.SIGINT, signal_handler)
         self.handlers = {}
         self.base_url = None
         self.transports = None
@@ -134,12 +143,16 @@ class BaseClient:
         if parsed_url.scheme in ['https', 'wss']:
             scheme += 's'
 
-        return ('{scheme}://{netloc}/{path}/?{query}'
-                '{sep}transport={transport}&EIO=4').format(
-                    scheme=scheme, netloc=parsed_url.netloc,
-                    path=engineio_path, query=parsed_url.query,
-                    sep='&' if parsed_url.query else '',
-                    transport=transport)
+        return (
+            '{scheme}://{netloc}/{path}/?{query}{sep}transport={transport}&EIO=4'
+        ).format(
+            scheme=scheme,
+            netloc=parsed_url.netloc,
+            path=engineio_path,
+            query=parsed_url.query,
+            sep='&' if parsed_url.query else '',
+            transport=transport,
+        )
 
     def _get_url_timestamp(self):
         """Generate the Engine.IO query string timestamp."""

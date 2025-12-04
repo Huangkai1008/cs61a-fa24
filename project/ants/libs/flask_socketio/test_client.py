@@ -24,10 +24,19 @@ class SocketIOTestClient(object):
                               cookies set in HTTP routes accessible from
                               Socket.IO events.
     """
+
     clients = {}
 
-    def __init__(self, app, socketio, namespace=None, query_string=None,
-                 headers=None, auth=None, flask_test_client=None):
+    def __init__(
+        self,
+        app,
+        socketio,
+        namespace=None,
+        query_string=None,
+        headers=None,
+        auth=None,
+        flask_test_client=None,
+    ):
         def _mock_send_packet(eio_sid, pkt):
             # make sure the packet can be encoded and decoded
             epkt = pkt.encode()
@@ -40,22 +49,28 @@ class SocketIOTestClient(object):
             client = self.clients.get(eio_sid)
             if not client:
                 return
-            if pkt.packet_type == packet.EVENT or \
-                    pkt.packet_type == packet.BINARY_EVENT:
+            if (
+                pkt.packet_type == packet.EVENT
+                or pkt.packet_type == packet.BINARY_EVENT
+            ):
                 if pkt.data[0] == 'message' or pkt.data[0] == 'json':
-                    client.queue.append({
-                        'name': pkt.data[0],
-                        'args': pkt.data[1],
-                        'namespace': pkt.namespace or '/'})
+                    client.queue.append(
+                        {
+                            'name': pkt.data[0],
+                            'args': pkt.data[1],
+                            'namespace': pkt.namespace or '/',
+                        }
+                    )
                 else:
-                    client.queue.append({
-                        'name': pkt.data[0],
-                        'args': pkt.data[1:],
-                        'namespace': pkt.namespace or '/'})
-            elif pkt.packet_type == packet.ACK or \
-                    pkt.packet_type == packet.BINARY_ACK:
-                client.acks = {'args': pkt.data,
-                               'namespace': pkt.namespace or '/'}
+                    client.queue.append(
+                        {
+                            'name': pkt.data[0],
+                            'args': pkt.data[1:],
+                            'namespace': pkt.namespace or '/',
+                        }
+                    )
+            elif pkt.packet_type == packet.ACK or pkt.packet_type == packet.BINARY_ACK:
+                client.acks = {'args': pkt.data, 'namespace': pkt.namespace or '/'}
             elif pkt.packet_type in [packet.DISCONNECT, packet.CONNECT_ERROR]:
                 client.connected[pkt.namespace or '/'] = False
 
@@ -65,8 +80,7 @@ class SocketIOTestClient(object):
             nonlocal _current_packet
             if _current_packet is not None:
                 _current_packet.add_attachment(eio_pkt.data)
-                if _current_packet.attachment_count == \
-                        len(_current_packet.attachments):
+                if _current_packet.attachment_count == len(_current_packet.attachments):
                     _mock_send_packet(eio_sid, _current_packet)
                     _current_packet = None
             else:
@@ -88,15 +102,18 @@ class SocketIOTestClient(object):
         socketio.server._send_packet = _mock_send_packet
         socketio.server._send_eio_packet = _mock_send_eio_packet
         socketio.server.environ[self.eio_sid] = {}
-        socketio.server.async_handlers = False      # easier to test when
+        socketio.server.async_handlers = False  # easier to test when
         socketio.server.eio.async_handlers = False  # events are sync
         if isinstance(socketio.server.manager, PubSubManager):
-            raise RuntimeError('Test client cannot be used with a message '
-                               'queue. Disable the queue on your test '
-                               'configuration.')
+            raise RuntimeError(
+                'Test client cannot be used with a message '
+                'queue. Disable the queue on your test '
+                'configuration.'
+            )
         socketio.server.manager.initialize()
-        self.connect(namespace=namespace, query_string=query_string,
-                     headers=headers, auth=auth)
+        self.connect(
+            namespace=namespace, query_string=query_string, headers=headers, auth=auth
+        )
 
     def is_connected(self, namespace=None):
         """Check if a namespace is connected.
@@ -106,8 +123,7 @@ class SocketIOTestClient(object):
         """
         return self.connected.get(namespace or '/', False)
 
-    def connect(self, namespace=None, query_string=None, headers=None,
-                auth=None):
+    def connect(self, namespace=None, query_string=None, headers=None, auth=None):
         """Connect the client.
 
         :param namespace: The namespace for the client. If not provided, the
@@ -141,8 +157,7 @@ class SocketIOTestClient(object):
         self.socketio.server._handle_eio_connect(self.eio_sid, environ)
         pkt = packet.Packet(packet.CONNECT, auth, namespace=namespace)
         self.socketio.server._handle_eio_message(self.eio_sid, pkt.encode())
-        sid = self.socketio.server.manager.sid_from_eio_sid(self.eio_sid,
-                                                            namespace)
+        sid = self.socketio.server.manager.sid_from_eio_sid(self.eio_sid, namespace)
         if sid:
             self.connected[namespace] = True
 
@@ -181,8 +196,9 @@ class SocketIOTestClient(object):
         if callback:
             self.callback_counter += 1
             id = self.callback_counter
-        pkt = packet.Packet(packet.EVENT, data=[event] + list(args),
-                            namespace=namespace, id=id)
+        pkt = packet.Packet(
+            packet.EVENT, data=[event] + list(args), namespace=namespace, id=id
+        )
         encoded_pkt = pkt.encode()
         if isinstance(encoded_pkt, list):
             for epkt in encoded_pkt:
@@ -192,8 +208,7 @@ class SocketIOTestClient(object):
         if self.acks is not None:
             ack = self.acks
             self.acks = None
-            return ack['args'][0] if len(ack['args']) == 1 \
-                else ack['args']
+            return ack['args'][0] if len(ack['args']) == 1 else ack['args']
 
     def send(self, data, json=False, callback=False, namespace=None):
         """Send a text or JSON message to the server.

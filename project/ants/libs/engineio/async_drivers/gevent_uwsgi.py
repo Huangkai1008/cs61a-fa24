@@ -3,6 +3,7 @@ from gevent import queue
 from gevent.event import Event
 from gevent import selectors
 import uwsgi
+
 _websocket_available = hasattr(uwsgi, 'websocket_handshake')
 
 
@@ -11,6 +12,7 @@ class Thread(gevent.Greenlet):  # pragma: no cover
     This wrapper class provides gevent Greenlet interface that is compatible
     with the standard library's Thread class.
     """
+
     def __init__(self, target, args=[], kwargs={}):
         super().__init__(target, *args, **kwargs)
 
@@ -23,6 +25,7 @@ class uWSGIWebSocket(object):  # pragma: no cover
     This wrapper class provides a uWSGI WebSocket interface that is
     compatible with eventlet's implementation.
     """
+
     def __init__(self, handler, server):
         self.app = handler
         self._sock = None
@@ -54,10 +57,10 @@ class uWSGIWebSocket(object):  # pragma: no cover
                         event.set()
                 except gevent.GreenletExit:
                     sel.unregister(fd)
+
             self._select_greenlet = gevent.spawn(
-                select_greenlet_runner,
-                self._sock,
-                self._event)
+                select_greenlet_runner, self._sock, self._event
+            )
 
         self.app(self)
         uwsgi.disconnect()
@@ -150,8 +153,7 @@ class uWSGIWebSocket(object):  # pragma: no cover
                         self.close()
                         return None
                     if msg:  # message available
-                        self.received_messages.append(
-                            self._decode_received(msg))
+                        self.received_messages.append(self._decode_received(msg))
                     else:
                         break
                 if self.received_messages:

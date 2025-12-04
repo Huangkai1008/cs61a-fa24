@@ -12,6 +12,7 @@ class AsyncSimpleClient:
     The positional and keyword arguments given in the constructor are passed
     to the underlying :func:`socketio.AsyncClient` object.
     """
+
     def __init__(self, *args, **kwargs):
         self.client_args = args
         self.client_kwargs = kwargs
@@ -22,9 +23,16 @@ class AsyncSimpleClient:
         self.input_event = asyncio.Event()
         self.input_buffer = []
 
-    async def connect(self, url, headers={}, auth=None, transports=None,
-                      namespace='/', socketio_path='socket.io',
-                      wait_timeout=5):
+    async def connect(
+        self,
+        url,
+        headers={},
+        auth=None,
+        transports=None,
+        namespace='/',
+        socketio_path='socket.io',
+        wait_timeout=5,
+    ):
         """Connect to a Socket.IO server.
 
         :param url: The URL of the Socket.IO server. It can include custom
@@ -82,9 +90,14 @@ class AsyncSimpleClient:
             self.input_event.set()
 
         await self.client.connect(
-            url, headers=headers, auth=auth, transports=transports,
-            namespaces=[namespace], socketio_path=socketio_path,
-            wait_timeout=wait_timeout)
+            url,
+            headers=headers,
+            auth=auth,
+            transports=transports,
+            namespaces=[namespace],
+            socketio_path=socketio_path,
+            wait_timeout=wait_timeout,
+        )
 
     @property
     def sid(self):
@@ -127,8 +140,7 @@ class AsyncSimpleClient:
             if not self.connected:
                 raise DisconnectedError()
             try:
-                return await self.client.emit(event, data,
-                                              namespace=self.namespace)
+                return await self.client.emit(event, data, namespace=self.namespace)
             except SocketIOError:
                 pass
 
@@ -157,9 +169,9 @@ class AsyncSimpleClient:
             if not self.connected:
                 raise DisconnectedError()
             try:
-                return await self.client.call(event, data,
-                                              namespace=self.namespace,
-                                              timeout=timeout)
+                return await self.client.call(
+                    event, data, namespace=self.namespace, timeout=timeout
+                )
             except SocketIOError:
                 pass
 
@@ -178,15 +190,13 @@ class AsyncSimpleClient:
         """
         while not self.input_buffer:
             try:
-                await asyncio.wait_for(self.connected_event.wait(),
-                                       timeout=timeout)
+                await asyncio.wait_for(self.connected_event.wait(), timeout=timeout)
             except asyncio.TimeoutError:  # pragma: no cover
                 raise TimeoutError()
             if not self.connected:
                 raise DisconnectedError()
             try:
-                await asyncio.wait_for(self.input_event.wait(),
-                                       timeout=timeout)
+                await asyncio.wait_for(self.input_event.wait(), timeout=timeout)
             except asyncio.TimeoutError:
                 raise TimeoutError()
             self.input_event.clear()

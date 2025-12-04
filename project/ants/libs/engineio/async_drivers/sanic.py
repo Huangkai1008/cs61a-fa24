@@ -3,6 +3,7 @@ from urllib.parse import urlsplit
 
 try:  # pragma: no cover
     from sanic.response import HTTPResponse
+
     try:
         from sanic.server.protocols.websocket_protocol import WebSocketProtocol
     except ImportError:
@@ -20,8 +21,11 @@ def create_route(app, engineio_server, engineio_endpoint):  # pragma: no cover
     Note that both GET and POST requests must be hooked up on the engine.io
     endpoint.
     """
-    app.add_route(engineio_server.handle_request, engineio_endpoint,
-                  methods=['GET', 'POST', 'OPTIONS'])
+    app.add_route(
+        engineio_server.handle_request,
+        engineio_endpoint,
+        methods=['GET', 'POST', 'OPTIONS'],
+    )
     try:
         app.enable_websocket()
     except AttributeError:
@@ -33,6 +37,7 @@ def translate_request(request):  # pragma: no cover
     """This function takes the arguments passed to the request handler and
     uses them to generate a WSGI compatible environ dictionary.
     """
+
     class AwaitablePayload(object):
         def __init__(self, payload):
             self.payload = payload or b''
@@ -64,7 +69,7 @@ def translate_request(request):  # pragma: no cover
         'REMOTE_PORT': '0',
         'SERVER_NAME': 'sanic',
         'SERVER_PORT': '0',
-        'sanic.request': request
+        'sanic.request': request,
     }
 
     for hdr_name, hdr_value in request.headers.items():
@@ -103,8 +108,12 @@ def make_response(status, headers, payload, environ):  # pragma: no cover
             content_type = h[1]
         else:
             headers_dict[h[0]] = h[1]
-    return HTTPResponse(body=payload, content_type=content_type,
-                        status=int(status.split()[0]), headers=headers_dict)
+    return HTTPResponse(
+        body=payload,
+        content_type=content_type,
+        status=int(status.split()[0]),
+        headers=headers_dict,
+    )
 
 
 class WebSocket(object):  # pragma: no cover
@@ -112,6 +121,7 @@ class WebSocket(object):  # pragma: no cover
     This wrapper class provides a sanic WebSocket interface that is
     somewhat compatible with eventlet's implementation.
     """
+
     def __init__(self, handler, server):
         self.handler = handler
         self.server = server
@@ -134,8 +144,7 @@ class WebSocket(object):  # pragma: no cover
 
     async def wait(self):
         data = await self._sock.recv()
-        if not isinstance(data, bytes) and \
-                not isinstance(data, str):
+        if not isinstance(data, bytes) and not isinstance(data, str):
             raise IOError()
         return data
 

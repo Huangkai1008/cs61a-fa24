@@ -76,6 +76,7 @@ class AsyncServer(base_server.BaseServer):
     :param kwargs: Reserved for future extensions, any additional parameters
                    given as keyword arguments will be silently ignored.
     """
+
     def is_asyncio_based(self):
         return True
 
@@ -158,6 +159,7 @@ class AsyncServer(base_server.BaseServer):
                 async with eio.session(sid) as session:
                     print('received message from ', session['username'])
         """
+
         class _session_context_manager(object):
             def __init__(self, server, sid):
                 self.server = server
@@ -192,8 +194,12 @@ class AsyncServer(base_server.BaseServer):
                 if sid in self.sockets:  # pragma: no cover
                     del self.sockets[sid]
         else:
-            await asyncio.wait([asyncio.create_task(client.close())
-                                for client in self.sockets.values()])
+            await asyncio.wait(
+                [
+                    asyncio.create_task(client.close())
+                    for client in self.sockets.values()
+                ]
+            )
             self.sockets = {}
 
     async def handle_request(self, *args, **kwargs):
@@ -217,14 +223,14 @@ class AsyncServer(base_server.BaseServer):
             origin = environ.get('HTTP_ORIGIN')
             if origin:
                 allowed_origins = self._cors_allowed_origins(environ)
-                if allowed_origins is not None and origin not in \
-                        allowed_origins:
+                if allowed_origins is not None and origin not in allowed_origins:
                     self._log_error_once(
-                        origin + ' is not an accepted origin.', 'bad-origin')
+                        origin + ' is not an accepted origin.', 'bad-origin'
+                    )
                     return await self._make_response(
-                        self._bad_request(
-                            origin + ' is not an accepted origin.'),
-                        environ)
+                        self._bad_request(origin + ' is not an accepted origin.'),
+                        environ,
+                    )
 
         method = environ['REQUEST_METHOD']
         query = urllib.parse.parse_qs(environ.get('QUERY_STRING', ''))
@@ -238,19 +244,24 @@ class AsyncServer(base_server.BaseServer):
         if transport not in self.transports:
             self._log_error_once('Invalid transport', 'bad-transport')
             return await self._make_response(
-                self._bad_request('Invalid transport'), environ)
+                self._bad_request('Invalid transport'), environ
+            )
 
         # make sure the client speaks a compatible Engine.IO version
         sid = query['sid'][0] if 'sid' in query else None
         if sid is None and query.get('EIO') != ['4']:
             self._log_error_once(
                 'The client is using an unsupported version of the Socket.IO '
-                'or Engine.IO protocols', 'bad-version'
+                'or Engine.IO protocols',
+                'bad-version',
             )
-            return await self._make_response(self._bad_request(
-                'The client is using an unsupported version of the Socket.IO '
-                'or Engine.IO protocols'
-            ), environ)
+            return await self._make_response(
+                self._bad_request(
+                    'The client is using an unsupported version of the Socket.IO '
+                    'or Engine.IO protocols'
+                ),
+                environ,
+            )
 
         if 'j' in query:
             jsonp = True
@@ -261,22 +272,21 @@ class AsyncServer(base_server.BaseServer):
                 pass
 
         if jsonp and jsonp_index is None:
-            self._log_error_once('Invalid JSONP index number',
-                                 'bad-jsonp-index')
+            self._log_error_once('Invalid JSONP index number', 'bad-jsonp-index')
             r = self._bad_request('Invalid JSONP index number')
         elif method == 'GET':
             if sid is None:
                 # transport must be one of 'polling' or 'websocket'.
                 # if 'websocket', the HTTP_UPGRADE header must match.
-                upgrade_header = environ.get('HTTP_UPGRADE').lower() \
-                    if 'HTTP_UPGRADE' in environ else None
-                if transport == 'polling' \
-                        or transport == upgrade_header == 'websocket':
-                    r = await self._handle_connect(environ, transport,
-                                                   jsonp_index)
+                upgrade_header = (
+                    environ.get('HTTP_UPGRADE').lower()
+                    if 'HTTP_UPGRADE' in environ
+                    else None
+                )
+                if transport == 'polling' or transport == upgrade_header == 'websocket':
+                    r = await self._handle_connect(environ, transport, jsonp_index)
                 else:
-                    self._log_error_once('Invalid websocket upgrade',
-                                         'bad-upgrade')
+                    self._log_error_once('Invalid websocket upgrade', 'bad-upgrade')
                     r = self._bad_request('Invalid websocket upgrade')
             else:
                 if sid not in self.sockets:
@@ -321,14 +331,14 @@ class AsyncServer(base_server.BaseServer):
             r = self._method_not_found()
         if not isinstance(r, dict):
             return r
-        if self.http_compression and \
-                len(r['response']) >= self.compression_threshold:
-            encodings = [e.split(';')[0].strip() for e in
-                         environ.get('HTTP_ACCEPT_ENCODING', '').split(',')]
+        if self.http_compression and len(r['response']) >= self.compression_threshold:
+            encodings = [
+                e.split(';')[0].strip()
+                for e in environ.get('HTTP_ACCEPT_ENCODING', '').split(',')
+            ]
             for encoding in encodings:
                 if encoding in self.compression_methods:
-                    r['response'] = \
-                        getattr(self, '_' + encoding)(r['response'])
+                    r['response'] = getattr(self, '_' + encoding)(r['response'])
                     r['headers'] += [('Content-Encoding', encoding)]
                     break
         return await self._make_response(r, environ)
@@ -409,12 +419,16 @@ class AsyncServer(base_server.BaseServer):
             response = await make_response(
                 response_dict['status'],
                 response_dict['headers'] + cors_headers,
-                response_dict['response'], environ)
+                response_dict['response'],
+                environ,
+            )
         else:
             response = make_response(
                 response_dict['status'],
                 response_dict['headers'] + cors_headers,
-                response_dict['response'], environ)
+                response_dict['response'],
+                environ,
+            )
         return response
 
     async def _handle_connect(self, environ, transport, jsonp_index=None):
@@ -422,23 +436,25 @@ class AsyncServer(base_server.BaseServer):
         if self.start_service_task:
             # start the service task to monitor connected clients
             self.start_service_task = False
-            self.service_task_handle = self.start_background_task(
-                self._service_task)
+            self.service_task_handle = self.start_background_task(self._service_task)
 
         sid = self.generate_id()
         s = async_socket.AsyncSocket(self, sid)
         self.sockets[sid] = s
 
         pkt = packet.Packet(
-            packet.OPEN, {'sid': sid,
-                          'upgrades': self._upgrades(sid, transport),
-                          'pingTimeout': int(self.ping_timeout * 1000),
-                          'pingInterval': int(self.ping_interval * 1000)})
+            packet.OPEN,
+            {
+                'sid': sid,
+                'upgrades': self._upgrades(sid, transport),
+                'pingTimeout': int(self.ping_timeout * 1000),
+                'pingInterval': int(self.ping_interval * 1000),
+            },
+        )
         await s.send(pkt)
         s.schedule_ping()
 
-        ret = await self._trigger_event('connect', sid, environ,
-                                        run_async=False)
+        ret = await self._trigger_event('connect', sid, environ, run_async=False)
         if ret is not None and ret is not True:
             del self.sockets[sid]
             self.logger.warning('Application rejected connection')
@@ -455,20 +471,23 @@ class AsyncServer(base_server.BaseServer):
             headers = None
             if self.cookie:
                 if isinstance(self.cookie, dict):
-                    headers = [(
-                        'Set-Cookie',
-                        self._generate_sid_cookie(sid, self.cookie)
-                    )]
+                    headers = [
+                        ('Set-Cookie', self._generate_sid_cookie(sid, self.cookie))
+                    ]
                 else:
-                    headers = [(
-                        'Set-Cookie',
-                        self._generate_sid_cookie(sid, {
-                            'name': self.cookie, 'path': '/', 'SameSite': 'Lax'
-                        })
-                    )]
+                    headers = [
+                        (
+                            'Set-Cookie',
+                            self._generate_sid_cookie(
+                                sid,
+                                {'name': self.cookie, 'path': '/', 'SameSite': 'Lax'},
+                            ),
+                        )
+                    ]
             try:
-                return self._ok(await s.poll(), headers=headers,
-                                jsonp_index=jsonp_index)
+                return self._ok(
+                    await s.poll(), headers=headers, jsonp_index=jsonp_index
+                )
             except exceptions.QueueEmpty:
                 return self._bad_request()
 
@@ -478,6 +497,7 @@ class AsyncServer(base_server.BaseServer):
         ret = None
         if event in self.handlers:
             if asyncio.iscoroutinefunction(self.handlers[event]):
+
                 async def run_async_handler():
                     try:
                         return await self.handlers[event](*args)
@@ -497,6 +517,7 @@ class AsyncServer(base_server.BaseServer):
                 else:
                     ret = await run_async_handler()
             else:
+
                 async def run_sync_handler():
                     try:
                         return self.handlers[event](*args)
@@ -522,8 +543,9 @@ class AsyncServer(base_server.BaseServer):
             if len(self.sockets) == 0:
                 # nothing to do
                 try:
-                    await asyncio.wait_for(self.service_task_event.wait(),
-                                           timeout=self.ping_timeout)
+                    await asyncio.wait_for(
+                        self.service_task_event.wait(), timeout=self.ping_timeout
+                    )
                 except asyncio.TimeoutError:
                     break
                 continue
@@ -544,8 +566,9 @@ class AsyncServer(base_server.BaseServer):
                     elif not s.closing:
                         await s.check_ping_timeout()
                     try:
-                        await asyncio.wait_for(self.service_task_event.wait(),
-                                               timeout=sleep_interval)
+                        await asyncio.wait_for(
+                            self.service_task_event.wait(), timeout=sleep_interval
+                        )
                     except asyncio.TimeoutError:
                         raise KeyboardInterrupt()
             except (
@@ -558,8 +581,7 @@ class AsyncServer(base_server.BaseServer):
                 break
             except:
                 if asyncio.get_event_loop().is_closed():
-                    self.logger.info('event loop is closed, exiting service '
-                                     'task')
+                    self.logger.info('event loop is closed, exiting service task')
                     break
 
                 # an unexpected exception has occurred, log it and continue

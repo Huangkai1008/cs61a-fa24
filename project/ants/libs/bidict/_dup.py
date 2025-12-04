@@ -7,7 +7,6 @@
 
 """Provide :class:`OnDup` and related functionality."""
 
-
 from __future__ import annotations
 from enum import Enum
 import typing as t
@@ -43,7 +42,9 @@ class OnDup(t.NamedTuple('_OnDup', [('key', OD), ('val', OD), ('kv', OD)])):
 
     __slots__ = ()
 
-    def __new__(cls, key: OD = DROP_OLD, val: OD = RAISE, kv: OD | None = None) -> OnDup:
+    def __new__(
+        cls, key: OD = DROP_OLD, val: OD = RAISE, kv: OD | None = None
+    ) -> OnDup:
         """Override to provide user-friendly default values."""
         return super().__new__(cls, key, val, kv or val)
 

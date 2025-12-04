@@ -28,8 +28,8 @@ def get_debug_flag() -> bool:
     """Get whether debug mode should be enabled for the app, indicated by the
     :envvar:`FLASK_DEBUG` environment variable. The default is ``False``.
     """
-    val = os.environ.get("FLASK_DEBUG")
-    return bool(val and val.lower() not in {"0", "false", "no"})
+    val = os.environ.get('FLASK_DEBUG')
+    return bool(val and val.lower() not in {'0', 'false', 'no'})
 
 
 def get_load_dotenv(default: bool = True) -> bool:
@@ -39,12 +39,12 @@ def get_load_dotenv(default: bool = True) -> bool:
 
     :param default: What to return if the env var isn't set.
     """
-    val = os.environ.get("FLASK_SKIP_DOTENV")
+    val = os.environ.get('FLASK_SKIP_DOTENV')
 
     if not val:
         return default
 
-    return val.lower() in ("0", "false", "no")
+    return val.lower() in ('0', 'false', 'no')
 
 
 def stream_with_context(
@@ -98,7 +98,7 @@ def stream_with_context(
         if ctx is None:
             raise RuntimeError(
                 "'stream_with_context' can only be used when a request"
-                " context is active, such as in a view function."
+                ' context is active, such as in a view function.'
             )
         with ctx:
             # Dummy sentinel.  Has to be inside the context block or we're
@@ -112,7 +112,7 @@ def stream_with_context(
             try:
                 yield from gen
             finally:
-                if hasattr(gen, "close"):
+                if hasattr(gen, 'close'):
                     gen.close()
 
     # The trick is to start the generator.  Then the code execution runs until
@@ -296,7 +296,7 @@ def get_template_attribute(template_name: str, attribute: str) -> t.Any:
     return getattr(current_app.jinja_env.get_template(template_name).module, attribute)
 
 
-def flash(message: str, category: str = "message") -> None:
+def flash(message: str, category: str = 'message') -> None:
     """Flashes a message to the next request.  In order to remove the
     flashed message from the session and to display it to the user,
     the template has to call :func:`get_flashed_messages`.
@@ -318,9 +318,9 @@ def flash(message: str, category: str = "message") -> None:
     # This assumed that changes made to mutable structures in the session are
     # always in sync with the session object, which is not true for session
     # implementations that use external storage for keeping their keys/values.
-    flashes = session.get("_flashes", [])
+    flashes = session.get('_flashes', [])
     flashes.append((category, message))
-    session["_flashes"] = flashes
+    session['_flashes'] = flashes
     app = current_app._get_current_object()  # type: ignore
     message_flashed.send(
         app,
@@ -363,7 +363,7 @@ def get_flashed_messages(
     """
     flashes = request_ctx.flashes
     if flashes is None:
-        flashes = session.pop("_flashes") if "_flashes" in session else []
+        flashes = session.pop('_flashes') if '_flashes' in session else []
         request_ctx.flashes = flashes
     if category_filter:
         flashes = list(filter(lambda f: f[0] in category_filter, flashes))
@@ -373,12 +373,12 @@ def get_flashed_messages(
 
 
 def _prepare_send_file_kwargs(**kwargs: t.Any) -> dict[str, t.Any]:
-    if kwargs.get("max_age") is None:
-        kwargs["max_age"] = current_app.get_send_file_max_age
+    if kwargs.get('max_age') is None:
+        kwargs['max_age'] = current_app.get_send_file_max_age
 
     kwargs.update(
         environ=request.environ,
-        use_x_sendfile=current_app.config["USE_X_SENDFILE"],
+        use_x_sendfile=current_app.config['USE_X_SENDFILE'],
         response_class=current_app.response_class,
         _root_path=current_app.root_path,  # type: ignore
     )
@@ -566,7 +566,7 @@ def get_root_path(import_name: str) -> str:
     # Module already imported and has a file attribute. Use that first.
     mod = sys.modules.get(import_name)
 
-    if mod is not None and hasattr(mod, "__file__") and mod.__file__ is not None:
+    if mod is not None and hasattr(mod, '__file__') and mod.__file__ is not None:
         return os.path.dirname(os.path.abspath(mod.__file__))
 
     # Next attempt: check the loader.
@@ -586,25 +586,25 @@ def get_root_path(import_name: str) -> str:
     if loader is None:
         return os.getcwd()
 
-    if hasattr(loader, "get_filename"):
+    if hasattr(loader, 'get_filename'):
         filepath = loader.get_filename(import_name)
     else:
         # Fall back to imports.
         __import__(import_name)
         mod = sys.modules[import_name]
-        filepath = getattr(mod, "__file__", None)
+        filepath = getattr(mod, '__file__', None)
 
         # If we don't have a file path it might be because it is a
         # namespace package. In this case pick the root path from the
         # first module that is contained in the package.
         if filepath is None:
             raise RuntimeError(
-                "No root path can be found for the provided module"
-                f" {import_name!r}. This can happen because the module"
-                " came from an import hook that does not provide file"
+                'No root path can be found for the provided module'
+                f' {import_name!r}. This can happen because the module'
+                ' came from an import hook that does not provide file'
                 " name information or because it's a namespace package."
-                " In this case the root path needs to be explicitly"
-                " provided."
+                ' In this case the root path needs to be explicitly'
+                ' provided.'
             )
 
     # filepath is import_name.py for a module, or __init__.py for a package.
@@ -615,7 +615,7 @@ def get_root_path(import_name: str) -> str:
 def _split_blueprint_path(name: str) -> list[str]:
     out: list[str] = [name]
 
-    if "." in name:
-        out.extend(_split_blueprint_path(name.rpartition(".")[0]))
+    if '.' in name:
+        out.extend(_split_blueprint_path(name.rpartition('.')[0]))
 
     return out

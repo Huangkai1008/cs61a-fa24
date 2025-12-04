@@ -6,8 +6,8 @@ from typing import TypeVar
 from .mixins import ImmutableDictMixin
 from .mixins import UpdateDictMixin
 
-T = TypeVar("T")
-_CPT = TypeVar("_CPT", str, int, bool)
+T = TypeVar('T')
+_CPT = TypeVar('_CPT', str, int, bool)
 _OptCPT = _CPT | None
 
 def cache_control_property(key: str, empty: _OptCPT, type: type[_CPT]) -> property: ...

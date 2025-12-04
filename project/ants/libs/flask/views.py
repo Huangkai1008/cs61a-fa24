@@ -6,10 +6,10 @@ from . import typing as ft
 from .globals import current_app
 from .globals import request
 
-F = t.TypeVar("F", bound=t.Callable[..., t.Any])
+F = t.TypeVar('F', bound=t.Callable[..., t.Any])
 
 http_method_funcs = frozenset(
-    ["get", "post", "head", "options", "delete", "put", "trace", "patch"]
+    ['get', 'post', 'head', 'options', 'delete', 'put', 'trace', 'patch']
 )
 
 
@@ -165,11 +165,11 @@ class MethodView(View):
     def __init_subclass__(cls, **kwargs: t.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        if "methods" not in cls.__dict__:
+        if 'methods' not in cls.__dict__:
             methods = set()
 
             for base in cls.__bases__:
-                if getattr(base, "methods", None):
+                if getattr(base, 'methods', None):
                     methods.update(base.methods)  # type: ignore[attr-defined]
 
             for key in http_method_funcs:
@@ -184,8 +184,8 @@ class MethodView(View):
 
         # If the request method is HEAD and we don't have a handler for it
         # retry with GET.
-        if meth is None and request.method == "HEAD":
-            meth = getattr(self, "get", None)
+        if meth is None and request.method == 'HEAD':
+            meth = getattr(self, 'get', None)
 
-        assert meth is not None, f"Unimplemented method {request.method!r}"
+        assert meth is not None, f'Unimplemented method {request.method!r}'
         return current_app.ensure_sync(meth)(**kwargs)  # type: ignore[no-any-return]

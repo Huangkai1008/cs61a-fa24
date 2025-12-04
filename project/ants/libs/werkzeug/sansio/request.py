@@ -136,10 +136,10 @@ class Request:
         self.server = server
         #: The prefix that the application is mounted under, without a
         #: trailing slash. :attr:`path` comes after this.
-        self.root_path = root_path.rstrip("/")
+        self.root_path = root_path.rstrip('/')
         #: The path part of the URL after :attr:`root_path`. This is the
         #: path used for routing within the application.
-        self.path = "/" + path.lstrip("/")
+        self.path = '/' + path.lstrip('/')
         #: The part of the URL after the "?". This is the raw value, use
         #: :attr:`args` for the parsed values.
         self.query_string = query_string
@@ -152,9 +152,9 @@ class Request:
         try:
             url = self.url
         except Exception as e:
-            url = f"(invalid URL: {e})"
+            url = f'(invalid URL: {e})'
 
-        return f"<{type(self).__name__} {url!r} [{self.method}]>"
+        return f'<{type(self).__name__} {url!r} [{self.method}]>'
 
     @cached_property
     def args(self) -> MultiDict[str, str]:
@@ -174,7 +174,7 @@ class Request:
             parse_qsl(
                 self.query_string.decode(),
                 keep_blank_values=True,
-                errors="werkzeug.url_quote",
+                errors='werkzeug.url_quote',
             )
         )
 
@@ -183,9 +183,9 @@ class Request:
         """If a forwarded header exists this is a list of all ip addresses
         from the client ip to the last proxy server.
         """
-        if "X-Forwarded-For" in self.headers:
+        if 'X-Forwarded-For' in self.headers:
             return self.list_storage_class(
-                parse_list_header(self.headers["X-Forwarded-For"])
+                parse_list_header(self.headers['X-Forwarded-For'])
             )
         elif self.remote_addr is not None:
             return self.list_storage_class([self.remote_addr])
@@ -194,14 +194,14 @@ class Request:
     @cached_property
     def full_path(self) -> str:
         """Requested path, including the query string."""
-        return f"{self.path}?{self.query_string.decode()}"
+        return f'{self.path}?{self.query_string.decode()}'
 
     @property
     def is_secure(self) -> bool:
         """``True`` if the request was made with a secure protocol
         (HTTPS or WSS).
         """
-        return self.scheme in {"https", "wss"}
+        return self.scheme in {'https', 'wss'}
 
     @cached_property
     def url(self) -> str:
@@ -234,14 +234,14 @@ class Request:
         it's non-standard. Validated with :attr:`trusted_hosts`.
         """
         return get_host(
-            self.scheme, self.headers.get("host"), self.server, self.trusted_hosts
+            self.scheme, self.headers.get('host'), self.server, self.trusted_hosts
         )
 
     @cached_property
     def cookies(self) -> ImmutableMultiDict[str, str]:
         """A :class:`dict` with the contents of all cookies transmitted with
         the request."""
-        wsgi_combined_cookie = ";".join(self.headers.getlist("Cookie"))
+        wsgi_combined_cookie = ';'.join(self.headers.getlist('Cookie'))
         return parse_cookie(  # type: ignore
             wsgi_combined_cookie, cls=self.dict_storage_class
         )
@@ -249,7 +249,7 @@ class Request:
     # Common Descriptors
 
     content_type = header_property[str](
-        "Content-Type",
+        'Content-Type',
         doc="""The Content-Type entity-header field indicates the media
         type of the entity-body sent to the recipient or, in the case of
         the HEAD method, the media type that would have been sent had
@@ -265,12 +265,12 @@ class Request:
         GET.
         """
         return get_content_length(
-            http_content_length=self.headers.get("Content-Length"),
-            http_transfer_encoding=self.headers.get("Transfer-Encoding"),
+            http_content_length=self.headers.get('Content-Length'),
+            http_transfer_encoding=self.headers.get('Transfer-Encoding'),
         )
 
     content_encoding = header_property[str](
-        "Content-Encoding",
+        'Content-Encoding',
         doc="""The Content-Encoding entity-header field is used as a
         modifier to the media-type. When present, its value indicates
         what additional content codings have been applied to the
@@ -282,7 +282,7 @@ class Request:
         read_only=True,
     )
     content_md5 = header_property[str](
-        "Content-MD5",
+        'Content-MD5',
         doc="""The Content-MD5 entity-header field, as defined in
         RFC 1864, is an MD5 digest of the entity-body for the purpose of
         providing an end-to-end message integrity check (MIC) of the
@@ -294,7 +294,7 @@ class Request:
         read_only=True,
     )
     referrer = header_property[str](
-        "Referer",
+        'Referer',
         doc="""The Referer[sic] request-header field allows the client
         to specify, for the server's benefit, the address (URI) of the
         resource from which the Request-URI was obtained (the
@@ -302,7 +302,7 @@ class Request:
         read_only=True,
     )
     date = header_property(
-        "Date",
+        'Date',
         None,
         parse_date,
         doc="""The Date general-header field represents the date and
@@ -315,7 +315,7 @@ class Request:
         read_only=True,
     )
     max_forwards = header_property(
-        "Max-Forwards",
+        'Max-Forwards',
         None,
         int,
         doc="""The Max-Forwards request-header field provides a
@@ -326,9 +326,9 @@ class Request:
     )
 
     def _parse_content_type(self) -> None:
-        if not hasattr(self, "_parsed_content_type"):
+        if not hasattr(self, '_parsed_content_type'):
             self._parsed_content_type = parse_options_header(
-                self.headers.get("Content-Type", "")
+                self.headers.get('Content-Type', '')
             )
 
     @property
@@ -358,7 +358,7 @@ class Request:
         optional behavior from the viewpoint of the protocol; however, some
         systems MAY require that behavior be consistent with the directives.
         """
-        return parse_set_header(self.headers.get("Pragma", ""))
+        return parse_set_header(self.headers.get('Pragma', ''))
 
     # Accept
 
@@ -367,14 +367,14 @@ class Request:
         """List of mimetypes this client supports as
         :class:`~werkzeug.datastructures.MIMEAccept` object.
         """
-        return parse_accept_header(self.headers.get("Accept"), MIMEAccept)
+        return parse_accept_header(self.headers.get('Accept'), MIMEAccept)
 
     @cached_property
     def accept_charsets(self) -> CharsetAccept:
         """List of charsets this client supports as
         :class:`~werkzeug.datastructures.CharsetAccept` object.
         """
-        return parse_accept_header(self.headers.get("Accept-Charset"), CharsetAccept)
+        return parse_accept_header(self.headers.get('Accept-Charset'), CharsetAccept)
 
     @cached_property
     def accept_encodings(self) -> Accept:
@@ -382,7 +382,7 @@ class Request:
         are compression encodings such as gzip.  For charsets have a look at
         :attr:`accept_charset`.
         """
-        return parse_accept_header(self.headers.get("Accept-Encoding"))
+        return parse_accept_header(self.headers.get('Accept-Encoding'))
 
     @cached_property
     def accept_languages(self) -> LanguageAccept:
@@ -393,7 +393,7 @@ class Request:
            In previous versions this was a regular
            :class:`~werkzeug.datastructures.Accept` object.
         """
-        return parse_accept_header(self.headers.get("Accept-Language"), LanguageAccept)
+        return parse_accept_header(self.headers.get('Accept-Language'), LanguageAccept)
 
     # ETag
 
@@ -402,7 +402,7 @@ class Request:
         """A :class:`~werkzeug.datastructures.RequestCacheControl` object
         for the incoming cache control headers.
         """
-        cache_control = self.headers.get("Cache-Control")
+        cache_control = self.headers.get('Cache-Control')
         return parse_cache_control_header(cache_control, None, RequestCacheControl)
 
     @cached_property
@@ -411,7 +411,7 @@ class Request:
 
         :rtype: :class:`~werkzeug.datastructures.ETags`
         """
-        return parse_etags(self.headers.get("If-Match"))
+        return parse_etags(self.headers.get('If-Match'))
 
     @cached_property
     def if_none_match(self) -> ETags:
@@ -419,7 +419,7 @@ class Request:
 
         :rtype: :class:`~werkzeug.datastructures.ETags`
         """
-        return parse_etags(self.headers.get("If-None-Match"))
+        return parse_etags(self.headers.get('If-None-Match'))
 
     @cached_property
     def if_modified_since(self) -> datetime | None:
@@ -428,7 +428,7 @@ class Request:
         .. versionchanged:: 2.0
             The datetime object is timezone-aware.
         """
-        return parse_date(self.headers.get("If-Modified-Since"))
+        return parse_date(self.headers.get('If-Modified-Since'))
 
     @cached_property
     def if_unmodified_since(self) -> datetime | None:
@@ -437,7 +437,7 @@ class Request:
         .. versionchanged:: 2.0
             The datetime object is timezone-aware.
         """
-        return parse_date(self.headers.get("If-Unmodified-Since"))
+        return parse_date(self.headers.get('If-Unmodified-Since'))
 
     @cached_property
     def if_range(self) -> IfRange:
@@ -448,7 +448,7 @@ class Request:
 
         .. versionadded:: 0.7
         """
-        return parse_if_range_header(self.headers.get("If-Range"))
+        return parse_if_range_header(self.headers.get('If-Range'))
 
     @cached_property
     def range(self) -> Range | None:
@@ -458,7 +458,7 @@ class Request:
 
         :rtype: :class:`~werkzeug.datastructures.Range`
         """
-        return parse_range_header(self.headers.get("Range"))
+        return parse_range_header(self.headers.get('Range'))
 
     # User Agent
 
@@ -473,7 +473,7 @@ class Request:
             The built-in parser was removed. Set ``user_agent_class`` to a ``UserAgent``
             subclass to parse data from the string.
         """
-        return self.user_agent_class(self.headers.get("User-Agent", ""))
+        return self.user_agent_class(self.headers.get('User-Agent', ''))
 
     # Authorization
 
@@ -486,39 +486,39 @@ class Request:
             :class:`Authorization` is no longer a ``dict``. The ``token`` attribute
             was added for auth schemes that use a token instead of parameters.
         """
-        return Authorization.from_header(self.headers.get("Authorization"))
+        return Authorization.from_header(self.headers.get('Authorization'))
 
     # CORS
 
     origin = header_property[str](
-        "Origin",
+        'Origin',
         doc=(
-            "The host that the request originated from. Set"
-            " :attr:`~CORSResponseMixin.access_control_allow_origin` on"
-            " the response to indicate which origins are allowed."
+            'The host that the request originated from. Set'
+            ' :attr:`~CORSResponseMixin.access_control_allow_origin` on'
+            ' the response to indicate which origins are allowed.'
         ),
         read_only=True,
     )
 
     access_control_request_headers = header_property(
-        "Access-Control-Request-Headers",
+        'Access-Control-Request-Headers',
         load_func=parse_set_header,
         doc=(
-            "Sent with a preflight request to indicate which headers"
-            " will be sent with the cross origin request. Set"
-            " :attr:`~CORSResponseMixin.access_control_allow_headers`"
-            " on the response to indicate which headers are allowed."
+            'Sent with a preflight request to indicate which headers'
+            ' will be sent with the cross origin request. Set'
+            ' :attr:`~CORSResponseMixin.access_control_allow_headers`'
+            ' on the response to indicate which headers are allowed.'
         ),
         read_only=True,
     )
 
     access_control_request_method = header_property[str](
-        "Access-Control-Request-Method",
+        'Access-Control-Request-Method',
         doc=(
-            "Sent with a preflight request to indicate which method"
-            " will be used for the cross origin request. Set"
-            " :attr:`~CORSResponseMixin.access_control_allow_methods`"
-            " on the response to indicate which methods are allowed."
+            'Sent with a preflight request to indicate which method'
+            ' will be used for the cross origin request. Set'
+            ' :attr:`~CORSResponseMixin.access_control_allow_methods`'
+            ' on the response to indicate which methods are allowed.'
         ),
         read_only=True,
     )
@@ -530,7 +530,7 @@ class Request:
         """
         mt = self.mimetype
         return (
-            mt == "application/json"
-            or mt.startswith("application/")
-            and mt.endswith("+json")
+            mt == 'application/json'
+            or mt.startswith('application/')
+            and mt.endswith('+json')
         )

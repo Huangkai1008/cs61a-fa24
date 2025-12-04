@@ -90,8 +90,12 @@ def namedbidict(
     setattr(NamedBidict, key_by_val_name, get_key_by_val)
     NamedBidict.__name__ = NamedBidict.__qualname__ = typename
     NamedInv.__name__ = NamedInv.__qualname__ = f'{typename}Inv'
-    NamedBidict.__doc__ = f'NamedBidict({basename}) {typename!r}: {keyname} -> {valname}'
-    NamedInv.__doc__ = f'NamedBidictInv({basename}) {typename!r}: {valname} -> {keyname}'
+    NamedBidict.__doc__ = (
+        f'NamedBidict({basename}) {typename!r}: {keyname} -> {valname}'
+    )
+    NamedInv.__doc__ = (
+        f'NamedBidictInv({basename}) {typename!r}: {valname} -> {keyname}'
+    )
     caller_module = _getframe(1).f_globals.get('__name__', '__main__')
     NamedBidict.__module__ = NamedInv.__module__ = caller_module
     return NamedBidict

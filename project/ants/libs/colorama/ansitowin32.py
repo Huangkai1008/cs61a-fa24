@@ -14,11 +14,12 @@ if windll is not None:
 
 
 class StreamWrapper(object):
-    '''
+    """
     Wraps a stream (such as stdout), acting as a transparent proxy for all
     attribute access apart from method 'write()', which is delegated to our
     Converter instance.
-    '''
+    """
+
     def __init__(self, wrapped, converter):
         # double-underscore everything to prevent clashes with names of
         # attributes on the wrapped stream object.
@@ -43,7 +44,9 @@ class StreamWrapper(object):
     def isatty(self):
         stream = self.__wrapped
         if 'PYCHARM_HOSTED' in os.environ:
-            if stream is not None and (stream is sys.__stdout__ or stream is sys.__stderr__):
+            if stream is not None and (
+                stream is sys.__stdout__ or stream is sys.__stderr__
+            ):
                 return True
         try:
             stream_isatty = stream.isatty
@@ -62,13 +65,18 @@ class StreamWrapper(object):
 
 
 class AnsiToWin32(object):
-    '''
+    """
     Implements a 'write()' method which, on Windows, will strip ANSI character
     sequences from the text, and if outputting to a tty, will convert them into
     win32 function calls.
-    '''
-    ANSI_CSI_RE = re.compile('\001?\033\\[((?:\\d|;)*)([a-zA-Z])\002?')   # Control Sequence Introducer
-    ANSI_OSC_RE = re.compile('\001?\033\\]([^\a]*)(\a)\002?')             # Operating System Command
+    """
+
+    ANSI_CSI_RE = re.compile(
+        '\001?\033\\[((?:\\d|;)*)([a-zA-Z])\002?'
+    )  # Control Sequence Introducer
+    ANSI_OSC_RE = re.compile(
+        '\001?\033\\]([^\a]*)(\a)\002?'
+    )  # Operating System Command
 
     def __init__(self, wrapped, convert=None, strip=None, autoreset=False):
         # The wrapped stream (normally sys.stdout or sys.stderr)
@@ -89,12 +97,16 @@ class AnsiToWin32(object):
 
         # should we strip ANSI sequences from our output?
         if strip is None:
-            strip = conversion_supported or (not self.stream.closed and not self.stream.isatty())
+            strip = conversion_supported or (
+                not self.stream.closed and not self.stream.isatty()
+            )
         self.strip = strip
 
         # should we should convert ANSI sequences into win32 calls?
         if convert is None:
-            convert = conversion_supported and not self.stream.closed and self.stream.isatty()
+            convert = (
+                conversion_supported and not self.stream.closed and self.stream.isatty()
+            )
         self.convert = convert
 
         # dict of ansi codes to win32 functions and parameters
@@ -104,19 +116,19 @@ class AnsiToWin32(object):
         self.on_stderr = self.wrapped is sys.stderr
 
     def should_wrap(self):
-        '''
+        """
         True if this class is actually needed. If false, then the output
         stream will not be affected, nor will win32 calls be issued, so
         wrapping stdout is not actually required. This will generally be
         False on non-Windows platforms, unless optional functionality like
         autoreset has been requested using kwargs to init()
-        '''
+        """
         return self.convert or self.strip or self.autoreset
 
     def get_win32_calls(self):
         if self.convert and winterm:
             return {
-                AnsiStyle.RESET_ALL: (winterm.reset_all, ),
+                AnsiStyle.RESET_ALL: (winterm.reset_all,),
                 AnsiStyle.BRIGHT: (winterm.style, WinStyle.BRIGHT),
                 AnsiStyle.DIM: (winterm.style, WinStyle.NORMAL),
                 AnsiStyle.NORMAL: (winterm.style, WinStyle.NORMAL),
@@ -128,7 +140,7 @@ class AnsiToWin32(object):
                 AnsiFore.MAGENTA: (winterm.fore, WinColor.MAGENTA),
                 AnsiFore.CYAN: (winterm.fore, WinColor.CYAN),
                 AnsiFore.WHITE: (winterm.fore, WinColor.GREY),
-                AnsiFore.RESET: (winterm.fore, ),
+                AnsiFore.RESET: (winterm.fore,),
                 AnsiFore.LIGHTBLACK_EX: (winterm.fore, WinColor.BLACK, True),
                 AnsiFore.LIGHTRED_EX: (winterm.fore, WinColor.RED, True),
                 AnsiFore.LIGHTGREEN_EX: (winterm.fore, WinColor.GREEN, True),
@@ -145,7 +157,7 @@ class AnsiToWin32(object):
                 AnsiBack.MAGENTA: (winterm.back, WinColor.MAGENTA),
                 AnsiBack.CYAN: (winterm.back, WinColor.CYAN),
                 AnsiBack.WHITE: (winterm.back, WinColor.GREY),
-                AnsiBack.RESET: (winterm.back, ),
+                AnsiBack.RESET: (winterm.back,),
                 AnsiBack.LIGHTBLACK_EX: (winterm.back, WinColor.BLACK, True),
                 AnsiBack.LIGHTRED_EX: (winterm.back, WinColor.RED, True),
                 AnsiBack.LIGHTGREEN_EX: (winterm.back, WinColor.GREEN, True),
@@ -166,20 +178,18 @@ class AnsiToWin32(object):
         if self.autoreset:
             self.reset_all()
 
-
     def reset_all(self):
         if self.convert:
             self.call_win32('m', (0,))
         elif not self.strip and not self.stream.closed:
             self.wrapped.write(Style.RESET_ALL)
 
-
     def write_and_convert(self, text):
-        '''
+        """
         Write the given text to our wrapped stream, stripping any ANSI
         sequences from the text, and optionally converting them into win32
         calls.
-        '''
+        """
         cursor = 0
         text = self.convert_osc(text)
         for match in self.ANSI_CSI_RE.finditer(text):
@@ -189,18 +199,15 @@ class AnsiToWin32(object):
             cursor = end
         self.write_plain_text(text, cursor, len(text))
 
-
     def write_plain_text(self, text, start, end):
         if start < end:
             self.wrapped.write(text[start:end])
             self.wrapped.flush()
 
-
     def convert_ansi(self, paramstring, command):
         if self.convert:
             params = self.extract_params(command, paramstring)
             self.call_win32(command, params)
-
 
     def extract_params(self, command, paramstring):
         if command in 'Hf':
@@ -219,7 +226,6 @@ class AnsiToWin32(object):
 
         return params
 
-
     def call_win32(self, command, params):
         if command == 'm':
             for param in params:
@@ -233,14 +239,13 @@ class AnsiToWin32(object):
             winterm.erase_screen(params[0], on_stderr=self.on_stderr)
         elif command in 'K':
             winterm.erase_line(params[0], on_stderr=self.on_stderr)
-        elif command in 'Hf':     # cursor position - absolute
+        elif command in 'Hf':  # cursor position - absolute
             winterm.set_cursor_position(params, on_stderr=self.on_stderr)
-        elif command in 'ABCD':   # cursor position - relative
+        elif command in 'ABCD':  # cursor position - relative
             n = params[0]
             # A - up, B - down, C - forward, D - back
             x, y = {'A': (0, -n), 'B': (0, n), 'C': (n, 0), 'D': (-n, 0)}[command]
             winterm.cursor_adjust(x, y, on_stderr=self.on_stderr)
-
 
     def convert_osc(self, text):
         for match in self.ANSI_OSC_RE.finditer(text):
@@ -248,8 +253,8 @@ class AnsiToWin32(object):
             text = text[:start] + text[end:]
             paramstring, command = match.groups()
             if command == BEL:
-                if paramstring.count(";") == 1:
-                    params = paramstring.split(";")
+                if paramstring.count(';') == 1:
+                    params = paramstring.split(';')
                     # 0 - change title and icon (we will only change title)
                     # 1 - change icon (we don't support this)
                     # 2 - change title

@@ -67,9 +67,9 @@ except ImportError:
 #
 # Maybe a dict-of-lists would be better?
 
-_content_length_re = re.compile(rb"[0-9]+")
-_field_name_re = re.compile(field_name.encode("ascii"))
-_field_value_re = re.compile(field_value.encode("ascii"))
+_content_length_re = re.compile(rb'[0-9]+')
+_field_name_re = re.compile(field_name.encode('ascii'))
+_field_value_re = re.compile(field_value.encode('ascii'))
 
 
 class Headers(Sequence[Tuple[bytes, bytes]]):
@@ -97,7 +97,7 @@ class Headers(Sequence[Tuple[bytes, bytes]]):
     ]
     """
 
-    __slots__ = "_full_items"
+    __slots__ = '_full_items'
 
     def __init__(self, full_items: List[Tuple[bytes, bytes, bytes]]) -> None:
         self._full_items = full_items
@@ -112,7 +112,7 @@ class Headers(Sequence[Tuple[bytes, bytes]]):
         return len(self._full_items)
 
     def __repr__(self) -> str:
-        return "<Headers(%s)>" % repr(list(self))
+        return '<Headers(%s)>' % repr(list(self))
 
     def __getitem__(self, idx: int) -> Tuple[bytes, bytes]:  # type: ignore[override]
         _, name, value = self._full_items[idx]
@@ -131,20 +131,19 @@ HeaderTypes = Union[
 
 
 @overload
-def normalize_and_validate(headers: Headers, _parsed: Literal[True]) -> Headers:
-    ...
+def normalize_and_validate(headers: Headers, _parsed: Literal[True]) -> Headers: ...
 
 
 @overload
-def normalize_and_validate(headers: HeaderTypes, _parsed: Literal[False]) -> Headers:
-    ...
+def normalize_and_validate(
+    headers: HeaderTypes, _parsed: Literal[False]
+) -> Headers: ...
 
 
 @overload
 def normalize_and_validate(
     headers: Union[Headers, HeaderTypes], _parsed: bool = False
-) -> Headers:
-    ...
+) -> Headers: ...
 
 
 def normalize_and_validate(
@@ -160,39 +159,39 @@ def normalize_and_validate(
         if not _parsed:
             name = bytesify(name)
             value = bytesify(value)
-            validate(_field_name_re, name, "Illegal header name {!r}", name)
-            validate(_field_value_re, value, "Illegal header value {!r}", value)
+            validate(_field_name_re, name, 'Illegal header name {!r}', name)
+            validate(_field_value_re, value, 'Illegal header value {!r}', value)
         assert isinstance(name, bytes)
         assert isinstance(value, bytes)
 
         raw_name = name
         name = name.lower()
-        if name == b"content-length":
-            lengths = {length.strip() for length in value.split(b",")}
+        if name == b'content-length':
+            lengths = {length.strip() for length in value.split(b',')}
             if len(lengths) != 1:
-                raise LocalProtocolError("conflicting Content-Length headers")
+                raise LocalProtocolError('conflicting Content-Length headers')
             value = lengths.pop()
-            validate(_content_length_re, value, "bad Content-Length")
+            validate(_content_length_re, value, 'bad Content-Length')
             if seen_content_length is None:
                 seen_content_length = value
                 new_headers.append((raw_name, name, value))
             elif seen_content_length != value:
-                raise LocalProtocolError("conflicting Content-Length headers")
-        elif name == b"transfer-encoding":
+                raise LocalProtocolError('conflicting Content-Length headers')
+        elif name == b'transfer-encoding':
             # "A server that receives a request message with a transfer coding
             # it does not understand SHOULD respond with 501 (Not
             # Implemented)."
             # https://tools.ietf.org/html/rfc7230#section-3.3.1
             if saw_transfer_encoding:
                 raise LocalProtocolError(
-                    "multiple Transfer-Encoding headers", error_status_hint=501
+                    'multiple Transfer-Encoding headers', error_status_hint=501
                 )
             # "All transfer-coding names are case-insensitive"
             # -- https://tools.ietf.org/html/rfc7230#section-4
             value = value.lower()
-            if value != b"chunked":
+            if value != b'chunked':
                 raise LocalProtocolError(
-                    "Only Transfer-Encoding: chunked is supported",
+                    'Only Transfer-Encoding: chunked is supported',
                     error_status_hint=501,
                 )
             saw_transfer_encoding = True
@@ -242,7 +241,7 @@ def get_comma_header(headers: Headers, name: bytes) -> List[bytes]:
     for _, found_name, found_raw_value in headers._full_items:
         if found_name == name:
             found_raw_value = found_raw_value.lower()
-            for found_split_value in found_raw_value.split(b","):
+            for found_split_value in found_raw_value.split(b','):
                 found_split_value = found_split_value.strip()
                 if found_split_value:
                     out.append(found_split_value)
@@ -268,11 +267,11 @@ def set_comma_header(headers: Headers, name: bytes, new_values: List[bytes]) -> 
     return normalize_and_validate(new_headers)
 
 
-def has_expect_100_continue(request: "Request") -> bool:
+def has_expect_100_continue(request: 'Request') -> bool:
     # https://tools.ietf.org/html/rfc7231#section-5.1.1
     # "A server that receives a 100-continue expectation in an HTTP/1.0 request
     # MUST ignore that expectation."
-    if request.http_version < b"1.1":
+    if request.http_version < b'1.1':
         return False
-    expect = get_comma_header(request.headers, b"expect")
-    return b"100-continue" in expect
+    expect = get_comma_header(request.headers, b'expect')
+    return b'100-continue' in expect

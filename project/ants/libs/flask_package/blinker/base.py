@@ -7,6 +7,7 @@ each manages its own receivers and message emission.
 The :func:`signal` function provides singleton behavior for named signals.
 
 """
+
 from __future__ import annotations
 
 import typing as t
@@ -27,15 +28,15 @@ from blinker._utilities import WeakTypes
 if t.TYPE_CHECKING:
     import typing_extensions as te
 
-    T_callable = t.TypeVar("T_callable", bound=t.Callable[..., t.Any])
+    T_callable = t.TypeVar('T_callable', bound=t.Callable[..., t.Any])
 
-    T = t.TypeVar("T")
-    P = te.ParamSpec("P")
+    T = t.TypeVar('T')
+    P = te.ParamSpec('P')
 
     AsyncWrapperType = t.Callable[[t.Callable[P, t.Awaitable[T]]], t.Callable[P, T]]
     SyncWrapperType = t.Callable[[t.Callable[P, T]], t.Callable[P, t.Awaitable[T]]]
 
-ANY = symbol("ANY")
+ANY = symbol('ANY')
 ANY.__doc__ = 'Token for "any sender".'
 ANY_ID = 0
 
@@ -63,7 +64,7 @@ class Signal:
         .. versionadded:: 1.2
 
         """
-        return Signal(doc="Emitted after a receiver connects.")
+        return Signal(doc='Emitted after a receiver connects.')
 
     @lazy_property
     def receiver_disconnected(self) -> Signal:
@@ -87,7 +88,7 @@ class Signal:
         .. versionadded:: 1.2
 
         """
-        return Signal(doc="Emitted after a receiver disconnects.")
+        return Signal(doc='Emitted after a receiver disconnects.')
 
     def __init__(self, doc: str | None = None) -> None:
         """
@@ -165,7 +166,7 @@ class Signal:
                 del sender_ref
 
         # broadcast this connection.  if receivers raise, disconnect.
-        if "receiver_connected" in self.__dict__ and self.receiver_connected.receivers:
+        if 'receiver_connected' in self.__dict__ and self.receiver_connected.receivers:
             try:
                 self.receiver_connected.send(
                     self, receiver=receiver, sender=sender, weak=weak
@@ -271,7 +272,7 @@ class Signal:
 
         """
         warn(
-            "temporarily_connected_to is deprecated; use connected_to instead.",
+            'temporarily_connected_to is deprecated; use connected_to instead.',
             DeprecationWarning,
         )
         return self.connected_to(receiver, sender)
@@ -302,7 +303,7 @@ class Signal:
         for receiver in self.receivers_for(sender):
             if iscoroutinefunction(receiver):
                 if _async_wrapper is None:
-                    raise RuntimeError("Cannot send to a coroutine function")
+                    raise RuntimeError('Cannot send to a coroutine function')
                 receiver = _async_wrapper(receiver)
             result = receiver(sender, **kwargs)
             results.append((receiver, result))
@@ -334,7 +335,7 @@ class Signal:
         for receiver in self.receivers_for(sender):
             if not iscoroutinefunction(receiver):
                 if _sync_wrapper is None:
-                    raise RuntimeError("Cannot send to a non-coroutine function")
+                    raise RuntimeError('Cannot send to a non-coroutine function')
                 receiver = _sync_wrapper(receiver)
             result = await receiver(sender, **kwargs)
             results.append((receiver, result))
@@ -346,7 +347,7 @@ class Signal:
             # for lowest possible cost.
             if __debug__ and sender and len(sender) > 1:
                 raise TypeError(
-                    f"send() accepts only one positional argument, {len(sender)} given"
+                    f'send() accepts only one positional argument, {len(sender)} given'
                 )
             return []
 
@@ -357,7 +358,7 @@ class Signal:
             sender = None
         elif len(sender) > 1:
             raise TypeError(
-                f"send() accepts only one positional argument, {len(sender)} given"
+                f'send() accepts only one positional argument, {len(sender)} given'
             )
         else:
             sender = sender[0]
@@ -420,7 +421,7 @@ class Signal:
         self._disconnect(receiver_id, sender_id)
 
         if (
-            "receiver_disconnected" in self.__dict__
+            'receiver_disconnected' in self.__dict__
             and self.receiver_disconnected.receivers
         ):
             self.receiver_disconnected.send(self, receiver=receiver, sender=sender)
@@ -512,7 +513,7 @@ class NamedSignal(Signal):
 
     def __repr__(self) -> str:
         base = Signal.__repr__(self)
-        return f"{base[:-1]}; {self.name!r}>"  # noqa: E702
+        return f'{base[:-1]}; {self.name!r}>'  # noqa: E702
 
 
 class Namespace(dict):

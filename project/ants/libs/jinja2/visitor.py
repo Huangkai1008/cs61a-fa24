@@ -1,6 +1,7 @@
 """API for traversing the AST nodes. Implemented by the compiler and
 meta introspection.
 """
+
 import typing as t
 
 from .nodes import Node
@@ -9,8 +10,7 @@ if t.TYPE_CHECKING:
     import typing_extensions as te
 
     class VisitCallable(te.Protocol):
-        def __call__(self, node: Node, *args: t.Any, **kwargs: t.Any) -> t.Any:
-            ...
+        def __call__(self, node: Node, *args: t.Any, **kwargs: t.Any) -> t.Any: ...
 
 
 class NodeVisitor:
@@ -25,12 +25,12 @@ class NodeVisitor:
     (return value `None`) the `generic_visit` visitor is used instead.
     """
 
-    def get_visitor(self, node: Node) -> "t.Optional[VisitCallable]":
+    def get_visitor(self, node: Node) -> 't.Optional[VisitCallable]':
         """Return the visitor function for this node or `None` if no visitor
         exists for this node.  In that case the generic visit function is
         used instead.
         """
-        return getattr(self, f"visit_{type(node).__name__}", None)
+        return getattr(self, f'visit_{type(node).__name__}', None)
 
     def visit(self, node: Node, *args: t.Any, **kwargs: t.Any) -> t.Any:
         """Visit a node."""

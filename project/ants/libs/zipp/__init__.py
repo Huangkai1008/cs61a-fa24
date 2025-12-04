@@ -155,7 +155,7 @@ class CompleteDirs(InitializedState, zipfile.ZipFile):
         any directories implied by the presence of children.
         """
         for name in cls._implied_dirs(zf.namelist()):
-            zf.writestr(name, b"")
+            zf.writestr(name, b'')
         return zf
 
 
@@ -283,9 +283,9 @@ class Path:
     >>> pass
     """
 
-    __repr = "{self.__class__.__name__}({self.root.filename!r}, {self.at!r})"
+    __repr = '{self.__class__.__name__}({self.root.filename!r}, {self.at!r})'
 
-    def __init__(self, root, at=""):
+    def __init__(self, root, at=''):
         """
         Construct a Path from a ZipFile or filename.
 
@@ -324,7 +324,7 @@ class Path:
         stream = self.root.open(self.at, zip_mode, pwd=pwd)
         if 'b' in mode:
             if args or kwargs:
-                raise ValueError("encoding args invalid for binary operation")
+                raise ValueError('encoding args invalid for binary operation')
             return stream
         # Text mode:
         encoding, args, kwargs = _extract_text_encoding(*args, **kwargs)
@@ -363,13 +363,13 @@ class Path:
             return strm.read()
 
     def _is_child(self, path):
-        return posixpath.dirname(path.at.rstrip("/")) == self.at.rstrip("/")
+        return posixpath.dirname(path.at.rstrip('/')) == self.at.rstrip('/')
 
     def _next(self, at):
         return self.__class__(self.root, at)
 
     def is_dir(self):
-        return not self.at or self.at.endswith("/")
+        return not self.at or self.at.endswith('/')
 
     def is_file(self):
         return self.exists() and not self.is_dir()
@@ -394,7 +394,7 @@ class Path:
 
     def glob(self, pattern):
         if not pattern:
-            raise ValueError(f"Unacceptable pattern: {pattern!r}")
+            raise ValueError(f'Unacceptable pattern: {pattern!r}')
 
         prefix = re.escape(self.at)
         matches = re.compile(prefix + translate(pattern)).fullmatch

@@ -64,12 +64,21 @@ class AsyncClient(base_client.BaseClient):
                             fatal errors are logged even when
                             ``engineio_logger`` is ``False``.
     """
+
     def is_asyncio_based(self):
         return True
 
-    async def connect(self, url, headers={}, auth=None, transports=None,
-                      namespaces=None, socketio_path='socket.io', wait=True,
-                      wait_timeout=1):
+    async def connect(
+        self,
+        url,
+        headers={},
+        auth=None,
+        transports=None,
+        namespaces=None,
+        socketio_path='socket.io',
+        wait=True,
+        wait_timeout=1,
+    ):
         """Connect to a Socket.IO server.
 
         :param url: The URL of the Socket.IO server. It can include custom
@@ -124,8 +133,9 @@ class AsyncClient(base_client.BaseClient):
         self.socketio_path = socketio_path
 
         if namespaces is None:
-            namespaces = list(set(self.handlers.keys()).union(
-                set(self.namespace_handlers.keys())))
+            namespaces = list(
+                set(self.handlers.keys()).union(set(self.namespace_handlers.keys()))
+            )
             if len(namespaces) == 0:
                 namespaces = ['/']
         elif isinstance(namespaces, str):
@@ -139,21 +149,25 @@ class AsyncClient(base_client.BaseClient):
         real_url = await self._get_real_value(self.connection_url)
         real_headers = await self._get_real_value(self.connection_headers)
         try:
-            await self.eio.connect(real_url, headers=real_headers,
-                                   transports=transports,
-                                   engineio_path=socketio_path)
+            await self.eio.connect(
+                real_url,
+                headers=real_headers,
+                transports=transports,
+                engineio_path=socketio_path,
+            )
         except engineio.exceptions.ConnectionError as exc:
             for n in self.connection_namespaces:
                 await self._trigger_event(
-                    'connect_error', n,
-                    exc.args[1] if len(exc.args) > 1 else exc.args[0])
+                    'connect_error',
+                    n,
+                    exc.args[1] if len(exc.args) > 1 else exc.args[0],
+                )
             raise exceptions.ConnectionError(exc.args[0]) from None
 
         if wait:
             try:
                 while True:
-                    await asyncio.wait_for(self._connect_event.wait(),
-                                           wait_timeout)
+                    await asyncio.wait_for(self._connect_event.wait(), wait_timeout)
                     self._connect_event.clear()
                     if set(self.namespaces) == set(self.connection_namespaces):
                         break
@@ -162,7 +176,8 @@ class AsyncClient(base_client.BaseClient):
             if set(self.namespaces) != set(self.connection_namespaces):
                 await self.disconnect()
                 raise exceptions.ConnectionError(
-                    'One or more namespaces failed to connect')
+                    'One or more namespaces failed to connect'
+                )
 
         self.connected = True
 
@@ -212,7 +227,8 @@ class AsyncClient(base_client.BaseClient):
         namespace = namespace or '/'
         if namespace not in self.namespaces:
             raise exceptions.BadNamespaceError(
-                namespace + ' is not a connected namespace.')
+                namespace + ' is not a connected namespace.'
+            )
         self.logger.info('Emitting event "%s" [%s]', event, namespace)
         if callback is not None:
             id = self._generate_ack_id(namespace, callback)
@@ -226,8 +242,11 @@ class AsyncClient(base_client.BaseClient):
             data = [data]
         else:
             data = []
-        await self._send_packet(self.packet_class(
-            packet.EVENT, namespace=namespace, data=[event] + data, id=id))
+        await self._send_packet(
+            self.packet_class(
+                packet.EVENT, namespace=namespace, data=[event] + data, id=id
+            )
+        )
 
     async def send(self, data, namespace=None, callback=None):
         """Send a message to the server.
@@ -249,8 +268,7 @@ class AsyncClient(base_client.BaseClient):
 
         Note: this method is a coroutine.
         """
-        await self.emit('message', data=data, namespace=namespace,
-                        callback=callback)
+        await self.emit('message', data=data, namespace=namespace, callback=callback)
 
     async def call(self, event, data=None, namespace=None, timeout=60):
         """Emit a custom event to the server and wait for the response.
@@ -290,15 +308,18 @@ class AsyncClient(base_client.BaseClient):
             callback_args.append(args)
             callback_event.set()
 
-        await self.emit(event, data=data, namespace=namespace,
-                        callback=event_callback)
+        await self.emit(event, data=data, namespace=namespace, callback=event_callback)
         try:
             await asyncio.wait_for(callback_event.wait(), timeout)
         except asyncio.TimeoutError:
             raise exceptions.TimeoutError() from None
-        return callback_args[0] if len(callback_args[0]) > 1 \
-            else callback_args[0][0] if len(callback_args[0]) == 1 \
+        return (
+            callback_args[0]
+            if len(callback_args[0]) > 1
+            else callback_args[0][0]
+            if len(callback_args[0]) == 1
             else None
+        )
 
     async def disconnect(self):
         """Disconnect from the server.
@@ -308,8 +329,7 @@ class AsyncClient(base_client.BaseClient):
         # here we just request the disconnection
         # later in _handle_eio_disconnect we invoke the disconnect handler
         for n in self.namespaces:
-            await self._send_packet(self.packet_class(packet.DISCONNECT,
-                                    namespace=n))
+            await self._send_packet(self.packet_class(packet.DISCONNECT, namespace=n))
         await self.eio.disconnect(abort=True)
 
     def start_background_task(self, target, *args, **kwargs):
@@ -390,8 +410,9 @@ class AsyncClient(base_client.BaseClient):
                 data = list(r)
             else:
                 data = [r]
-            await self._send_packet(self.packet_class(
-                packet.ACK, namespace=namespace, id=id, data=data))
+            await self._send_packet(
+                self.packet_class(packet.ACK, namespace=namespace, id=id, data=data)
+            )
 
     async def _handle_ack(self, namespace, id, data):
         namespace = namespace or '/'
@@ -412,8 +433,7 @@ class AsyncClient(base_client.BaseClient):
 
     async def _handle_error(self, namespace, data):
         namespace = namespace or '/'
-        self.logger.info('Connection to namespace {} was rejected'.format(
-            namespace))
+        self.logger.info('Connection to namespace {} was rejected'.format(namespace))
         if data is None:
             data = tuple()
         elif not isinstance(data, (tuple, list)):
@@ -459,38 +479,39 @@ class AsyncClient(base_client.BaseClient):
                 delay = self.reconnection_delay_max
             delay += self.randomization_factor * (2 * random.random() - 1)
             self.logger.info(
-                'Connection failed, new attempt in {:.02f} seconds'.format(
-                    delay))
+                'Connection failed, new attempt in {:.02f} seconds'.format(delay)
+            )
             try:
                 await asyncio.wait_for(self._reconnect_abort.wait(), delay)
                 self.logger.info('Reconnect task aborted')
                 for n in self.connection_namespaces:
-                    await self._trigger_event('__disconnect_final',
-                                              namespace=n)
+                    await self._trigger_event('__disconnect_final', namespace=n)
                 break
             except (asyncio.TimeoutError, asyncio.CancelledError):
                 pass
             attempt_count += 1
             try:
-                await self.connect(self.connection_url,
-                                   headers=self.connection_headers,
-                                   auth=self.connection_auth,
-                                   transports=self.connection_transports,
-                                   namespaces=self.connection_namespaces,
-                                   socketio_path=self.socketio_path)
+                await self.connect(
+                    self.connection_url,
+                    headers=self.connection_headers,
+                    auth=self.connection_auth,
+                    transports=self.connection_transports,
+                    namespaces=self.connection_namespaces,
+                    socketio_path=self.socketio_path,
+                )
             except (exceptions.ConnectionError, ValueError):
                 pass
             else:
                 self.logger.info('Reconnection successful')
                 self._reconnect_task = None
                 break
-            if self.reconnection_attempts and \
-                    attempt_count >= self.reconnection_attempts:
-                self.logger.info(
-                    'Maximum reconnection attempts reached, giving up')
+            if (
+                self.reconnection_attempts
+                and attempt_count >= self.reconnection_attempts
+            ):
+                self.logger.info('Maximum reconnection attempts reached, giving up')
                 for n in self.connection_namespaces:
-                    await self._trigger_event('__disconnect_final',
-                                              namespace=n)
+                    await self._trigger_event('__disconnect_final', namespace=n)
                 break
         base_client.reconnecting_clients.remove(self)
 
@@ -500,8 +521,9 @@ class AsyncClient(base_client.BaseClient):
         self.sid = self.eio.sid
         real_auth = await self._get_real_value(self.connection_auth) or {}
         for n in self.connection_namespaces:
-            await self._send_packet(self.packet_class(
-                packet.CONNECT, data=real_auth, namespace=n))
+            await self._send_packet(
+                self.packet_class(packet.CONNECT, data=real_auth, namespace=n)
+            )
 
     async def _handle_eio_message(self, data):
         """Dispatch Engine.IO messages."""
@@ -523,8 +545,10 @@ class AsyncClient(base_client.BaseClient):
                 await self._handle_event(pkt.namespace, pkt.id, pkt.data)
             elif pkt.packet_type == packet.ACK:
                 await self._handle_ack(pkt.namespace, pkt.id, pkt.data)
-            elif pkt.packet_type == packet.BINARY_EVENT or \
-                    pkt.packet_type == packet.BINARY_ACK:
+            elif (
+                pkt.packet_type == packet.BINARY_EVENT
+                or pkt.packet_type == packet.BINARY_ACK
+            ):
                 self._binary_packet = pkt
             elif pkt.packet_type == packet.CONNECT_ERROR:
                 await self._handle_error(pkt.namespace, pkt.data)
@@ -539,16 +563,14 @@ class AsyncClient(base_client.BaseClient):
             for n in self.namespaces:
                 await self._trigger_event('disconnect', namespace=n)
                 if not will_reconnect:
-                    await self._trigger_event('__disconnect_final',
-                                              namespace=n)
+                    await self._trigger_event('__disconnect_final', namespace=n)
             self.namespaces = {}
             self.connected = False
         self.callbacks = {}
         self._binary_packet = None
         self.sid = None
         if will_reconnect:
-            self._reconnect_task = self.start_background_task(
-                self._handle_reconnect)
+            self._reconnect_task = self.start_background_task(self._handle_reconnect)
 
     def _engineio_client_class(self):
         return engineio.AsyncClient

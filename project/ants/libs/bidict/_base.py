@@ -7,9 +7,9 @@
 
 #                             * Code review nav *
 #                        (see comments in __init__.py)
-#==============================================================================
+# ==============================================================================
 # ← Prev: _abc.py              Current: _base.py      Next: _frozenbidict.py →
-#==============================================================================
+# ==============================================================================
 
 
 """Provide :class:`BidictBase`."""
@@ -24,7 +24,12 @@ import weakref
 
 from ._abc import BidirectionalMapping
 from ._dup import ON_DUP_DEFAULT, RAISE, DROP_OLD, DROP_NEW, OnDup
-from ._exc import DuplicationError, KeyDuplicationError, ValueDuplicationError, KeyAndValueDuplicationError
+from ._exc import (
+    DuplicationError,
+    KeyDuplicationError,
+    ValueDuplicationError,
+    KeyAndValueDuplicationError,
+)
 from ._iter import iteritems, inverted
 from ._typing import KT, VT, MISSING, OKT, OVT, Items, MapOrItems, TypeAlias
 
@@ -67,8 +72,12 @@ class BidictBase(BidirectionalMapping[KT, VT]):
     _invm: t.MutableMapping[VT, KT]  #: the backing inverse mapping (*val* → *key*)
 
     # Use Any rather than KT/VT in the following to avoid "ClassVar cannot contain type variables" errors:
-    _fwdm_cls: t.ClassVar[t.Type[t.MutableMapping[t.Any, t.Any]]] = dict  #: class of the backing forward mapping
-    _invm_cls: t.ClassVar[t.Type[t.MutableMapping[t.Any, t.Any]]] = dict  #: class of the backing inverse mapping
+    _fwdm_cls: t.ClassVar[t.Type[t.MutableMapping[t.Any, t.Any]]] = (
+        dict  #: class of the backing forward mapping
+    )
+    _invm_cls: t.ClassVar[t.Type[t.MutableMapping[t.Any, t.Any]]] = (
+        dict  #: class of the backing inverse mapping
+    )
 
     #: The class of the inverse bidict instance.
     _inv_cls: t.ClassVar[t.Type[BidictBase[t.Any, t.Any]]]
@@ -100,7 +109,9 @@ class BidictBase(BidirectionalMapping[KT, VT]):
         # The following will be False for MutableBidict, bidict, and frozenbidict on Python < 3.8,
         # and True for them on 3.8+ (where dicts are reversible). Will also be True for custom
         # subclasses like SortedBidict (see https://bidict.rtfd.io/extending.html#sortedbidict-recipes).
-        backing_reversible = all(issubclass(i, t.Reversible) for i in (cls._fwdm_cls, cls._invm_cls))
+        backing_reversible = all(
+            issubclass(i, t.Reversible) for i in (cls._fwdm_cls, cls._invm_cls)
+        )
         cls.__reversed__ = _fwdm_reversed if backing_reversible else None
 
     @classmethod
@@ -348,7 +359,14 @@ class BidictBase(BidirectionalMapping[KT, VT]):
         # else neither isdupkey nor isdupval.
         return oldkey, oldval
 
-    def _prep_write(self, newkey: KT, newval: VT, oldkey: OKT[KT], oldval: OVT[VT], save_unwrite: bool) -> PreparedWrite:
+    def _prep_write(
+        self,
+        newkey: KT,
+        newval: VT,
+        oldkey: OKT[KT],
+        oldval: OVT[VT],
+        save_unwrite: bool,
+    ) -> PreparedWrite:
         """Given (newkey, newval) to insert, return the list of operations necessary to perform the write.
 
         *oldkey* and *oldval* are as returned by :meth:`_dedup`.
@@ -368,39 +386,59 @@ class BidictBase(BidirectionalMapping[KT, VT]):
         unwrite: list[t.Callable[[], None]]
         if oldval is MISSING and oldkey is MISSING:  # no key or value duplication
             # {0: 1, 2: 3} + (4, 5) => {0: 1, 2: 3, 4: 5}
-            unwrite = [
-                partial(fwdm.__delitem__, newkey),
-                partial(invm.__delitem__, newval),
-            ] if save_unwrite else []
-        elif oldval is not MISSING and oldkey is not MISSING:  # key and value duplication across two different items
+            unwrite = (
+                [
+                    partial(fwdm.__delitem__, newkey),
+                    partial(invm.__delitem__, newval),
+                ]
+                if save_unwrite
+                else []
+            )
+        elif (
+            oldval is not MISSING and oldkey is not MISSING
+        ):  # key and value duplication across two different items
             # {0: 1, 2: 3} + (0, 3) => {0: 3}
-            write.extend((
-                partial(fwdm.__delitem__, oldkey),
-                partial(invm.__delitem__, oldval),
-            ))
-            unwrite = [
-                partial(fwdm.__setitem__, newkey, oldval),
-                partial(invm.__setitem__, oldval, newkey),
-                partial(fwdm.__setitem__, oldkey, newval),
-                partial(invm.__setitem__, newval, oldkey),
-            ] if save_unwrite else []
+            write.extend(
+                (
+                    partial(fwdm.__delitem__, oldkey),
+                    partial(invm.__delitem__, oldval),
+                )
+            )
+            unwrite = (
+                [
+                    partial(fwdm.__setitem__, newkey, oldval),
+                    partial(invm.__setitem__, oldval, newkey),
+                    partial(fwdm.__setitem__, oldkey, newval),
+                    partial(invm.__setitem__, newval, oldkey),
+                ]
+                if save_unwrite
+                else []
+            )
         elif oldval is not MISSING:  # just key duplication
             # {0: 1, 2: 3} + (2, 4) => {0: 1, 2: 4}
             write.append(partial(invm.__delitem__, oldval))
-            unwrite = [
-                partial(fwdm.__setitem__, newkey, oldval),
-                partial(invm.__setitem__, oldval, newkey),
-                partial(invm.__delitem__, newval),
-            ] if save_unwrite else []
+            unwrite = (
+                [
+                    partial(fwdm.__setitem__, newkey, oldval),
+                    partial(invm.__setitem__, oldval, newkey),
+                    partial(invm.__delitem__, newval),
+                ]
+                if save_unwrite
+                else []
+            )
         else:
             assert oldkey is not MISSING  # just value duplication
             # {0: 1, 2: 3} + (4, 3) => {0: 1, 4: 3}
             write.append(partial(fwdm.__delitem__, oldkey))
-            unwrite = [
-                partial(fwdm.__setitem__, oldkey, newval),
-                partial(invm.__setitem__, newval, oldkey),
-                partial(fwdm.__delitem__, newkey),
-            ] if save_unwrite else []
+            unwrite = (
+                [
+                    partial(fwdm.__setitem__, oldkey, newval),
+                    partial(invm.__setitem__, newval, oldkey),
+                    partial(fwdm.__delitem__, newkey),
+                ]
+                if save_unwrite
+                else []
+            )
         return write, unwrite
 
     def _update(
@@ -443,7 +481,7 @@ class BidictBase(BidirectionalMapping[KT, VT]):
         unwrites: list[Unwrite] = []
         append_unwrite = unwrites.append
         prep_write = self._prep_write
-        for (key, val) in iteritems(arg, **kw):
+        for key, val in iteritems(arg, **kw):
             try:
                 dedup_result = self._dedup(key, val, on_dup)
             except DuplicationError:
@@ -528,7 +566,9 @@ class BidictBase(BidirectionalMapping[KT, VT]):
         # (presumably not dynamically generated) class the caller is more likely to have a reference to
         # somewhere in sys.modules that pickle can discover.
         should_invert = isinstance(self, GeneratedBidictInverse)
-        cls, init_from = (self._inv_cls, self.inverse) if should_invert else (self.__class__, self)
+        cls, init_from = (
+            (self._inv_cls, self.inverse) if should_invert else (self.__class__, self)
+        )
         return self._from_other, (cls, dict(init_from), should_invert)  # type: ignore [call-overload]
 
 
@@ -547,6 +587,6 @@ class GeneratedBidictInverse:
 
 
 #                             * Code review nav *
-#==============================================================================
+# ==============================================================================
 # ← Prev: _abc.py              Current: _base.py      Next: _frozenbidict.py →
-#==============================================================================
+# ==============================================================================

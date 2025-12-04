@@ -8,6 +8,7 @@ Serve Shared Static Files
 :copyright: 2007 Pallets
 :license: BSD-3-Clause
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -38,7 +39,6 @@ if t.TYPE_CHECKING:
 
 
 class SharedDataMiddleware:
-
     """A WSGI middleware which provides static content for development
     environments or simple server setups. Its usage is quite simple::
 
@@ -109,7 +109,7 @@ class SharedDataMiddleware:
         disallow: None = None,
         cache: bool = True,
         cache_timeout: int = 60 * 60 * 12,
-        fallback_mimetype: str = "application/octet-stream",
+        fallback_mimetype: str = 'application/octet-stream',
     ) -> None:
         self.app = app
         self.exports: list[tuple[str, _TLoader]] = []
@@ -128,7 +128,7 @@ class SharedDataMiddleware:
                 else:
                     loader = self.get_directory_loader(value)
             else:
-                raise TypeError(f"unknown def {value!r}")
+                raise TypeError(f'unknown def {value!r}')
 
             self.exports.append((key, loader))
 
@@ -148,7 +148,7 @@ class SharedDataMiddleware:
 
     def _opener(self, filename: str) -> _TOpener:
         return lambda: (
-            open(filename, "rb"),
+            open(filename, 'rb'),
             datetime.fromtimestamp(os.path.getmtime(filename), tz=timezone.utc),
             int(os.path.getsize(filename)),
         )
@@ -221,7 +221,7 @@ class SharedDataMiddleware:
         real_filename = os.fsencode(real_filename)
         timestamp = mtime.timestamp()
         checksum = adler32(real_filename) & 0xFFFFFFFF
-        return f"wzsdm-{timestamp}-{file_size}-{checksum}"
+        return f'wzsdm-{timestamp}-{file_size}-{checksum}'
 
     def __call__(
         self, environ: WSGIEnvironment, start_response: StartResponse
@@ -236,8 +236,8 @@ class SharedDataMiddleware:
                 if file_loader is not None:
                     break
 
-            if not search_path.endswith("/"):
-                search_path += "/"
+            if not search_path.endswith('/'):
+                search_path += '/'
 
             if path.startswith(search_path):
                 real_filename, file_loader = loader(path[len(search_path) :])
@@ -249,34 +249,34 @@ class SharedDataMiddleware:
             return self.app(environ, start_response)
 
         guessed_type = mimetypes.guess_type(real_filename)  # type: ignore
-        mime_type = get_content_type(guessed_type[0] or self.fallback_mimetype, "utf-8")
+        mime_type = get_content_type(guessed_type[0] or self.fallback_mimetype, 'utf-8')
         f, mtime, file_size = file_loader()
 
-        headers = [("Date", http_date())]
+        headers = [('Date', http_date())]
 
         if self.cache:
             timeout = self.cache_timeout
             etag = self.generate_etag(mtime, file_size, real_filename)  # type: ignore
             headers += [
-                ("Etag", f'"{etag}"'),
-                ("Cache-Control", f"max-age={timeout}, public"),
+                ('Etag', f'"{etag}"'),
+                ('Cache-Control', f'max-age={timeout}, public'),
             ]
 
             if not is_resource_modified(environ, etag, last_modified=mtime):
                 f.close()
-                start_response("304 Not Modified", headers)
+                start_response('304 Not Modified', headers)
                 return []
 
-            headers.append(("Expires", http_date(time() + timeout)))
+            headers.append(('Expires', http_date(time() + timeout)))
         else:
-            headers.append(("Cache-Control", "public"))
+            headers.append(('Cache-Control', 'public'))
 
         headers.extend(
             (
-                ("Content-Type", mime_type),
-                ("Content-Length", str(file_size)),
-                ("Last-Modified", http_date(mtime)),
+                ('Content-Type', mime_type),
+                ('Content-Length', str(file_size)),
+                ('Last-Modified', http_date(mtime)),
             )
         )
-        start_response("200 OK", headers)
+        start_response('200 OK', headers)
         return wrap_file(environ, f)

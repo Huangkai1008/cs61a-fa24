@@ -90,7 +90,7 @@ class Response:
     default_status = 200
 
     #: the default mimetype if none is provided.
-    default_mimetype: str | None = "text/plain"
+    default_mimetype: str | None = 'text/plain'
 
     #: Warn if a cookie header exceeds this size. The default, 4093, should be
     #: safely `supported by most browsers <cookie_>`_. A cookie larger than
@@ -122,19 +122,19 @@ class Response:
             self.headers = Headers(headers)
 
         if content_type is None:
-            if mimetype is None and "content-type" not in self.headers:
+            if mimetype is None and 'content-type' not in self.headers:
                 mimetype = self.default_mimetype
             if mimetype is not None:
-                mimetype = get_content_type(mimetype, "utf-8")
+                mimetype = get_content_type(mimetype, 'utf-8')
             content_type = mimetype
         if content_type is not None:
-            self.headers["Content-Type"] = content_type
+            self.headers['Content-Type'] = content_type
         if status is None:
             status = self.default_status
         self.status = status  # type: ignore
 
     def __repr__(self) -> str:
-        return f"<{type(self).__name__} [{self.status}]>"
+        return f'<{type(self).__name__} [{self.status}]>'
 
     @property
     def status_code(self) -> int:
@@ -161,15 +161,15 @@ class Response:
             value = value.strip()
 
             if not value:
-                raise ValueError("Empty status argument")
+                raise ValueError('Empty status argument')
 
-            code_str, sep, _ = value.partition(" ")
+            code_str, sep, _ = value.partition(' ')
 
             try:
                 status_code = int(code_str)
             except ValueError:
                 # only message
-                return f"0 {value}", 0
+                return f'0 {value}', 0
 
             if sep:
                 # code and message
@@ -177,19 +177,19 @@ class Response:
 
         # only code, look up message
         try:
-            status = f"{status_code} {HTTP_STATUS_CODES[status_code].upper()}"
+            status = f'{status_code} {HTTP_STATUS_CODES[status_code].upper()}'
         except KeyError:
-            status = f"{status_code} UNKNOWN"
+            status = f'{status_code} UNKNOWN'
 
         return status, status_code
 
     def set_cookie(
         self,
         key: str,
-        value: str = "",
+        value: str = '',
         max_age: timedelta | int | None = None,
         expires: str | datetime | int | float | None = None,
-        path: str | None = "/",
+        path: str | None = '/',
         domain: str | None = None,
         secure: bool = False,
         httponly: bool = False,
@@ -220,7 +220,7 @@ class Response:
             attached to requests that are "same-site".
         """
         self.headers.add(
-            "Set-Cookie",
+            'Set-Cookie',
             dump_cookie(
                 key,
                 value=value,
@@ -238,7 +238,7 @@ class Response:
     def delete_cookie(
         self,
         key: str,
-        path: str | None = "/",
+        path: str | None = '/',
         domain: str | None = None,
         secure: bool = False,
         httponly: bool = False,
@@ -275,9 +275,9 @@ class Response:
         """
         mt = self.mimetype
         return mt is not None and (
-            mt == "application/json"
-            or mt.startswith("application/")
-            and mt.endswith("+json")
+            mt == 'application/json'
+            or mt.startswith('application/')
+            and mt.endswith('+json')
         )
 
     # Common Descriptors
@@ -285,16 +285,16 @@ class Response:
     @property
     def mimetype(self) -> str | None:
         """The mimetype (content type without charset etc.)"""
-        ct = self.headers.get("content-type")
+        ct = self.headers.get('content-type')
 
         if ct:
-            return ct.split(";")[0].strip()
+            return ct.split(';')[0].strip()
         else:
             return None
 
     @mimetype.setter
     def mimetype(self, value: str) -> None:
-        self.headers["Content-Type"] = get_content_type(value, "utf-8")
+        self.headers['Content-Type'] = get_content_type(value, 'utf-8')
 
     @property
     def mimetype_params(self) -> dict[str, str]:
@@ -306,20 +306,20 @@ class Response:
         """
 
         def on_update(d: CallbackDict) -> None:
-            self.headers["Content-Type"] = dump_options_header(self.mimetype, d)
+            self.headers['Content-Type'] = dump_options_header(self.mimetype, d)
 
-        d = parse_options_header(self.headers.get("content-type", ""))[1]
+        d = parse_options_header(self.headers.get('content-type', ''))[1]
         return CallbackDict(d, on_update)
 
     location = header_property[str](
-        "Location",
+        'Location',
         doc="""The Location response-header field is used to redirect
         the recipient to a location other than the Request-URI for
         completion of the request or identification of a new
         resource.""",
     )
     age = header_property(
-        "Age",
+        'Age',
         None,
         parse_age,
         dump_age,  # type: ignore
@@ -331,14 +331,14 @@ class Response:
         in seconds.""",
     )
     content_type = header_property[str](
-        "Content-Type",
+        'Content-Type',
         doc="""The Content-Type entity-header field indicates the media
         type of the entity-body sent to the recipient or, in the case of
         the HEAD method, the media type that would have been sent had
         the request been a GET.""",
     )
     content_length = header_property(
-        "Content-Length",
+        'Content-Length',
         None,
         int,
         str,
@@ -349,14 +349,14 @@ class Response:
         GET.""",
     )
     content_location = header_property[str](
-        "Content-Location",
+        'Content-Location',
         doc="""The Content-Location entity-header field MAY be used to
         supply the resource location for the entity enclosed in the
         message when that entity is accessible from a location separate
         from the requested resource's URI.""",
     )
     content_encoding = header_property[str](
-        "Content-Encoding",
+        'Content-Encoding',
         doc="""The Content-Encoding entity-header field is used as a
         modifier to the media-type. When present, its value indicates
         what additional content codings have been applied to the
@@ -365,7 +365,7 @@ class Response:
         header field.""",
     )
     content_md5 = header_property[str](
-        "Content-MD5",
+        'Content-MD5',
         doc="""The Content-MD5 entity-header field, as defined in
         RFC 1864, is an MD5 digest of the entity-body for the purpose of
         providing an end-to-end message integrity check (MIC) of the
@@ -374,7 +374,7 @@ class Response:
         against malicious attacks.)""",
     )
     date = header_property(
-        "Date",
+        'Date',
         None,
         parse_date,
         http_date,
@@ -387,7 +387,7 @@ class Response:
         """,
     )
     expires = header_property(
-        "Expires",
+        'Expires',
         None,
         parse_date,
         http_date,
@@ -400,7 +400,7 @@ class Response:
         """,
     )
     last_modified = header_property(
-        "Last-Modified",
+        'Last-Modified',
         None,
         parse_date,
         http_date,
@@ -424,7 +424,7 @@ class Response:
         .. versionchanged:: 2.0
             The datetime object is timezone-aware.
         """
-        value = self.headers.get("retry-after")
+        value = self.headers.get('retry-after')
         if value is None:
             return None
 
@@ -438,31 +438,31 @@ class Response:
     @retry_after.setter
     def retry_after(self, value: datetime | int | str | None) -> None:
         if value is None:
-            if "retry-after" in self.headers:
-                del self.headers["retry-after"]
+            if 'retry-after' in self.headers:
+                del self.headers['retry-after']
             return
         elif isinstance(value, datetime):
             value = http_date(value)
         else:
             value = str(value)
-        self.headers["Retry-After"] = value
+        self.headers['Retry-After'] = value
 
     vary = _set_property(
-        "Vary",
+        'Vary',
         doc="""The Vary field value indicates the set of request-header
         fields that fully determines, while the response is fresh,
         whether a cache is permitted to use the response to reply to a
         subsequent request without revalidation.""",
     )
     content_language = _set_property(
-        "Content-Language",
+        'Content-Language',
         doc="""The Content-Language entity-header field describes the
         natural language(s) of the intended audience for the enclosed
         entity. Note that this might not be equivalent to all the
         languages used within the entity-body.""",
     )
     allow = _set_property(
-        "Allow",
+        'Allow',
         doc="""The Allow entity-header field lists the set of methods
         supported by the resource identified by the Request-URI. The
         purpose of this field is strictly to inform the recipient of
@@ -481,27 +481,27 @@ class Response:
         """
 
         def on_update(cache_control: ResponseCacheControl) -> None:
-            if not cache_control and "cache-control" in self.headers:
-                del self.headers["cache-control"]
+            if not cache_control and 'cache-control' in self.headers:
+                del self.headers['cache-control']
             elif cache_control:
-                self.headers["Cache-Control"] = cache_control.to_header()
+                self.headers['Cache-Control'] = cache_control.to_header()
 
         return parse_cache_control_header(
-            self.headers.get("cache-control"), on_update, ResponseCacheControl
+            self.headers.get('cache-control'), on_update, ResponseCacheControl
         )
 
     def set_etag(self, etag: str, weak: bool = False) -> None:
         """Set the etag, and override the old one if there was one."""
-        self.headers["ETag"] = quote_etag(etag, weak)
+        self.headers['ETag'] = quote_etag(etag, weak)
 
     def get_etag(self) -> tuple[str, bool] | tuple[None, None]:
         """Return a tuple in the form ``(etag, is_weak)``.  If there is no
         ETag the return value is ``(None, None)``.
         """
-        return unquote_etag(self.headers.get("ETag"))
+        return unquote_etag(self.headers.get('ETag'))
 
     accept_ranges = header_property[str](
-        "Accept-Ranges",
+        'Accept-Ranges',
         doc="""The `Accept-Ranges` header. Even though the name would
         indicate that multiple values are supported, it must be one
         string token only.
@@ -522,11 +522,11 @@ class Response:
 
         def on_update(rng: ContentRange) -> None:
             if not rng:
-                del self.headers["content-range"]
+                del self.headers['content-range']
             else:
-                self.headers["Content-Range"] = rng.to_header()
+                self.headers['Content-Range'] = rng.to_header()
 
-        rv = parse_content_range_header(self.headers.get("content-range"), on_update)
+        rv = parse_content_range_header(self.headers.get('content-range'), on_update)
         # always provide a content range object to make the descriptor
         # more user friendly.  It provides an unset() method that can be
         # used to remove the header quickly.
@@ -537,11 +537,11 @@ class Response:
     @content_range.setter
     def content_range(self, value: ContentRange | str | None) -> None:
         if not value:
-            del self.headers["content-range"]
+            del self.headers['content-range']
         elif isinstance(value, str):
-            self.headers["Content-Range"] = value
+            self.headers['Content-Range'] = value
         else:
-            self.headers["Content-Range"] = value.to_header()
+            self.headers['Content-Range'] = value.to_header()
 
     # Authorization
 
@@ -574,10 +574,10 @@ class Response:
             :class:`WWWAuthenticate` is no longer a ``dict``. The ``token`` attribute
             was added for auth challenges that use a token instead of parameters.
         """
-        value = WWWAuthenticate.from_header(self.headers.get("WWW-Authenticate"))
+        value = WWWAuthenticate.from_header(self.headers.get('WWW-Authenticate'))
 
         if value is None:
-            value = WWWAuthenticate("basic")
+            value = WWWAuthenticate('basic')
 
         def on_update(value: WWWAuthenticate) -> None:
             self.www_authenticate = value
@@ -593,13 +593,13 @@ class Response:
             del self.www_authenticate
         elif isinstance(value, list):
             # Clear any existing header by setting the first item.
-            self.headers.set("WWW-Authenticate", value[0].to_header())
+            self.headers.set('WWW-Authenticate', value[0].to_header())
 
             for item in value[1:]:
                 # Add additional header lines for additional items.
-                self.headers.add("WWW-Authenticate", item.to_header())
+                self.headers.add('WWW-Authenticate', item.to_header())
         else:
-            self.headers.set("WWW-Authenticate", value.to_header())
+            self.headers.set('WWW-Authenticate', value.to_header())
 
             def on_update(value: WWWAuthenticate) -> None:
                 self.www_authenticate = value
@@ -609,8 +609,8 @@ class Response:
 
     @www_authenticate.deleter
     def www_authenticate(self) -> None:
-        if "WWW-Authenticate" in self.headers:
-            del self.headers["WWW-Authenticate"]
+        if 'WWW-Authenticate' in self.headers:
+            del self.headers['WWW-Authenticate']
 
     # CSP
 
@@ -626,11 +626,11 @@ class Response:
 
         def on_update(csp: ContentSecurityPolicy) -> None:
             if not csp:
-                del self.headers["content-security-policy"]
+                del self.headers['content-security-policy']
             else:
-                self.headers["Content-Security-Policy"] = csp.to_header()
+                self.headers['Content-Security-Policy'] = csp.to_header()
 
-        rv = parse_csp_header(self.headers.get("content-security-policy"), on_update)
+        rv = parse_csp_header(self.headers.get('content-security-policy'), on_update)
         if rv is None:
             rv = ContentSecurityPolicy(None, on_update=on_update)
         return rv
@@ -640,11 +640,11 @@ class Response:
         self, value: ContentSecurityPolicy | str | None
     ) -> None:
         if not value:
-            del self.headers["content-security-policy"]
+            del self.headers['content-security-policy']
         elif isinstance(value, str):
-            self.headers["Content-Security-Policy"] = value
+            self.headers['Content-Security-Policy'] = value
         else:
-            self.headers["Content-Security-Policy"] = value.to_header()
+            self.headers['Content-Security-Policy'] = value.to_header()
 
     @property
     def content_security_policy_report_only(self) -> ContentSecurityPolicy:
@@ -659,12 +659,12 @@ class Response:
 
         def on_update(csp: ContentSecurityPolicy) -> None:
             if not csp:
-                del self.headers["content-security-policy-report-only"]
+                del self.headers['content-security-policy-report-only']
             else:
-                self.headers["Content-Security-policy-report-only"] = csp.to_header()
+                self.headers['Content-Security-policy-report-only'] = csp.to_header()
 
         rv = parse_csp_header(
-            self.headers.get("content-security-policy-report-only"), on_update
+            self.headers.get('content-security-policy-report-only'), on_update
         )
         if rv is None:
             rv = ContentSecurityPolicy(None, on_update=on_update)
@@ -675,11 +675,11 @@ class Response:
         self, value: ContentSecurityPolicy | str | None
     ) -> None:
         if not value:
-            del self.headers["content-security-policy-report-only"]
+            del self.headers['content-security-policy-report-only']
         elif isinstance(value, str):
-            self.headers["Content-Security-policy-report-only"] = value
+            self.headers['Content-Security-policy-report-only'] = value
         else:
-            self.headers["Content-Security-policy-report-only"] = value.to_header()
+            self.headers['Content-Security-policy-report-only'] = value.to_header()
 
     # CORS
 
@@ -689,50 +689,50 @@ class Response:
         JavaScript code. As part of the preflight request it indicates
         whether credentials can be used on the cross origin request.
         """
-        return "Access-Control-Allow-Credentials" in self.headers
+        return 'Access-Control-Allow-Credentials' in self.headers
 
     @access_control_allow_credentials.setter
     def access_control_allow_credentials(self, value: bool | None) -> None:
         if value is True:
-            self.headers["Access-Control-Allow-Credentials"] = "true"
+            self.headers['Access-Control-Allow-Credentials'] = 'true'
         else:
-            self.headers.pop("Access-Control-Allow-Credentials", None)
+            self.headers.pop('Access-Control-Allow-Credentials', None)
 
     access_control_allow_headers = header_property(
-        "Access-Control-Allow-Headers",
+        'Access-Control-Allow-Headers',
         load_func=parse_set_header,
         dump_func=dump_header,
-        doc="Which headers can be sent with the cross origin request.",
+        doc='Which headers can be sent with the cross origin request.',
     )
 
     access_control_allow_methods = header_property(
-        "Access-Control-Allow-Methods",
+        'Access-Control-Allow-Methods',
         load_func=parse_set_header,
         dump_func=dump_header,
-        doc="Which methods can be used for the cross origin request.",
+        doc='Which methods can be used for the cross origin request.',
     )
 
     access_control_allow_origin = header_property[str](
-        "Access-Control-Allow-Origin",
+        'Access-Control-Allow-Origin',
         doc="The origin or '*' for any origin that may make cross origin requests.",
     )
 
     access_control_expose_headers = header_property(
-        "Access-Control-Expose-Headers",
+        'Access-Control-Expose-Headers',
         load_func=parse_set_header,
         dump_func=dump_header,
-        doc="Which headers can be shared by the browser to JavaScript code.",
+        doc='Which headers can be shared by the browser to JavaScript code.',
     )
 
     access_control_max_age = header_property(
-        "Access-Control-Max-Age",
+        'Access-Control-Max-Age',
         load_func=int,
         dump_func=str,
-        doc="The maximum age in seconds the access control settings can be cached for.",
+        doc='The maximum age in seconds the access control settings can be cached for.',
     )
 
     cross_origin_opener_policy = header_property[COOP](
-        "Cross-Origin-Opener-Policy",
+        'Cross-Origin-Opener-Policy',
         load_func=lambda value: COOP(value),
         dump_func=lambda value: value.value,
         default=COOP.UNSAFE_NONE,
@@ -741,7 +741,7 @@ class Response:
     )
 
     cross_origin_embedder_policy = header_property[COEP](
-        "Cross-Origin-Embedder-Policy",
+        'Cross-Origin-Embedder-Policy',
         load_func=lambda value: COEP(value),
         dump_func=lambda value: value.value,
         default=COEP.UNSAFE_NONE,
