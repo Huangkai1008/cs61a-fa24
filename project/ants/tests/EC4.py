@@ -1,11 +1,11 @@
 test = {
-    'name': 'Problem EC 4',
-    'points': 1,
-    'suites': [
+  'name': 'Problem EC 4',
+  'points': 1,
+  'suites': [
+    {
+      'cases': [
         {
-            'cases': [
-                {
-                    'code': r"""
+          'code': r"""
           >>> laser = LaserAnt()
           >>> ant = HarvesterAnt(2)
           >>> bee1 = Bee(2)
@@ -30,12 +30,12 @@ test = {
           >>> bee3.health
           1.5
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> laser = LaserAnt()
           >>> bee1 = Bee(1)
           >>> bee2 = Bee(2)
@@ -52,12 +52,12 @@ test = {
           >>> bee3.health
           1.875
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> laser = LaserAnt()
           >>> bee1 = Bee(3)
           >>> bee2 = Bee(3)
@@ -82,12 +82,12 @@ test = {
           >>> ant.health
           2.5
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> laser = LaserAnt()
           >>> container_laser = TankAnt()
           >>> bee2 = Bee(3)
@@ -114,38 +114,38 @@ test = {
           >>> bee3.health
           4
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-            ],
-            'scored': True,
-            'setup': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        }
+      ],
+      'scored': True,
+      'setup': r"""
       >>> from ants import *
       >>> beehive, layout = Hive(AssaultPlan()), dry_layout
       >>> dimensions = (1, 9)
       >>> gamestate = GameState(beehive, ant_types(), layout, dimensions)
       """,
-            'teardown': '',
-            'type': 'doctest',
-        },
+      'teardown': '',
+      'type': 'doctest'
+    },
+    {
+      'cases': [
         {
-            'cases': [
-                {
-                    'code': r"""
+          'code': r"""
           >>> from ants import *
           >>> LaserAnt.implemented
           True
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                }
-            ],
-            'scored': True,
-            'setup': '',
-            'teardown': '',
-            'type': 'doctest',
-        },
-    ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        }
+      ],
+      'scored': True,
+      'setup': '',
+      'teardown': '',
+      'type': 'doctest'
+    }
+  ]
 }

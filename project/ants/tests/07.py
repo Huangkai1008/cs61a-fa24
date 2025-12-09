@@ -1,62 +1,62 @@
 test = {
-    'name': 'Problem 7',
-    'points': 3,
-    'suites': [
+  'name': 'Problem 7',
+  'points': 3,
+  'suites': [
+    {
+      'cases': [
         {
-            'cases': [
-                {
-                    'answer': 'instance, each HungryAnt instance chews independently of other HungryAnt instances',
-                    'choices': [
-                        r"""
+          'answer': 'instance, each HungryAnt instance chews independently of other HungryAnt instances',
+          'choices': [
+            r"""
             instance, each HungryAnt instance chews independently of other
             HungryAnt instances
             """,
-                        'instance, all HungryAnt instances in the game chew simultaneously',
-                        r"""
+            'instance, all HungryAnt instances in the game chew simultaneously',
+            r"""
             class, each HungryAnt instance chews independently of other
             HungryAnt instances
             """,
-                        'class, all HungryAnt instances in the game chew simultaneously',
-                    ],
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                    'question': 'Should cooldown be an instance or class attribute? Why?',
-                },
-                {
-                    'answer': 'When it is not chewing, i.e. when its cooldown attribute is 0',
-                    'choices': [
-                        'When it is not chewing, i.e. when its cooldown attribute is 0',
-                        'When it is chewing, i.e. when its cooldown attribute is at least 1',
-                        'Each turn',
-                        'Whenever a Bee is in its place',
-                    ],
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                    'question': 'When is a HungryAnt able to eat a Bee?',
-                },
-                {
-                    'answer': 'A random Bee in the same place as itself',
-                    'choices': [
-                        'A random Bee in the same place as itself',
-                        'The closest Bee in front of it',
-                        'The closest Bee behind it',
-                        'The closest Bee in either direction',
-                    ],
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                    'question': 'When a HungryAnt is able to eat, which Bee does it eat?',
-                },
-            ],
-            'scored': False,
-            'type': 'concept',
+            'class, all HungryAnt instances in the game chew simultaneously'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'Should cooldown be an instance or class attribute? Why?'
         },
         {
-            'cases': [
-                {
-                    'code': r"""
+          'answer': 'When it is not chewing, i.e. when its cooldown attribute is 0',
+          'choices': [
+            'When it is not chewing, i.e. when its cooldown attribute is 0',
+            'When it is chewing, i.e. when its cooldown attribute is at least 1',
+            'Each turn',
+            'Whenever a Bee is in its place'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'When is a HungryAnt able to eat a Bee?'
+        },
+        {
+          'answer': 'A random Bee in the same place as itself',
+          'choices': [
+            'A random Bee in the same place as itself',
+            'The closest Bee in front of it',
+            'The closest Bee behind it',
+            'The closest Bee in either direction'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'When a HungryAnt is able to eat, which Bee does it eat?'
+        }
+      ],
+      'scored': False,
+      'type': 'concept'
+    },
+    {
+      'cases': [
+        {
+          'code': r"""
           >>> # Testing HungryAnt parameters
           >>> hungry = HungryAnt()
           >>> HungryAnt.food_cost
@@ -68,12 +68,12 @@ test = {
           >>> hungry.cooldown
           0
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Abstraction tests
           >>> original = Ant.__init__
           >>> Ant.__init__ = lambda self, health: print("init")  # If this errors, you are not calling the parent constructor correctly.
@@ -89,12 +89,12 @@ test = {
           >>> HungryAnt.chew_cooldown
           3
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt eats and chews
           >>> hungry = HungryAnt()
           >>> bee1 = Bee(1000)              # A Bee with 1000 health
@@ -114,12 +114,12 @@ test = {
           >>> bee2.health
           0
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt eats and chews for allotted time
           >>> hungry = HungryAnt()
           >>> bee1 = Bee(1000)              # A Bee with 1000 health
@@ -139,12 +139,12 @@ test = {
           >>> bee2.health
           1
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt eats and chews
           >>> hungry = HungryAnt()
           >>> super_bee, wimpy_bee = Bee(1000), Bee(1)
@@ -163,12 +163,12 @@ test = {
           >>> wimpy_bee.health
           0
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt only waits when chewing
           >>> hungry = HungryAnt()
           >>> place = gamestate.places["tunnel_0_0"]
@@ -191,12 +191,12 @@ test = {
           >>> bee.health
           0
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt chew duration looked up on instance
           >>> very_hungry = HungryAnt()  # Add very hungry caterpi- um, ant
           >>> HungryAnt.chew_cooldown = 0
@@ -209,12 +209,12 @@ test = {
           >>> len(place.bees)
           0
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt dies while eating
           >>> hungry = HungryAnt()
           >>> place = gamestate.places["tunnel_0_0"]
@@ -231,12 +231,12 @@ test = {
           >>> len(place.bees)
           1
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt can't eat a bee at another space
           >>> hungry = HungryAnt()
           >>> gamestate.places["tunnel_0_0"].add_insect(hungry)
@@ -245,12 +245,12 @@ test = {
           >>> len(gamestate.places["tunnel_0_1"].bees)
           1
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # test proper call to zero-health callback
           >>> original_zero_health_callback = Insect.zero_health_callback
           >>> Insect.zero_health_callback = lambda x: print("insect died")
@@ -263,12 +263,12 @@ test = {
           insect died
           >>> Insect.zero_health_callback = original_zero_health_callback
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt removes bee when eating.
           >>> hungry = HungryAnt()
           >>> place = gamestate.places["tunnel_0_0"]
@@ -286,12 +286,12 @@ test = {
           >>> len(place.bees)
           2
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing HungryAnt chooses a random bee in its Place, and that it reduces that bee's health to 0.
           >>> hungry = HungryAnt()
           >>> HungryAnt.chew_cooldown = 0
@@ -311,39 +311,39 @@ test = {
           >>> first_bee_chosen_count > 0 # If bees are chosen randomly, HungryAnt should eat the first bee at least once with high probability
           True
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-            ],
-            'scored': True,
-            'setup': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        }
+      ],
+      'scored': True,
+      'setup': r"""
       >>> from ants import *
       >>> beehive, layout = Hive(AssaultPlan()), dry_layout
       >>> dimensions = (1, 9)
       >>> gamestate = GameState(beehive, ant_types(), layout, dimensions)
       >>> #
       """,
-            'teardown': '',
-            'type': 'doctest',
-        },
+      'teardown': '',
+      'type': 'doctest'
+    },
+    {
+      'cases': [
         {
-            'cases': [
-                {
-                    'code': r"""
+          'code': r"""
           >>> from ants import *
           >>> HungryAnt.implemented
           True
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                }
-            ],
-            'scored': True,
-            'setup': '',
-            'teardown': '',
-            'type': 'doctest',
-        },
-    ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        }
+      ],
+      'scored': True,
+      'setup': '',
+      'teardown': '',
+      'type': 'doctest'
+    }
+  ]
 }

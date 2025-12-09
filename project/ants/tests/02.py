@@ -1,57 +1,57 @@
 test = {
-    'name': 'Problem 2',
-    'points': 1,
-    'suites': [
+  'name': 'Problem 2',
+  'points': 1,
+  'suites': [
+    {
+      'cases': [
         {
-            'cases': [
-                {
-                    'answer': 'A single tile that an Ant can be placed on and that connects to other Places',
-                    'choices': [
-                        r"""
+          'answer': 'A single tile that an Ant can be placed on and that connects to other Places',
+          'choices': [
+            r"""
             A single tile that an Ant can be placed on and that connects to
             other Places
             """,
-                        'The entire space where the game takes place',
-                        'The tunnel that bees travel through',
-                        'Where the bees start out in the game',
-                    ],
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                    'question': 'What does a Place represent in the game?',
-                },
-                {
-                    'answer': 'When q is constructed',
-                    'choices': [
-                        'When p is constructed',
-                        'When q is constructed',
-                        'Never, it is always set to None',
-                    ],
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                    'question': 'p is a Place whose entrance is q and exit is r (q and r are not None). When is p.entrance first set to a non-None value?',
-                },
-                {
-                    'answer': 'When p is constructed',
-                    'choices': [
-                        'When p is constructed',
-                        'When q is constructed',
-                        'Never, it is always set to None',
-                    ],
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                    'question': 'p is a Place whose entrance is q and exit is r (q and r are not None). When is p.exit first set to a non-None value?',
-                },
-            ],
-            'scored': False,
-            'type': 'concept',
+            'The entire space where the game takes place',
+            'The tunnel that bees travel through',
+            'Where the bees start out in the game'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'What does a Place represent in the game?'
         },
         {
-            'cases': [
-                {
-                    'code': r"""
+          'answer': 'When q is constructed',
+          'choices': [
+            'When p is constructed',
+            'When q is constructed',
+            'Never, it is always set to None'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'p is a Place whose entrance is q and exit is r (q and r are not None). When is p.entrance first set to a non-None value?'
+        },
+        {
+          'answer': 'When p is constructed',
+          'choices': [
+            'When p is constructed',
+            'When q is constructed',
+            'Never, it is always set to None'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'p is a Place whose entrance is q and exit is r (q and r are not None). When is p.exit first set to a non-None value?'
+        }
+      ],
+      'scored': False,
+      'type': 'concept'
+    },
+    {
+      'cases': [
+        {
+          'code': r"""
           >>> # Simple test for Place
           >>> place0 = Place('place_0')
           >>> print(place0.exit)
@@ -64,12 +64,12 @@ test = {
           >>> place0.entrance is place1
           True
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing if entrances are properly initialized
           >>> tunnel_len = 9
           >>> len(gamestate.bee_entrances)
@@ -90,13 +90,13 @@ test = {
           >>> tile_3.exit is gamestate.base
           True
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-            ],
-            'scored': True,
-            'setup': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        }
+      ],
+      'scored': True,
+      'setup': r"""
       >>> from ants import *
       >>> from ants_plans import *
       >>> #
@@ -106,8 +106,8 @@ test = {
       >>> gamestate = GameState(beehive, ant_types(), layout, dimensions)
       >>> #
       """,
-            'teardown': '',
-            'type': 'doctest',
-        },
-    ],
+      'teardown': '',
+      'type': 'doctest'
+    }
+  ]
 }

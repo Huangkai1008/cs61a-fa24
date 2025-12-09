@@ -1,62 +1,62 @@
 test = {
-    'name': 'Problem 10',
-    'points': 1,
-    'suites': [
+  'name': 'Problem 10',
+  'points': 1,
+  'suites': [
+    {
+      'cases': [
         {
-            'cases': [
-                {
-                    'answer': 'adaf2d9fa40056824000d27086ae3288',
-                    'choices': [
-                        r"""
+          'answer': 'If the insect is not waterproof, its health is reduced to 0. Otherwise, nothing happens.',
+          'choices': [
+            r"""
             If the insect is not waterproof, its health is reduced to 0.
             Otherwise, nothing happens.
             """,
-                        "The insect's health is reduced to 0.",
-                        'Nothing happens.',
-                        'The insect goes for a swim.',
-                    ],
-                    'hidden': False,
-                    'locked': True,
-                    'multiline': False,
-                    'question': 'What happens when an insect is added to a Water Place?',
-                },
-                {
-                    'answer': 'c2c702fdace349525eb19020c3dde5e2',
-                    'choices': [
-                        'class, all ants of a subclass should either be waterproof or not',
-                        'class, all ants should be waterproof',
-                        'instance, the is_waterproof attribute depends on the amount of health a given ant has left',
-                        'instance, the is_waterproof attribute depends on the given place of an ant',
-                    ],
-                    'hidden': False,
-                    'locked': True,
-                    'multiline': False,
-                    'question': 'What type of attribute should "is_waterproof" be?',
-                },
-                {
-                    'answer': 'd0b5a58a4030ecd64dc80332c297e8dd',
-                    'choices': [
-                        'reduce_health, in the Insect class',
-                        'remove_insect, in the Place class',
-                        'sting, in the Bee class',
-                        'remove_ant, in the GameState class',
-                    ],
-                    'hidden': False,
-                    'locked': True,
-                    'multiline': False,
-                    'question': r"""
-          What method deals damage to an Insect and removes it from its place
-          if its health reaches 0?
-          """,
-                },
-            ],
-            'scored': False,
-            'type': 'concept',
+            "The insect's health is reduced to 0.",
+            'Nothing happens.',
+            'The insect goes for a swim.'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'What happens when an insect is added to a Water Place?'
         },
         {
-            'cases': [
-                {
-                    'code': r"""
+          'answer': 'class, all ants of a subclass should either be waterproof or not',
+          'choices': [
+            'class, all ants of a subclass should either be waterproof or not',
+            'class, all ants should be waterproof',
+            'instance, the is_waterproof attribute depends on the amount of health a given ant has left',
+            'instance, the is_waterproof attribute depends on the given place of an ant'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': 'What type of attribute should "is_waterproof" be?'
+        },
+        {
+          'answer': 'reduce_health, in the Insect class',
+          'choices': [
+            'reduce_health, in the Insect class',
+            'remove_insect, in the Place class',
+            'sting, in the Bee class',
+            'remove_ant, in the GameState class'
+          ],
+          'hidden': False,
+          'locked': False,
+          'multiline': False,
+          'question': r"""
+          What method deals damage to an Insect and removes it from its place
+          if its health reaches 0?
+          """
+        }
+      ],
+      'scored': False,
+      'type': 'concept'
+    },
+    {
+      'cases': [
+        {
+          'code': r"""
           >>> # Testing water with Ants
           >>> test_water = Water('Water Test1')
           >>> ant = HarvesterAnt()
@@ -72,47 +72,43 @@ test = {
           >>> (ant.health, test_water.ant is None)
           (0, True)
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing water with soggy (non-waterproof) bees
           >>> test_bee = Bee(1000000)
           >>> test_bee.is_waterproof = False    # Make Bee non-waterproof
           >>> test_water = Water('Water Test2')
           >>> test_water.add_insect(test_bee)
           >>> test_bee.health
-          73b94a1326ae2e803c3421016112207b
-          # locked
+          0
           >>> len(test_water.bees)
-          73b94a1326ae2e803c3421016112207b
-          # locked
+          0
           """,
-                    'hidden': False,
-                    'locked': True,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # Testing water with waterproof bees
           >>> test_bee = Bee(1)
           >>> test_water = Water('Water Test3')
           >>> test_water.add_insect(test_bee)
           >>> test_bee.health
-          d89cf7c79d5a479b0f636734143ed5e6
-          # locked
+          1
           >>> test_bee in test_water.bees
-          c7a88a0ffd3aef026b98eef6e7557da3
-          # locked
+          True
           """,
-                    'hidden': False,
-                    'locked': True,
-                    'multiline': False,
-                },
-                {
-                    'code': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        },
+        {
+          'code': r"""
           >>> # test proper call to zero-health callback
           >>> original_zero_health_callback = Insect.zero_health_callback
           >>> Insect.zero_health_callback = lambda x: print("insect died")
@@ -126,13 +122,13 @@ test = {
           insect died
           >>> Insect.zero_health_callback = original_zero_health_callback
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                },
-            ],
-            'scored': True,
-            'setup': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        }
+      ],
+      'scored': True,
+      'setup': r"""
       >>> from ants import *
       >>> from ants_plans import *
       >>> beehive, layout = Hive(make_test_assault_plan()), dry_layout
@@ -140,13 +136,13 @@ test = {
       >>> gamestate = GameState(beehive, ant_types(), layout, dimensions)
       >>> #
       """,
-            'teardown': '',
-            'type': 'doctest',
-        },
+      'teardown': '',
+      'type': 'doctest'
+    },
+    {
+      'cases': [
         {
-            'cases': [
-                {
-                    'code': r"""
+          'code': r"""
           >>> # Testing water inheritance
           >>> old_add_insect = Place.add_insect
           >>> def new_add_insect(self, insect):
@@ -159,13 +155,13 @@ test = {
           called add_insect
           >>> Place.add_insect = old_add_insect
           """,
-                    'hidden': False,
-                    'locked': False,
-                    'multiline': False,
-                }
-            ],
-            'scored': True,
-            'setup': r"""
+          'hidden': False,
+          'locked': False,
+          'multiline': False
+        }
+      ],
+      'scored': True,
+      'setup': r"""
       >>> from ants import *
       >>> from ants_plans import *
       >>> beehive, layout = Hive(make_test_assault_plan()), dry_layout
@@ -173,10 +169,10 @@ test = {
       >>> gamestate = GameState(beehive, ant_types(), layout, dimensions)
       >>> old_add_insect = Place.add_insect
       """,
-            'teardown': r"""
+      'teardown': r"""
       >>> Place.add_insect = old_add_insect
       """,
-            'type': 'doctest',
-        },
-    ],
+      'type': 'doctest'
+    }
+  ]
 }
